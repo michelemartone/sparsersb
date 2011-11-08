@@ -1,0 +1,46 @@
+
+ -- Loadable Function: S = sparsersb (A)
+     Create a sparse RSB matrix from the full matrix A.
+
+ -- Loadable Function: S = sparsersb (FILENAME)
+     Create a sparse RSB matrix by loading the Matrix Market matrix
+     file from string FILENAME.
+
+ -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
+     Create a sparse RSB matrix given integer index vectors I and J, a
+     1-by-`nnz' vector of real of complex values SV, overall dimensions
+     M and N of the sparse matrix.  The argument `nzmax' is ignored but
+     accepted for compatibility with MATLAB.
+
+     *Note*: if multiple values are specified with the same I, J
+     indices, the corresponding values in S will be added.
+
+     The following are all equivalent:
+
+          s = sparsersb (i, j, s, m, n)
+          s = sparsersb (i, j, s, m, n, "summation")
+          s = sparsersb (i, j, s, m, n, "sum")
+          s = sparsersb (i, j, s, "summation")
+          s = sparsersb (i, j, s, "sum")
+
+ -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
+     Same as above, except that if more than two values are specified
+     for the same I, J indices, the last specified value will be used.
+
+ -- Loadable Function: S = sparsersb (I, J, SV)
+     Uses `M = max (I)', `N = max (J)'
+
+ -- Loadable Function: S = sparsersb (M, N)
+     Equivalent to `sparsersb ([], [], [], M, N, 0)'
+
+     See also: full
+
+
+
+Additional help for built-in functions and operators is
+available in the on-line version of the manual.  Use the command
+`doc <topic>' to search the manual index.
+
+Help and information about Octave is also available on the WWW
+at http://www.octave.org and via the help@octave.org
+mailing list.

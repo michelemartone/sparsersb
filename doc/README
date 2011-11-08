@@ -1,0 +1,27 @@
+
+================================================================================
+This is a plugin to interface the "librsb" sparse matrix library to Octave.
+Author: Michele Martone
+================================================================================
+
+Build instructions:
+
+sh autogen.sh
+./configure
+make
+make check
+
+
+Usage instructions:
+# go in the directory where sparsersb.oct is located
+octave
+# you can use the sparsersb function
+
+If you desire, you can pass some options to configure; e.g.: 
+./configure CXXFLAGS="-O3  "
+./configure CXXFLAGS="-O3  " LIBRSB_CONFIG=/opt/librsb-optimized/bin/librsb-config 
+
+Developer notes:
+ /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles
+ http://octave.sourceforge.net/developers.html
+================================================================================

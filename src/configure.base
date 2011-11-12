@@ -258,10 +258,10 @@ int test(void) { lo_ieee_nan_value(); }],,
 dnl
 dnl Check if octave is needs octave_idx_type
 dnl
-TRY_MKOCTFILE([for octave_idx_type],
-[#include <octave/oct-types.h>
-octave_idx_type test(void) { octave_idx_type idx = 1; return idx; }],,
-[MKOCTFILE="$MKOCTFILE -Doctave_idx_type=int"])
+dnl TRY_MKOCTFILE([for octave_idx_type],
+dnl [#include <octave/oct-types.h>
+dnl octave_idx_type test(void) { octave_idx_type idx = 1; return idx; }],,
+dnl [MKOCTFILE="$MKOCTFILE -Doctave_idx_type=int"])
 
 dnl
 dnl Check if octave uses quit.h

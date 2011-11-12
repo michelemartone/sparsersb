@@ -1174,7 +1174,7 @@ static void install_sparse_rsb (void)
 		octave_sparse_rsb_matrix::register_type ();
 		install_sparsersb_ops ();
 		sparse_rsb_loaded=true;
-		//mlock (RSBOI_FNS);
+		mlock();
 	}
 	return;
 	err:

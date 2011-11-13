@@ -1181,23 +1181,6 @@ static void install_sparse_rsb (void)
 	RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 }
 
-// PKG_ADD: autoload ("istri", "sparsersb.oct");
-DEFUN_DLD (istri, args, , "Returns true if argument is a triangular matrix")
-{
-	int nargin = args.length ();
-	octave_value retval;
-	RSBOI_DEBUG_NOTICE("");
-
-	if (nargin != 1)
-		print_usage ();
-	else if (! sparse_rsb_loaded)
-		retval = false;
-	else
-		retval = args(0).type_id () ==
-			octave_sparse_rsb_matrix::static_type_id ();
-	return retval;
-}
-
 // PKG_ADD: autoload (RSBOI_FNS, RSBOI_FNS".oct");
 DEFUN_DLD (RSB_SPARSERSB_LABEL, args, ,
 "-*- texinfo -*-\n\

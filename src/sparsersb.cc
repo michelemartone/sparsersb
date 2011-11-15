@@ -44,7 +44,11 @@
 #include <octave/ov-typeinfo.h>
 #include <rsb.h>
 
-//#define RSBOI_VERBOSE 1
+#ifdef RSBOI_VERBOSE_CONFIG
+#if (RSBOI_VERBOSE_CONFIG>0)
+#define RSBOI_VERBOSE RSBOI_VERBOSE_CONFIG
+#endif
+#endif
 
 #define RSBOI_PRINTF( ... ) printf( __VA_ARGS__ )
 #if RSBOI_VERBOSE
@@ -231,8 +235,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			//		sm.data(), (rsb_coo_index_t*)IA.data(),  (rsb_coo_index_t*)JA.data(), sm.nnz(), RSBOI_TYPECODE , nr, nc, br, bc);
 
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, RSBOI_TYPECODE , nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR("error in %s!\n","rsb");
-								 // FIXME: need to set symmetry/triangle flags
+				RSBOI_ERROR("error allocating matrix!\n");
+			/* FIXME: what to do in case of such an error ? */
+			// FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
 			rsb_perror(errval);
 		}

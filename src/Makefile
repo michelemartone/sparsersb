@@ -13,7 +13,7 @@ tags: *.cc
 #LIBRSB_LIBS=$(RSBLIBDIR)/librsb.a
 
 $(SPARSERSB_OCT): sparsersb.cc
-	$(MKOCTFILE) -D''RSB_SPARSERSB_LABEL=sparsersb $(LIBRSB_CXXFLAGS) -o $@ $< $(LIBRSB_LIBS)
+	$(MKOCTFILE) -D''RSB_SPARSERSB_LABEL=sparsersb $(RSBOI_CXXFLAGS) $(LIBRSB_CXXFLAGS) -o $@ $< $(LIBRSB_LIBS)
 
 rtest: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent rsb.m

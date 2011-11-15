@@ -76,7 +76,10 @@
 #undef RSB_FULLY_IMPLEMENTED
 #define RSBOI_DESTROY(OM) {rsb_free_sparse_matrix(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
-
+#define RSBOI_0_ERROR error
+#define RSBOI_0_ALLERRMSG "error allocating matrix!\n"
+#define RSBOI_0_EMERRMSG  "data structure is corrupt (unexpected NULL matrix pointer)!\n"
+#define RSBOI_0_EMCHECK(M) if(!(M))RSBOI_0_ERROR(RSBOI_0_EMERRMSG);
 #define RSBOI_FNSS(S)	#S
 //#define RSBOI_FNS	RSBOI_FNSS(RSB_SPARSERSB_LABEL)
 #define RSBOI_FNS	"sparsersb"
@@ -126,6 +129,8 @@ static bool sparsersb_tester()
 	{
 		RSBOI_ERROR("Index sizes of Octave differs from that of RSB:"
 			" a conversion is needed, but yet unsupported in this version.");
+	//	RSBOI_O_ERROR("Index sizes of Octave differs from that of RSB:"
+	//		" a conversion is needed, but yet unsupported in this version.");
 		goto err;
 	}
 	// TODO: THIS FUNCTION IS INCOMPLETE
@@ -161,6 +166,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 					
 				RSBOI_ERROR("error in %s!\n","rsb");
 			rsb_perror(errval);
+			if(!this->A)
+				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
 		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const Matrix &SM, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
@@ -199,6 +206,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			//rsb_mark_matrix_with_type_flags(this->A);
 			RSBOI_MP(this->A);
 			rsb_perror(errval);
+			if(!this->A)
+				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
 		octave_sparse_rsb_matrix (const Matrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
@@ -235,11 +244,12 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			//		sm.data(), (rsb_coo_index_t*)IA.data(),  (rsb_coo_index_t*)JA.data(), sm.nnz(), RSBOI_TYPECODE , nr, nc, br, bc);
 
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, RSBOI_TYPECODE , nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR("error allocating matrix!\n");
-			/* FIXME: what to do in case of such an error ? */
+				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			// FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
 			rsb_perror(errval);
+			if(!this->A)
+				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
 		octave_sparse_rsb_matrix (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
@@ -279,6 +289,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 								 // FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
 			rsb_perror(errval);
+			if(!this->A)
+				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
 		octave_sparse_rsb_matrix (const octave_sparse_rsb_matrix& T) :
@@ -286,27 +298,27 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		octave_idx_type length (void) const { return this->nnz(); }
 		octave_idx_type nelem (void) const { return this->nnz(); }
 		octave_idx_type numel (void) const { return this->nnz(); }
-		octave_idx_type nnz (void) const { return this->A->nnz; }
+		octave_idx_type nnz (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nnz; }
 		dim_vector dims (void) const { return (dim_vector(this->rows(),this->cols())); }
 		octave_idx_type dim1 (void) const { return this->rows(); }
 		octave_idx_type dim2 (void) const { return this->cols(); }
-		octave_idx_type rows (void) const { return this->A->m; }
-		octave_idx_type cols (void) const { return this->A->k; }
+		octave_idx_type rows (void) const { RSBOI_0_EMCHECK(this->A);return this->A->m; }
+		octave_idx_type cols (void) const { RSBOI_0_EMCHECK(this->A);return this->A->k; }
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
-		size_t byte_size (void) const { return rsb_sizeof(this->A); }
+		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);return rsb_sizeof(this->A); }
 
 		virtual ~octave_sparse_rsb_matrix (void)
 		{
-			RSBOI_DEBUG_NOTICE("");
+			RSBOI_DEBUG_NOTICE("destroying librsb matrix %p\n",this->A);
 			RSBOI_DESTROY(this->A);
 		};
 
 		virtual octave_base_value *clone (void) const
 		{
 			// FIXME: I am not sure how and when this works
-			RSBOI_DEBUG_NOTICE("");
+			RSBOI_DEBUG_NOTICE("cloning librsb matrix %p\n",this->A);
 			return new octave_sparse_rsb_matrix (*this);
 		}
 

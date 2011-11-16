@@ -1023,7 +1023,8 @@ DEFBINOP(op_sub, sparse_rsb_matrix, sparse_rsb_matrix)
 	/* FIXME */
 	sm->A=rsb_matrix_sum(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
 	rsb_perror(errval);
-
+	if(!sm->A)
+		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 
@@ -1037,7 +1038,8 @@ DEFBINOP(op_add, sparse_rsb_matrix, sparse_rsb_matrix)
 	/* FIXME */
 	sm->A=rsb_matrix_sum(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	rsb_perror(errval);
-
+	if(!sm->A)
+		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 
@@ -1050,7 +1052,8 @@ DEFBINOP(op_spmul, sparse_rsb_matrix, sparse_rsb_matrix)
 	RSBOI_DEBUG_NOTICE("");
 	sm->A=rsb_matrix_mul(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	rsb_perror(errval);
-
+	if(!sm->A)
+		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 

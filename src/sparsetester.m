@@ -217,14 +217,18 @@ end
 
 dim=3;
 #M=(rand(dim)>.8)*rand(dim);M(1,1)=11;
-M=zeros(3)+sparse([1,2,3,2],[1,2,3,1],[11,22,33,21]);
+M=[1]
+OM=sparse(M); XM=sparsersb(M);
+if(match=tests(OM,XM)) printf("SUCCESS!\n"); else printf("FAILURE!\n");end
+
+M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
+OM=sparse(M); XM=sparsersb(M);
+if(match=tests(OM,XM)) printf("SUCCESS!\n"); else printf("FAILURE!\n");end
+
 #M=zeros(3)+sparse([1,2,3],[1,2,3],[11,22,33]);
 #M=sparse([1,2,3],[1,2,3],[11,22,33]);
-OM=sparse(M);
-XM=sparsersb(M);
 #XM=sparsepsb(M);
 #
-tests(OM,XM)
 #
 exit
 #

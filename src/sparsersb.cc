@@ -24,6 +24,7 @@
  * for future versions, see http://www.gnu.org/software/octave/doc/interpreter/index.html#Top
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * need a specialized error dumping routine 
+ * should use rsb_strerror+octave_stdout, not rsb_perror
  *
  * NOTES:
  * 20110312 why isstruct() gives 1 ? this invalidates tril, triu
@@ -901,8 +902,16 @@ DEFBINOP(ldiv, sparse_rsb_matrix, matrix)
 	RSBOI_DEBUG_NOTICE("");
 	//errval=rsb_spsv(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,(const RSBOI_T*)retval.data(),RSBOI_OV_STRIDE,(RSBOI_T*)retval.data(),RSBOI_OV_STRIDE);
 	errval=rsb_spsm(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
+	if(RSBOI_SOME_ERROR(errval))
+	{
+		if(errval==RSB_ERR_INVALID_NUMERICAL_DATA)
+			rsb_perror(errval);// FIXME: need a specific error message here
+		else
+			rsb_perror(errval);// FIXME: generic case, here
+		for(octave_idx_type i=0;i<nels;++i)
+			retval(i)=octave_NaN;
+	}
 	//octave_stdout << v3.matrix_value() << retval << "\n";
-	rsb_perror(errval);
 	return retval;
 }
 

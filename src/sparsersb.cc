@@ -18,8 +18,9 @@
 
 /*
  * TODO:
+ * behaviour with complex data is often undefined. shall fix this.
  * should implement compound_binary_op
- * should use octave_stdout
+ * should use octave_stdout in many situations, instead of librsb's printf statements.
  * for future versions, see http://www.gnu.org/software/octave/doc/interpreter/index.html#Top
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * need a specialized error dumping routine 
@@ -633,14 +634,36 @@ skipimpl:
 		void print (std::ostream& os, bool pr_as_read_syntax = false) const
 		{
 			/* FIXME : missing implementation */
-			RSBOI_DEBUG_NOTICE("");
 			//      octave_sparse_matrix::print (os, pr_as_read_syntax);
 			//os <<  " RSB Sparse *only in multiplication*";
+#if 0
+			RSBOI_DEBUG_NOTICE("");
 			RSBOI_PRINTF("Recursive Sparse Blocks:\n");
 			RSBOI_MP(this->A);
 			RSBOI_PRINTF("\n");
 			rsb_print_matrix_t(this->A);
+#else
+			/* FIXME: missing error checking */
+			struct rsb_coo_matrix_t coo;
+			rsb_err_t errval=RSB_ERR_NO_ERROR;
+			rsb_nnz_index_t nnz=this->nnz(),nzi;
+			RSBOI_DEBUG_NOTICE("");
+			Array<octave_idx_type> IA( dim_vector(1,nnz) );
+			Array<octave_idx_type> JA( dim_vector(1,nnz) );
+			Array<RSBOI_T> VA( dim_vector(1,nnz) );
+			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			if(coo.VA==NULL)
+				nnz=0;
+			else
+				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+			coo.m=this->rows();
+			coo.k=this->cols();
+			octave_stdout<<"Recursive Sparse Blocks  (rows = "<<coo.m<<", cols = "<<coo.k<<", nnz = "<<nnz<<" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<"%])\n";
+			for(nzi=0;nzi<nnz;++nzi)
+				octave_stdout<<"  ("<<1+IA(nzi)<<", "<<1+JA(nzi)<<") -> "<<((RSBOI_T*)coo.VA)[nzi]<<"\n";
+#endif
 			newline(os);
+done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		}
 
 	octave_value diag (octave_idx_type k) const

@@ -43,9 +43,9 @@ function match=testasgn(OM,XM)
 	nc=columns(OM);
 	for i=1:nr
 	for j=1:nc
-		printf("%d %d / %d %d\n", i,j,nr,nc)
+		#printf("%d %d / %d %d\n", i,j,nr,nc)
 		#OM, XM
-		printf("%d %d %d\n", i,j,XM(i,j))
+		#printf("%d %d %d\n", i,j,XM(i,j));
 		if(XM(i,j))
 			nv=rand(1);
 			OM(i,j)=nv;
@@ -57,7 +57,7 @@ function match=testasgn(OM,XM)
 	endfor
 	for i=1:nr
 	for j=1:nc
-		if(OM(i,j))match&=isequal(OM(i,j),XM(i,j)); end
+		if(OM(i,j))match&=isequal(OM(i,j),XM(i,j)); end;
 	endfor
 	endfor
 	testmsg(match,"asgn");
@@ -103,7 +103,7 @@ function match=testmult(OM,XM)
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	OX=transpose(OM)*B; XX=transpose(XM)*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
-	OX=OM.'*B, XX=XM.'*B
+	OX=OM.'*B; XX=XM.'*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	testmsg(match,"multiply");
 end
@@ -201,29 +201,55 @@ end
 
 function match=tests(OM,XM)
 	match=1;
-	match&=testinfo(OM,XM)
-	match&=testdims(OM,XM)
-	match&=testdiag(OM,XM)
-	match&=testfind(OM,XM)
-	match&=testelms(OM,XM)
-	match&=testasgn(OM,XM)
-	match&=testpcgm(OM,XM)
-	match&=testmult(OM,XM)
-	match&=testspsv(OM,XM)
-	match&=testscal(OM,XM)
-	match&=testadds(OM,XM)
-	testmsg(match,"overall");
+	match&=testinfo(OM,XM);
+	match&=testdims(OM,XM);
+	match&=testdiag(OM,XM);
+	match&=testfind(OM,XM);
+	match&=testelms(OM,XM);
+	match&=testasgn(OM,XM);
+	match&=testpcgm(OM,XM);
+	match&=testmult(OM,XM);
+	match&=testspsv(OM,XM);
+	match&=testscal(OM,XM);
+	match&=testadds(OM,XM);
+	testmsg(match,"overall (for this matrix)");
 end
 
+match=1;
 dim=3;
 #M=(rand(dim)>.8)*rand(dim);M(1,1)=11;
-M=[1]
+
+#M=[0];
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
+M=[1];
 OM=sparse(M); XM=sparsersb(M);
-if(match=tests(OM,XM)) printf("SUCCESS!\n"); else printf("FAILURE!\n");end
+match&=tests(OM,XM);
 
 M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
 OM=sparse(M); XM=sparsersb(M);
-if(match=tests(OM,XM)) printf("SUCCESS!\n"); else printf("FAILURE!\n");end
+match&=tests(OM,XM);
+
+#M=tril(ones(10))+100*diag(10);
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
+#M=hilb(10)+100*diag(10);
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
+M=diag(10);
+OM=sparse(M); XM=sparsersb(M);
+match&=tests(OM,XM);
+
+#M=diag(10)+sparse([1,10],[10,10],[.1,1]);
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
+if(match) printf("All tests passed.\n"); else printf("Failure while performing tests!\n");end
+
+# FIXME: shall print a report in case of failure.
 
 #M=zeros(3)+sparse([1,2,3],[1,2,3],[11,22,33]);
 #M=sparse([1,2,3],[1,2,3],[11,22,33]);

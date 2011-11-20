@@ -24,11 +24,9 @@
  * for future versions, see http://www.gnu.org/software/octave/doc/interpreter/index.html#Top
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * need a specialized error dumping routine 
- * should use rsb_strerror+octave_stdout, not rsb_perror
  *
  * NOTES:
  * 20110312 why isstruct() gives 1 ? this invalidates tril, triu
- * 20101013 FIXME: not using "mlock" due to a conflict. should we ?
  * 20110312 should unify the constructors into one
  * octave_sparse_matrix in ../src/ov-re-sparse.h
  * SparseMatrix in dSparse.h
@@ -58,9 +56,11 @@
 #define RSBOI_DEBUG_NOTICE( ... ) \
 	printf("In %s(), in file %s at line %10d:\n",__func__,__FILE__,__LINE__), \
 	printf( __VA_ARGS__ )
-#define RSBOI_ERROR( ... ) \
+//#define RSBOI_ERROR( ... ) \
 	printf("In %s(), in file %s at line %10d:\n",__func__,__FILE__,__LINE__), \
 	printf( __VA_ARGS__ )
+#define RSBOI_ERROR( MSG ) \
+	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"<<MSG;
 #define RSBOI_DUMP RSBOI_PRINTF
 #else
 #define RSBOI_DUMP( ... )
@@ -105,7 +105,7 @@
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)
-#define RSBOI_PERROR(E) octave_stdout<<"librsb error:"<<rsb_strerror(E)<<"\n"
+#define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E))octave_stdout<<"librsb error:"<<rsb_strerror(E)<<"\n"
 #if RSBOI_WANT_HEAVY_DEBUG
 extern "C" {
 	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_matrix_t *matrix); // forward declaration
@@ -168,7 +168,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			RSBOI_DEBUG_NOTICE("");
 			if(!(this->A=rsb_load_matrix_file_as_matrix_market(fn.c_str(),RSBOI_RF,typecode,&errval)))
 					
-				RSBOI_ERROR("error in %s!\n","rsb");
+				RSBOI_ERROR("error allocating an rsb matrix!\n");
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -204,7 +204,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				RSBOI_RF|eflags
 				,&errval))
 				)
-				RSBOI_ERROR("error in %s!\n","rsb");
+				RSBOI_ERROR("error allocating an rsb matrix!\n");
 			RSBOI_MP(this->A);
 								 // FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
@@ -289,7 +289,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			//		sm.data(), (rsb_coo_index_t*)IA.data(),  (rsb_coo_index_t*)JA.data(), sm.nnz(), RSBOI_TYPECODE , nr, nc, br, bc);
 
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(((const rsb_byte_t*)sm.data()), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, typecode , nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR("error in %s!\n","rsb");
+				RSBOI_ERROR("error allocating an rsb matrix!\n");
 								 // FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
 			RSBOI_PERROR(errval);

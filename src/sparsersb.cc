@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
-// mkoctfile -g -I../../librsb -o sparsersb.o sparsersb.cc
 
 /*
  * TODO:
@@ -27,6 +26,8 @@
  * need introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
+ * shall extend the test routines to complex types and to the different constructors
+ * so far, 'r=sparsersb([1+i]);s=sparsersb(2*r)' is enough to make crash sparsersb
  *
  * NOTES:
  * 20110312 why isstruct() gives 1 ? this invalidates tril, triu
@@ -54,7 +55,7 @@
 #endif
 
 #define RSBOI_WARN( MSG ) \
-	octave_stdout << MSG;
+	octave_stdout << "Warning: " << MSG;
 #define RSBOI_PRINTF( ... ) printf( __VA_ARGS__ )
 #if RSBOI_VERBOSE
 //printf("In file %20s (in %s) at line %10d:\n",__FILE__,__func__,__LINE__),
@@ -202,7 +203,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			Array<rsb_coo_index_t> JA( dim_vector(1,nnz) );
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			bool islowtri=true,isupptri=true;
-#ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
+#if RSBOI_WANT_DOUBLE_COMPLEX
 			rsb_type_t typecode=iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
 #else
 			rsb_type_t typecode=RSBOI_TYPECODE;
@@ -237,12 +238,14 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
 		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const ComplexMatrix &SM, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			// FIXME: shall call an inner, common layer allocating an rsb matrix
 			RSBOI_DEBUG_NOTICE("\n");
 			do_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),true,eflags);
 		}
+#endif
 
 		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const Matrix &SM, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
@@ -254,11 +257,10 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			do_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),false,eflags);
 		}
 
-		octave_sparse_rsb_matrix (const Matrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		void do_allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
 		{
 			// FIXME: need a specialized contructor in RSB itself
 			RSBOI_DEBUG_NOTICE("");
-			SparseMatrix sm(m); // FIXME
 			octave_idx_type nr = sm.rows ();
 			octave_idx_type nc = sm.cols ();
 			octave_idx_type nnz=0;
@@ -267,9 +269,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
-			rsb_type_t typecode=RSBOI_TYPECODE;
-			//bool ic=m.is_complex_type();
-			//bool ic=m.is_complex_matrix();
+			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE;
 
 			for (octave_idx_type j = 0; j < nc; j++)
 			{
@@ -300,7 +300,16 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		octave_sparse_rsb_matrix (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_matrix (const Matrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		{
+			// FIXME: need a specialized contructor in RSB itself
+			RSBOI_DEBUG_NOTICE("");
+			SparseMatrix sm(m);
+			do_allocate_rsb_matrix_from_csc_copy(sm);
+		}
+
+#if RSBOI_WANT_DOUBLE_COMPLEX
+		void do_allocate_rsb_matrix_from_csc_copy(const SparseComplexMatrix &sm)
 		{
 			// FIXME: need a specialized contructor in RSB itself
 			RSBOI_DEBUG_NOTICE("");
@@ -312,6 +321,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
+			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
+
 			for (octave_idx_type j = 0; j < nc; j++)
 			{
 				for (octave_idx_type k = sm.cidx(j); k < sm.cidx(j+1); k++)
@@ -332,13 +343,31 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			//	this->A=rsb_allocate_bcsr_sparse_matrix (
 			//		sm.data(), (rsb_coo_index_t*)IA.data(),  (rsb_coo_index_t*)JA.data(), sm.nnz(), RSBOI_TYPECODE , nr, nc, br, bc);
 
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(((const rsb_byte_t*)sm.data()), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, typecode , nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR("error allocating an rsb matrix!\n");
-								 // FIXME: need to set symmetry/triangle flags
+			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz,typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
+			// FIXME: need to set symmetry/triangle flags
 			//rsb_mark_matrix_with_type_flags(this->A);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
+		}
+
+		octave_sparse_rsb_matrix (const ComplexMatrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		{
+			// FIXME: need a specialized contructor in RSB itself
+			RSBOI_DEBUG_NOTICE("");
+			do_allocate_rsb_matrix_from_csc_copy(SparseComplexMatrix(m));
+		}
+
+		octave_sparse_rsb_matrix (const SparseComplexMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		{
+			do_allocate_rsb_matrix_from_csc_copy(sm);
+		}
+#endif
+
+		octave_sparse_rsb_matrix (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		{
+			do_allocate_rsb_matrix_from_csc_copy(sm);
 		}
 
 		octave_sparse_rsb_matrix (const octave_sparse_rsb_matrix& T) :
@@ -705,7 +734,7 @@ skipimpl:
 				nnz=0;
 			else
 				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
-			if(ic)RSBOI_WARN("Printing support of complex matrices is incomplete\n");
+			if(ic)RSBOI_WARN("printing support of complex matrices is incomplete!\n");
 			coo.m=this->rows();
 			coo.k=this->cols();
 			octave_stdout<<"Recursive Sparse Blocks "<< " (rows = "<<coo.m<<", cols = "<<coo.k<<", nnz = "<<nnz<<" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<"%], "<<c<<")\n";
@@ -1374,25 +1403,36 @@ to have a common size.\n*/
 #else
 			RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
-
 		if(args(0).is_sparse_type())
 		{
-
 			if(args(0).type_name()==RSB_OI_TYPEINFO_STRING)
 			{
+				RSBOI_WARN("unfinished construction method!\n");
 				retval.append(matrix=(octave_sparse_rsb_matrix*)(args(0).get_rep()).clone());
 			}
 			else
 			{
-				const SparseMatrix m = args(0).sparse_matrix_value();
-				if (error_state) goto err;
-				retval.append(matrix=new octave_sparse_rsb_matrix(m,typecode));
+				if(!ic0)
+				{
+					const SparseMatrix m = args(0).sparse_matrix_value();
+					if (error_state) goto err;
+					retval.append(matrix=new octave_sparse_rsb_matrix(m,typecode));
+				}
+#if RSBOI_WANT_DOUBLE_COMPLEX
+				else
+				{
+					const SparseComplexMatrix m = args(0).sparse_complex_matrix_value();
+					if (error_state) goto err;
+					retval.append(matrix=new octave_sparse_rsb_matrix(m,typecode));
+				}
+#endif
 			}
 		}
 		else
 		if(args(0).is_string())
 		{
 			const std::string m = args(0).string_value();
+			RSBOI_WARN("unfinished construction method!\n");
 			if (error_state) goto err;
 			retval.append(matrix=new octave_sparse_rsb_matrix(m));
 		}
@@ -1404,13 +1444,14 @@ to have a common size.\n*/
 				if (error_state) goto err;
 				retval.append(matrix=new octave_sparse_rsb_matrix(m));
 			}
+#if RSBOI_WANT_DOUBLE_COMPLEX
 			else
 			{
 				ComplexMatrix m = args(0).complex_matrix_value();
 				if (error_state) goto err;
-				// FIXME: unfinished !
-				//retval.append(matrix=new octave_sparse_rsb_matrix(m));
+				retval.append(matrix=new octave_sparse_rsb_matrix(m));
 			}
+#endif
 		}
 	}
 	else
@@ -1418,14 +1459,17 @@ to have a common size.\n*/
 	{
 		if(!ic3)
 			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).matrix_value() ));
+#if RSBOI_WANT_DOUBLE_COMPLEX
 		else
 			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).complex_matrix_value() ));
+#endif
 	}
 	else
 	if (nargin == 4  && args(3).is_string())
 	{
 		rsb_flags_t eflags;
 		std::string vv= args(3).string_value();
+		if(ic0)RSBOI_WARN("support of complex matrices is incomplete!\n");
 		if (error_state) goto ret;
 		RSBOI_DEBUG_NOTICE("");
 		if ( vv == "summation" || vv == "sum" )
@@ -1442,6 +1486,7 @@ to have a common size.\n*/
 	{
 		rsb_flags_t eflags;
 		std::string vv= args(5).string_value();
+		if(ic0)RSBOI_WARN("support of complex matrices is incomplete!\n");
 		if (error_state) goto ret;
 		RSBOI_DEBUG_NOTICE("");
 		if ( vv == "summation" || vv == "sum" )

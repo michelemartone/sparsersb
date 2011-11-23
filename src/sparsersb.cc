@@ -490,13 +490,13 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<RSBOI_T> VA2( dim_vector(1,2*nnz) );/* FIXME */
-			Array<RSBOI_T> VA( dim_vector(1,nnz) );/* FIXME */
-			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
-			for(nzi=0;nzi<nnz;++nzi)((RSBOI_T*)VA.data())[nzi]=VA2.data()[nzi];
+			//Array<RSBOI_T> VA( dim_vector(1,nnz) );/* FIXME */
+			coo.VA=(RSBOI_T*)VA2.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			//for(nzi=0;nzi<nnz;++nzi)((RSBOI_T*)VA.data())[nzi]=VA2.data()[nzi];
 			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			coo.m=this->rows();
 			coo.k=this->cols();
-			return SparseComplexMatrix(VA,IA,JA,coo.m,coo.k);
+			return SparseComplexMatrix(VA2,IA,JA,coo.m,coo.k);
 		}
 
 #if RSBOI_WANT_SUBSREF
@@ -583,6 +583,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		bool is_map (void) const { return true; }
 		bool is_sparse_type (void) const { RSBOI_DEBUG_NOTICE("");return true; }
 		bool is_real_type (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE("");return this->A->typecode==RSB_NUMERICAL_TYPE_DOUBLE?true:false; }
+		bool is_complex_type (void) const { RSBOI_DEBUG_NOTICE(""); return !is_real_type(); }
 		bool is_bool_type (void) const { return false; }
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
@@ -752,7 +753,7 @@ skipimpl:
 			struct rsb_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz=this->nnz(),nzi;
-			bool ic=is_real_type()?false:true;
+			bool ic=this->is_real_type()?false:true;
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<RSBOI_T> VA( dim_vector(1,(ic?2:1)*nnz) );
@@ -781,14 +782,23 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	{
 		octave_value retval;
 		RSBOI_DEBUG_NOTICE("");
+		RSBOI_0_EMCHECK(this->A);
 		if(this->is_square())
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			//Array<rsb_coo_index_t> DA( dim_vector(1,this->rows()) );
-			Matrix DA(this->rows(),1);
 			RSBOI_DEBUG_NOTICE("");
-			errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
-			retval=DA;
+			if(this->is_real_type())
+			{
+				Matrix DA(this->rows(),1);
+				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
+				retval=DA;
+			}
+			else
+			{
+				ComplexMatrix DA(this->rows(),1);
+				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
+				retval=DA;
+			}
 			// FIXME: missing error handling
 		}
 		else

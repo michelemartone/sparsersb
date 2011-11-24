@@ -498,7 +498,6 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			coo.m=this->rows();
 			coo.k=this->cols();
-			octave_stdout << VA << "\n";
 			return SparseComplexMatrix(VA,IA,JA,coo.m,coo.k);
 		}
 

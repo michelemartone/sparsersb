@@ -97,6 +97,7 @@
 #define RSBOI_FNSS(S)	#S
 //#define RSBOI_FNS	RSBOI_FNSS(RSB_SPARSERSB_LABEL)
 #define RSBOI_FNS	"sparsersb"
+#define RSBOI_LIS	"?"
 
 #define RSBIO_DEFAULT_CORE_MATRIX  Matrix (0,0)
 /* FIXME : octave_idx_type vs rsb_coo_index_t */
@@ -1468,7 +1469,8 @@ Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 /*is forced back to a full matrix if resulting matrix is sparse\n*/\
 "\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{filename})\n\
-Create a sparse RSB matrix by loading the Matrix Market matrix file from string @var{filename}.\n"\
+Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{filename}.\n"\
+"In the case @var{filename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned.\n"\
 "\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
 Create a sparse RSB matrix given integer index vectors @var{i} and @var{j},\n\
@@ -1581,9 +1583,17 @@ to have a common size.\n*/
 		if(args(0).is_string())
 		{
 			const std::string m = args(0).string_value();
-			RSBOI_WARN(RSBOI_0_UNFFEMSG);
 			if (error_state) goto err;
-			retval.append(matrix=new octave_sparse_rsb_matrix(m));
+			if(m==RSBOI_LIS)
+			{
+				retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
+				goto ret;
+			}
+			else
+			{
+				RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: shall set the type, here */
+				retval.append(matrix=new octave_sparse_rsb_matrix(m));
+			}
 		}
 		else
 		{

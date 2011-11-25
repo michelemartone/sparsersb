@@ -2,6 +2,8 @@
 #
 # A comparative tester for sparsersb.
 #
+# TODO: shall integrate with the rsb.m tester
+#
 
 function testmsg(match,tname,erreason)
 	if(match)
@@ -216,6 +218,15 @@ function match=tests(OM,XM)
 end
 
 match=1;
+mtn=1;
+
+if (strchr(sparsersb("?"),"Z")>0)
+	mtn++;
+endif
+
+for mti=1:mtn
+wc=(mti==2);
+
 dim=3;
 #M=(rand(dim)>.8)*rand(dim);M(1,1)=11;
 
@@ -224,16 +235,12 @@ dim=3;
 #match&=tests(OM,XM);
 
 M=[1];
+if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);
 
-# TODO: shall implement a functionality to verify whether sparsersb is configured to support complex
-# TODO: shall integrate with the rsb.m tester
-#M=[i];
-#OM=sparse(M); XM=sparsersb(M);
-#match&=tests(OM,XM);
-
 M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
+if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);
 
@@ -246,12 +253,15 @@ match&=tests(OM,XM);
 #match&=tests(OM,XM);
 
 M=diag(10);
+if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);
 
 #M=diag(10)+sparse([1,10],[10,10],[.1,1]);
 #OM=sparse(M); XM=sparsersb(M);
 #match&=tests(OM,XM);
+
+end
 
 if(match) printf("All tests passed.\n"); else printf("Failure while performing tests!\n");end
 

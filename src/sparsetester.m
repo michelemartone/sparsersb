@@ -227,6 +227,12 @@ M=[1];
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);
 
+# TODO: shall implement a functionality to verify whether sparsersb is configured to support complex
+# TODO: shall integrate with the rsb.m tester
+#M=[i];
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
 M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);

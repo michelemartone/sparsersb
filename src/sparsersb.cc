@@ -17,6 +17,7 @@
 
 /*
  * TODO:
+ * make sure complex is not a dependency, now
  * behaviour with complex data is often undefined. shall fix this: need complex support.
  * should implement compound_binary_op
  * should use octave_stdout in many situations, instead of librsb's printf statements.
@@ -24,6 +25,7 @@
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * need a specialized error dumping routine 
  * need introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
+ * shall support configuration inquire (e.g.: to know whether complex is supported or not)
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
  * shall extend the test routines to complex types and to the different constructors
@@ -479,6 +481,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			return SparseMatrix(VA,IA,JA,coo.m,coo.k);
 		}
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
 		virtual SparseComplexMatrix sparse_complex_matrix_value(bool = false)const
 		{
 			/* FIXME: UNFINISHED */
@@ -486,7 +489,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE("");
-			RSBOI_WARN(RSBOI_0_UNFFEMSG);
+			//RSBOI_WARN(RSBOI_0_UNFFEMSG);
 			RSBOI_0_EMCHECK(this->A);
 			nnz=this->nnz();
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
@@ -500,6 +503,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			coo.k=this->cols();
 			return SparseComplexMatrix(VA,IA,JA,coo.m,coo.k);
 		}
+#endif
 
 #if RSBOI_WANT_SUBSREF
 		octave_value subsref (const std::string &type, const std::list<octave_value_list>& idx)
@@ -521,17 +525,33 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 	    					idx_vector i = idx.front() (0).index_vector ();
 	    					if (! error_state)
 	      					{
-							idx_vector j = idx.front() (1).index_vector ();
-							RSBOI_T rv;
-					  		octave_idx_type ii=-1,jj=-1;
-							rsb_err_t errval=RSB_ERR_NO_ERROR;
-  							ii=i(0);
- 					 		jj=j(0);
-							RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
-       							errval=rsb_get_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
-							retval=rv;
-							if (! error_state)
-							  ;//retval = octave_value (matrix.index (i, j, resize_ok));
+							if(is_real_type())
+							{
+								idx_vector j = idx.front() (1).index_vector ();
+								RSBOI_T rv;
+						  		octave_idx_type ii=-1,jj=-1;
+								rsb_err_t errval=RSB_ERR_NO_ERROR;
+  								ii=i(0); jj=j(0);
+								RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
+       								errval=rsb_get_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+								retval=rv;
+								if (! error_state)
+								  ;
+							}
+							else
+							{
+								idx_vector j = idx.front() (1).index_vector ();
+								Complex rv;
+						  		octave_idx_type ii=-1,jj=-1;
+								rsb_err_t errval=RSB_ERR_NO_ERROR;
+  								ii=i(0); jj=j(0);
+								RSBOI_DEBUG_NOTICE("get_elements (%d %d) complex\n",ii,jj);
+       								errval=rsb_get_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+								retval=rv;
+								if (! error_state)
+								  ;
+							}
+							//retval = octave_value (matrix.index (i, j, resize_ok));
 //		  class Octave_map;
 //		  retval = Octave_map();
 //	RSBOI_DEBUG_NOTICE("UNFINISHED: set %d %d <- %lg\n",ii,jj,rhs.double_value());
@@ -635,21 +655,42 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 								idx_vector i = idx.front() (0).index_vector ();
 								if (! error_state)
 								{
-									rsb_err_t errval=RSB_ERR_NO_ERROR;
-									idx_vector j = idx.front() (1).index_vector ();
-									octave_idx_type ii=-1,jj=-1;
-									RSBOI_T rv=rhs.double_value();
-									ii=i(0); jj=j(0);
-									RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
-									RSBOI_DEBUG_NOTICE("update elements (%d %d)\n",ii,jj);
-									errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
-									RSBOI_PERROR(errval);
-									/* FIXME: I am unsure, here */
-									//retval=rhs.double_value(); // this does not match octavej
-									//retval=octave_value(this); 
-									retval=octave_value(this->clone()); // matches but .. heavy ?!
-									if (! error_state)
-										;//retval = octave_value (matrix.index (i, j, resize_ok));
+									if(is_real_type())
+									{
+										rsb_err_t errval=RSB_ERR_NO_ERROR;
+										idx_vector j = idx.front() (1).index_vector ();
+										octave_idx_type ii=-1,jj=-1;
+										RSBOI_T rv=rhs.double_value();
+										ii=i(0); jj=j(0);
+										RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
+										RSBOI_DEBUG_NOTICE("update elements (%d %d)\n",ii,jj);
+										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+										RSBOI_PERROR(errval);
+										/* FIXME: I am unsure, here */
+										//retval=rhs.double_value(); // this does not match octavej
+										//retval=octave_value(this); 
+										retval=octave_value(this->clone()); // matches but .. heavy ?!
+										if (! error_state)
+											;//retval = octave_value (matrix.index (i, j, resize_ok));
+									}
+									else
+									{
+										rsb_err_t errval=RSB_ERR_NO_ERROR;
+										idx_vector j = idx.front() (1).index_vector ();
+										octave_idx_type ii=-1,jj=-1;
+										Complex rv=rhs.complex_value();
+										ii=i(0); jj=j(0);
+										RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
+										RSBOI_DEBUG_NOTICE("update elements (%d %d) complex\n",ii,jj);
+										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+										RSBOI_PERROR(errval);
+										/* FIXME: I am unsure, here */
+										//retval=rhs.double_value(); // this does not match octavej
+										//retval=octave_value(this); 
+										retval=octave_value(this->clone()); // matches but .. heavy ?!
+										if (! error_state)
+											;//retval = octave_value (matrix.index (i, j, resize_ok));
+									}
 //		  class Octave_map;
 //		  retval = Octave_map();
 //	RSBOI_DEBUG_NOTICE("UNFINISHED: set %d %d <- %lg\n",ii,jj,rhs.double_value());
@@ -1244,46 +1285,79 @@ DEFBINOP(op_spmul, sparse_rsb_matrix, sparse_rsb_matrix)
 
 DEFBINOP(op_mul, sparse_rsb_matrix, matrix)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
-	const Matrix b = v2.matrix_value ();
-	//	const SparseMatrix sm = v1.sparse_matrix_value();
-	octave_idx_type b_nc = b.cols ();
-	octave_idx_type b_nr = b.rows ();
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	octave_idx_type ldb=b_nr;
-	octave_idx_type ldc=v1.rows();
-	octave_idx_type nrhs=b_nc;
-	//Matrix retval( b.dims(),1,RSBOI_ZERO);
-	Matrix retval(ldc,nrhs,RSBOI_ZERO);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
 	RSBOI_DEBUG_NOTICE("");
-	if(v1.columns()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
-
-	//errval=rsb_spmv(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,(RSBOI_T*)b.data(),RSBOI_OV_STRIDE,&rsboi_one,(RSBOI_T*)retval.data(),RSBOI_OV_STRIDE);
-	errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
-	RSBOI_PERROR(errval);
-	return retval;
+	if(v1.is_real_type())
+	{
+		const Matrix b = v2.matrix_value ();
+		octave_idx_type b_nc = b.cols ();
+		octave_idx_type b_nr = b.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=v1.rows();
+		octave_idx_type nrhs=b_nc;
+		Matrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(v1.columns()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		RSBOI_PERROR(errval);
+		return retval;
+	}
+	else
+	{
+		const ComplexMatrix b = v2.complex_matrix_value ();
+		octave_idx_type b_nc = b.cols ();
+		octave_idx_type b_nr = b.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=v1.rows();
+		octave_idx_type nrhs=b_nc;
+		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(v1.columns()!=b_nr) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
+		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		RSBOI_PERROR(errval);
+		return retval;
+	}
 }
 
 DEFBINOP(op_trans_mul, sparse_rsb_matrix, matrix)
 {
 	// ".'*"  operator
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
-	const Matrix b = v2.matrix_value ();
-	octave_idx_type b_nc = b.cols ();
-	octave_idx_type b_nr = b.rows ();
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	octave_idx_type ldb=b_nr;
-	octave_idx_type ldc=v1.columns();
-	octave_idx_type nrhs=b_nc;
-	Matrix retval(ldc,nrhs,RSBOI_ZERO);
 	RSBOI_DEBUG_NOTICE("");
-	if(v1.rows()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
-	//octave_stdout << "have: ldc=" <<ldc << " bc=" << b_nc<< " nrhs=" << nrhs << " retval="<< retval<< "\n";
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
+	if(v1.is_real_type())
+	{
+		const Matrix b = v2.matrix_value ();
+		octave_idx_type b_nc = b.cols ();
+		octave_idx_type b_nr = b.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=v1.columns();
+		octave_idx_type nrhs=b_nc;
+		Matrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(v1.rows()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		//octave_stdout << "have: ldc=" <<ldc << " bc=" << b_nc<< " nrhs=" << nrhs << " retval="<< retval<< "\n";
 
-	//errval=rsb_spmv(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,(RSBOI_T*)b.data(),RSBOI_OV_STRIDE,&rsboi_one,(RSBOI_T*)retval.data(),RSBOI_OV_STRIDE);
-	errval=rsb_spmm(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
-	RSBOI_PERROR(errval);
-	return retval;
+		//errval=rsb_spmv(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,(RSBOI_T*)b.data(),RSBOI_OV_STRIDE,&rsboi_one,(RSBOI_T*)retval.data(),RSBOI_OV_STRIDE);
+		errval=rsb_spmm(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		RSBOI_PERROR(errval);
+		return retval;
+	}
+	else
+	{
+		const ComplexMatrix b = v2.complex_matrix_value ();
+		octave_idx_type b_nc = b.cols ();
+		octave_idx_type b_nr = b.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=v1.columns();
+		octave_idx_type nrhs=b_nc;
+		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(v1.rows()!=b_nr) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
+		//octave_stdout << "have: ldc=" <<ldc << " bc=" << b_nc<< " nrhs=" << nrhs << " retval="<< retval<< "\n";
+
+		//errval=rsb_spmv(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,(RSBOI_T*)b.data(),RSBOI_OV_STRIDE,&rsboi_one,(RSBOI_T*)retval.data(),RSBOI_OV_STRIDE);
+		errval=rsb_spmm(RSB_TRANSPOSITION_T,&rsboi_one,v1.A,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		RSBOI_PERROR(errval);
+		return retval;
+	}
 }
 
 static void install_sparsersb_ops (void)

@@ -78,7 +78,12 @@ function match=testelms(OM,XM)
 end
 
 function match=testdiag(OM,XM)
+	#sparse(spdiag(OM))
+	#sparse(spdiag(XM))
+	#match=(sparse(spdiag(OM))==sparse(spdiag(XM)))
 	match=(diag(OM)==diag(XM));
+	#match=(spdiag(OM)==spdiag(XM));
+	#match=1
 	testmsg(match,"diagonal");
 end
 
@@ -201,7 +206,10 @@ function match=testadds(OM,XM)
 	OM=OB; XM=XB;
 end
 
-function match=tests(OM,XM)
+function match=tests(OM,XM,M)
+	if(nargin>2)
+		M
+	endif
 	match=1;
 	match&=testinfo(OM,XM);
 	match&=testdims(OM,XM);
@@ -234,15 +242,24 @@ dim=3;
 #OM=sparse(M); XM=sparsersb(M);
 #match&=tests(OM,XM);
 
-M=[1];
-if(wc)M+=M*i;end
+for k=4:4 # FIXME: this seems to work only by a chance :)
+M=[eye(k)];
+#if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
-match&=tests(OM,XM);
+match&=tests(OM,XM,M);
+end
 
-M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
+#M=zeros(4)+sparse([1,2,3,2,4],[1,2,3,1,4],[11,22,33,21,44]);
+#if(wc)M+=M*i;end
+#OM=sparse(M); XM=sparsersb(M);
+#match&=tests(OM,XM);
+
+for k=4
+M=zeros(k)+sparse([linspace(1,k,k),2],[linspace(1,k,k),1],[11*linspace(1,k,k),21]);
 if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM);
+end
 
 #M=tril(ones(10))+100*diag(10);
 #OM=sparse(M); XM=sparsersb(M);

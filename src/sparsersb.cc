@@ -31,6 +31,7 @@
  * shall extend the test routines to complex types and to the different constructors
  * need librsb functions for conversion (e.g.: double to double complex, viceversa, etc)
  * r=0;r=sparsersb([1+1i]),r*=(2+i) changes the format of r
+ * sparse_complex_matrix_value and sparse_matrix_value are incomplete !
  *
  * NOTES:
  * 20110312 why isstruct() gives 1 ? this invalidates tril, triu
@@ -57,8 +58,13 @@
 #endif
 #endif
 
+#if 0
 #define RSBOI_WARN( MSG ) \
 	octave_stdout << "Warning in "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n" << MSG;
+#else
+#define RSBOI_WARN( MSG )
+#endif
+
 #define RSBOI_PRINTF( ... ) printf( __VA_ARGS__ )
 #if RSBOI_VERBOSE
 //printf("In file %20s (in %s) at line %10d:\n",__FILE__,__func__,__LINE__),
@@ -827,6 +833,10 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		octave_value retval;
 		RSBOI_DEBUG_NOTICE("");
 		RSBOI_0_EMCHECK(this->A);
+		if(k!=0)
+		{
+			error("only main diagonal extraction is supported !");
+		}
 		if(this->is_square())
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -834,13 +844,20 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 			if(this->is_real_type())
 			{
 				Matrix DA(this->rows(),1);
+				//Matrix DA(this->rows(),this->columns());
+				//DiagArray2<double> DA(this->rows(),1);
+				//DiagMatrix DA(this->rows(),1,0.0);
+				//Array<double> DA(this->rows());
 				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
 				retval=DA;
+				//retval=DiagMatrix(DA);
+				//retval=DiagMatrix(DA);
 			}
 			else
 			{
 				ComplexMatrix DA(this->rows(),1);
-				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
+				//ComplexDiagMatrix DA(this->rows(),1);
+				errval=rsb_getdiag (this->A,(void*)DA.data());/*FIXME*/
 				retval=DA;
 			}
 			// FIXME: missing error handling

@@ -17,32 +17,17 @@
 
 /*
  * TODO:
- * make sure complex is not a dependency, now
  * behaviour with complex data is often undefined. shall fix this: need complex support.
  * should implement compound_binary_op
- * should use octave_stdout in many situations, instead of librsb's printf statements.
  * for future versions, see http://www.gnu.org/software/octave/doc/interpreter/index.html#Top
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * need a specialized error dumping routine 
  * need introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
- * shall support configuration inquire (e.g.: to know whether complex is supported or not)
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
- * shall extend the test routines to complex types and to the different constructors
- * need librsb functions for conversion (e.g.: double to double complex, viceversa, etc)
  * r=0;r=sparsersb([1+1i]),r*=(2+i) changes the format of r
- * sparse_complex_matrix_value and sparse_matrix_value are incomplete !
  *
- * NOTES:
- * 20110312 why isstruct() gives 1 ? this invalidates tril, triu
- * 20110312 should unify the constructors into one
- * octave_sparse_matrix in ../src/ov-re-sparse.h
- * SparseMatrix in dSparse.h
- * should issue error if rsboi_zero or other constants get overridden
- * should avoid copying of temporary vectors in spsv/spmv ops
- * should replace the use of rsb_perror with rsboi_perror
- * should print some memory usage statistics and optimize memory usage
- * see also OPERATORS/op-sm-sm.cc */
+ * */
 
 #include <octave/oct.h>
 #include <octave/ov-re-mat.h>
@@ -165,7 +150,7 @@ static bool sparsersb_tester()
 	//		" a conversion is needed, but yet unsupported in this version.");
 		goto err;
 	}
-	// TODO: THIS FUNCTION IS INCOMPLETE
+	// TODO: This function is incomplete.
 	return true;
 err:
 	return false;
@@ -473,16 +458,28 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE("");
-			RSBOI_WARN(RSBOI_0_UNFFEMSG);
+			//RSBOI_WARN(RSBOI_0_UNFFEMSG);
 			RSBOI_0_EMCHECK(this->A);
 			nnz=this->nnz();
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
-			Array<RSBOI_T> VA2( dim_vector(1,2*nnz) );/* FIXME: temporary ! */
-			Array<RSBOI_T> VA( dim_vector(1,nnz) );/* FIXME: temporary ! */
-			coo.VA=(RSBOI_T*)VA2.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
-			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
-			for(nzi=0;nzi<nnz;++nzi)((RSBOI_T*)VA.data())[nzi]=VA2.data()[nzi];
+			Array<RSBOI_T> VA( dim_vector(1,nnz) );
+			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			if(!this->is_real_type())
+			{
+				Array<Complex> VAC( dim_vector(1,nnz) );
+				coo.VA=(RSBOI_T*)VAC.data();
+				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				/* FIXME: need support for this conversion in librsb */
+				for(nzi=0;nzi<nnz;++nzi)
+					((RSBOI_T*)VA.data())[nzi]=((RSBOI_T*)coo.VA)[2*nzi];
+			}
+			else
+			{
+				coo.VA=(RSBOI_T*)VA.data();
+				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+			}
+			//for(nzi=0;nzi<nnz;++nzi)((RSBOI_T*)VA.data())[nzi]=VA2.data()[nzi];
 			coo.m=this->rows();
 			coo.k=this->cols();
 			return SparseMatrix(VA,IA,JA,coo.m,coo.k);
@@ -501,11 +498,15 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			nnz=this->nnz();
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
-			Array<Complex> VA( dim_vector(1,nnz) );/* FIXME */
-			//Array<RSBOI_T> VA( dim_vector(1,nnz) );/* FIXME */
-			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
-			//for(nzi=0;nzi<nnz;++nzi)((RSBOI_T*)VA.data())[nzi]=VA2.data()[nzi];
+			Array<Complex> VA( dim_vector(1,nnz) );
+			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			coo.VA=(RSBOI_T*)VA.data();
 			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+			/* FIXME: need support for this conversion in librsb */
+			if(this->is_real_type())
+				for(nzi=0;nzi<nnz;++nzi)
+					((RSBOI_T*)VA.data())[2*(nnz-1-nzi)+0]=((RSBOI_T*)VA.data())[(nnz-1-nzi)+0],
+					((RSBOI_T*)VA.data())[2*(nnz-1-nzi)+1]=0;
 			coo.m=this->rows();
 			coo.k=this->cols();
 			return SparseComplexMatrix(VA,IA,JA,coo.m,coo.k);

@@ -25,6 +25,7 @@
  * need introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
+ * shall document the semantics of the update and access operators
  * r=0;r=sparsersb([1+1i]),r*=(2+i) changes the format of r
  *
  * */
@@ -670,7 +671,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 										octave_idx_type ii=-1,jj=-1;
 										RSBOI_T rv=rhs.double_value();
 										ii=i(0); jj=j(0);
-										RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
+										//RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
 										RSBOI_DEBUG_NOTICE("update elements (%d %d)\n",ii,jj);
 										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
@@ -688,7 +689,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 										octave_idx_type ii=-1,jj=-1;
 										Complex rv=rhs.complex_value();
 										ii=i(0); jj=j(0);
-										RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
+										//RSBOI_DEBUG_NOTICE("FIXME: UNFINISHED\n");
 										RSBOI_DEBUG_NOTICE("update elements (%d %d) complex\n",ii,jj);
 										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
@@ -841,7 +842,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		if(this->is_square())
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			RSBOI_DEBUG_NOTICE("");
+			//RSBOI_DEBUG_NOTICE("");
 			if(this->is_real_type())
 			{
 				Matrix DA(this->rows(),1);
@@ -850,8 +851,8 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 				//DiagMatrix DA(this->rows(),1,0.0);
 				//Array<double> DA(this->rows());
 				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());/*FIXME*/
-				retval=DA;
-				//retval=DiagMatrix(DA);
+				//retval=SparseMatrix(DA);
+				retval=(DA);
 				//retval=DiagMatrix(DA);
 			}
 			else
@@ -859,7 +860,8 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 				ComplexMatrix DA(this->rows(),1);
 				//ComplexDiagMatrix DA(this->rows(),1);
 				errval=rsb_getdiag (this->A,(void*)DA.data());/*FIXME*/
-				retval=DA;
+				retval=(DA);
+				//retval=SparseComplexMatrix(DA);
 			}
 			// FIXME: missing error handling
 		}

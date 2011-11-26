@@ -81,9 +81,13 @@ function match=testdiag(OM,XM)
 	#sparse(spdiag(OM))
 	#sparse(spdiag(XM))
 	#match=(sparse(spdiag(OM))==sparse(spdiag(XM)))
-	match=(diag(OM)==diag(XM));
+	#OM,XM
+	#diag(OM)
+	#diag(XM)
+	match=1
+	if(diag(OM)==diag(XM));match=1;else match=0;end
+	#match=(diag(OM)==diag(XM)); # TODO: understand why the following syntax is problematic !
 	#match=(spdiag(OM)==spdiag(XM));
-	#match=1
 	testmsg(match,"diagonal");
 end
 
@@ -217,9 +221,11 @@ function match=tests(OM,XM,M)
 	match&=testfind(OM,XM);
 	match&=testelms(OM,XM);
 	match&=testasgn(OM,XM);
-	match&=testpcgm(OM,XM);
-	match&=testmult(OM,XM);
-	match&=testspsv(OM,XM);
+	if nnz(OM)>1
+		match&=testpcgm(OM,XM);
+		match&=testmult(OM,XM);
+		match&=testspsv(OM,XM);
+	end
 	match&=testscal(OM,XM);
 	match&=testadds(OM,XM);
 	testmsg(match,"overall (for this matrix)");
@@ -238,13 +244,13 @@ wc=(mti==2);
 dim=3;
 #M=(rand(dim)>.8)*rand(dim);M(1,1)=11;
 
-#M=[0];
-#OM=sparse(M); XM=sparsersb(M);
-#match&=tests(OM,XM);
+M=[0];
+OM=sparse(M); XM=sparsersb(M);
+match&=tests(OM,XM);
 
-for k=4:4 # FIXME: this seems to work only by a chance :)
+for k=1:6
 M=[eye(k)];
-#if(wc)M+=M*i;end
+if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);
 match&=tests(OM,XM,M);
 end
@@ -254,7 +260,7 @@ end
 #OM=sparse(M); XM=sparsersb(M);
 #match&=tests(OM,XM);
 
-for k=4
+for k=3:6
 M=zeros(k)+sparse([linspace(1,k,k),2],[linspace(1,k,k),1],[11*linspace(1,k,k),21]);
 if(wc)M+=M*i;end
 OM=sparse(M); XM=sparsersb(M);

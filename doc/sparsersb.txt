@@ -4,7 +4,9 @@
 
  -- Loadable Function: S = sparsersb (FILENAME)
      Create a sparse RSB matrix by loading the Matrix Market matrix
-     file from string FILENAME.
+     file named FILENAME.  In the case FILENAME is "?", a string
+     listing the available numerical types with BLAS-style characters
+     will be returned.
 
  -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
      Create a sparse RSB matrix given integer index vectors I and J, a
@@ -20,8 +22,6 @@
           s = sparsersb (i, j, s, m, n)
           s = sparsersb (i, j, s, m, n, "summation")
           s = sparsersb (i, j, s, m, n, "sum")
-          s = sparsersb (i, j, s, "summation")
-          s = sparsersb (i, j, s, "sum")
 
  -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
      Same as above, except that if more than two values are specified

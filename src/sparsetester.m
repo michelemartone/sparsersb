@@ -2,8 +2,23 @@
 #
 # A comparative tester for sparsersb.
 #
-# TODO: shall integrate with the rsb.m tester
-#
+# TODO:
+# - shall integrate with the rsb.m tester
+# - isequal(find(a),find(b)) only checks for pattern!
+# - isequal(sparsersb(..),sparsersb(..)) is unfinished !
+# - need NZMAX as last arg testing
+# - in sparsersb, the == operator is not yet handled natively
+# - need testing for find(M,<something>?)
+
+function ase=are_spm_equal(OM,XM)
+	if(nnz(XM)!=nnz(OM));ase=0; return; end
+	[oi,oj,ov]=find(OM);
+	[xi,xj,xv]=find(XM);
+	ase=1;
+	ase&=isequal(oi,xi);
+	ase&=isequal(oj,xj);
+	ase&=isequal(ov,xv);
+end
 
 function testmsg(match,tname,erreason)
 	if(match)
@@ -31,10 +46,48 @@ function match=testdims(OM,XM)
 	testmsg(match,"dimensions");
 end
 
+function match=testsprsb(OM,XM)
+	match=1;
+	# FIXME: shall see in detail whether there are not too many conversions here..
+	[oi,oj,ov]=find(OM);
+	RM=sparsersb(oi,oj,ov);
+	match&=isequal(find(RM),find(OM));
+	match&=isequal(find(RM),find(XM));
+	clear RM;
+	RM=sparsersb(oi,oj,ov,size(OM)(1),size(OM)(2));
+	match&=isequal(find(RM),find(OM));
+	match&=isequal(find(RM),find(XM));
+	clear RM;
+	RM=sparsersb(full(OM));
+	match&=isequal(find(RM),find(OM));
+	match&=isequal(find(RM),find(XM));
+	clear RM;
+	RM=sparsersb([oi;1;1],[oj;1;1],[ov;-1;1]);
+	match&=isequal(find(RM),find(OM));
+	match&=isequal(find(RM),find(XM));
+	clear RM;
+	nr=max(oi);
+	nc=max(oj);
+	RM=sparsersb([oi;1;1],[oj;1;1],[ov;-1;1],nr,nc,"sum")
+	match&=are_spm_equal(RM,OM);
+	match&=are_spm_equal(RM,XM);
+	clear RM;
+	RM=sparsersb([oi;1;1],[oj;1;1],[ov;-2;1],nr,nc,"sum");
+	match&=!are_spm_equal(RM,OM);
+	match&=!are_spm_equal(RM,XM);
+	clear RM;
+	RM=sparsersb([oi;nr+1;nr+1],[oj;nc+1;nc+1],[ov;-1;1],nr+1,nc+1,"unique");
+	match&=!are_spm_equal(RM,OM);
+	match&=!are_spm_equal(RM,XM);
+	clear RM;
+	testmsg(match,"find");
+end
+
 function match=testfind(OM,XM)
 	match=1;
 	match&=isequal(find(OM),find(XM));
 	match&=isequal(([oi,oj]=find(OM)),([xi,xj]=find(XM)));
+	match&=isequal(([oi,oj,ov]=find(OM)),([xi,xj,xv]=find(XM)));
 	match&=isequal(nonzeros(OM),nonzeros(XM));
 	testmsg(match,"find");
 end
@@ -215,6 +268,9 @@ function match=tests(OM,XM,M)
 		M
 	endif
 	match=1;
+	if nnz(OM)>0
+	match&=testsprsb(OM,XM);
+	end
 	match&=testinfo(OM,XM);
 	match&=testdims(OM,XM);
 	match&=testdiag(OM,XM);

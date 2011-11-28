@@ -74,7 +74,9 @@
 	printf("In %s(), in file %s at line %10d:\n",__func__,__FILE__,__LINE__), \
 	printf( __VA_ARGS__ )
 #define RSBOI_ERROR( MSG ) \
-	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"<<MSG;
+	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"<<MSG
+#define RSBOI_EERROR( MSG ) \
+	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"
 #define RSBOI_DUMP RSBOI_PRINTF
 #else
 #define RSBOI_DUMP( ... )
@@ -86,6 +88,7 @@
 #define RSBOI_CB RSB_DEFAULT_COL_BLOCKING
 //#define RSBOI_RF RSB_FLAG_DEFAULT_STORAGE_FLAGS
 #define RSBOI_RF RSB_FLAG_DEFAULT_RSB_MATRIX_FLAGS 
+#define RSBOI_DCF RSB_FLAG_DUPLICATES_SUM
 #define RSBOI_NF RSB_FLAG_NOFLAGS
 #define RSBOI_T double
 #define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
@@ -93,6 +96,7 @@
 #define RSBOI_DESTROY(OM) {rsb_free_sparse_matrix(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
 #define RSBOI_0_ERROR error
+#define RSBOI_0_BADINVOERRMSG "invoking this function in the wrong way!\n"
 #define RSBOI_0_ALLERRMSG "error allocating matrix!\n"
 #define RSBOI_0_NOCOERRMSG "compiled without complex type support!\n"
 #define RSBOI_0_ICSERRMSG "compiled with incomplete complex type support!\n"
@@ -109,6 +113,7 @@
 #define RSBOI_0_NSQERRMSG  "matrix is not square"
 #define RSBOI_D_EMPTY_MSG  "complex support is yet incomplete\n"
 #define RSBOI_O_MISSIMPERRMSG  "implementation missing here\n"
+#define RSBOI_O_NPMSERR  "providing non positive matrix size is not allowed!"
 #define RSBOI_0_EMCHECK(M) if(!(M))RSBOI_0_ERROR(RSBOI_0_EMERRMSG);
 #define RSBOI_FNSS(S)	#S
 //#define RSBOI_FNS	RSBOI_FNSS(RSB_SPARSERSB_LABEL)
@@ -210,7 +215,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		void rsboi_allocate_rsb_matrix_from_coo_copy(const Matrix &IM, const Matrix &JM, const void * SMp, bool iscomplex=false, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM)
+		void rsboi_allocate_rsb_matrix_from_coo_copy(const Matrix &IM, const Matrix &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 		{
 			octave_idx_type nnz=IM.rows()*IM.cols();
 			Array<rsb_coo_index_t> IA( dim_vector(1,nnz) );
@@ -235,7 +240,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			if(isupptri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_UPPER_TRIANGULAR);
 			if(islowtri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_TRIANGULAR);
 
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(SMp, (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, typecode, 0, 0, RSBOI_RB, RSBOI_CB,
+			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(SMp, (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz, typecode, nr, nc, RSBOI_RB, RSBOI_CB,
 				RSBOI_RF|eflags
 				,&errval))
 				)
@@ -248,24 +253,24 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
-		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const ComplexMatrix &SM, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const ComplexMatrix &SM,
+			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),true,eflags);
+			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
 		}
 #endif
 
-		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const Matrix &SM, rsb_flags_t eflags=RSB_FLAG_DUPLICATES_SUM) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const Matrix &SM,
+			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),false,eflags);
+			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
 		}
 
 		void rsboi_allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			octave_idx_type nr = sm.rows ();
-			octave_idx_type nc = sm.cols ();
 			octave_idx_type nnz=0;
 			Array<rsb_coo_index_t> IA( dim_vector(1,sm.nnz()) );
 			Array<rsb_coo_index_t> JA( dim_vector(1,sm.nnz()) );
@@ -273,6 +278,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE;
+			octave_idx_type nr = sm.rows (); octave_idx_type nc = sm.cols ();
 
 			for (octave_idx_type j = 0; j < nc; j++)
 			{
@@ -1393,10 +1399,10 @@ The following are all equivalent:\n\
 @group\n\
 s = "RSBOI_FNS" (i, j, s, m, n)\n\
 s = "RSBOI_FNS" (i, j, s, m, n, \"summation\")\n\
-s = "RSBOI_FNS" (i, j, s, m, n, \"sum\")\n\
-s = "RSBOI_FNS" (i, j, s, \"summation\")\n\
-s = "RSBOI_FNS" (i, j, s, \"sum\")\n\
-@end group\n\
+s = "RSBOI_FNS" (i, j, s, m, n, \"sum\")\n"\
+/*"s = "RSBOI_FNS" (i, j, s, \"summation\")\n"*/\
+/*"s = "RSBOI_FNS" (i, j, s, \"sum\")\n"*/\
+"@end group\n\
 @end example\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{s}, @var{m}, @var{n}, \"unique\")\n\
@@ -1505,48 +1511,65 @@ to have a common size.\n*/
 		}
 	}
 	else
-	if (nargin == 3 || nargin == 5)
+	if (nargin >= 3 && nargin <= 6)
 	{
+		rsb_flags_t eflags=RSBOI_DCF;
+		octave_idx_type nr=0,nc=0;
+		if (nargin > 3)
+		{
+			if ( nargin < 5)
+			{
+//				if(nargin==4 && args(3).is_string())
+//					goto checked;
+				RSBOI_EERROR(RSBOI_0_BADINVOERRMSG);
+				goto errp;
+			}
+			/* FIXME: integer_type should be also supported here: shouldn't it ?*/
+    			if( (!args(3).is_scalar_type()) || (!args(4).is_scalar_type()))
+			{
+				RSBOI_EERROR(RSBOI_0_BADINVOERRMSG);
+				goto errp;
+			}
+     			if( nargin > 5 && ((!args(5).is_string()) && (!args(5).is_scalar_type())))
+			{
+				RSBOI_EERROR(RSBOI_0_BADINVOERRMSG);
+				goto errp;
+			}
+		}
+//checked:
+		if (nargin >= 5  )
+		{
+			nr=args(3).scalar_value();/* FIXME: need index value here! */
+			nc=args(4).scalar_value();
+			if(nr<=0 || nc<=0)
+			{
+				RSBOI_EERROR(RSBOI_O_NPMSERR);
+				goto errp;
+			}
+		}
+		if (nargin >= 6  && args(5).is_string())
+		{
+			std::string vv= args(5).string_value();
+			if ( vv == "summation" || vv == "sum" )
+				eflags=RSB_FLAG_DUPLICATES_SUM;
+			else
+			if ( vv == "unique" )
+				eflags=RSB_FLAG_DUPLICATES_KEEP_LAST;
+			else
+				goto errp;
+		}
+		if (nargin >= 6  && args(5).is_integer_type())
+		{
+			/* we ignore this value for MATLAB compatibility */
+		}
+		if (error_state) goto ret;
+
 		if(!ic3)
-			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).matrix_value() ));
+			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).matrix_value(),nr,nc,eflags ));
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		else
-			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).complex_matrix_value() ));
+			retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).complex_matrix_value(),nr,nc,eflags ));
 #endif
-	}
-	else
-	if (nargin == 4  && args(3).is_string())
-	{
-		rsb_flags_t eflags;
-		std::string vv= args(3).string_value();
-		if(ic0)RSBOI_WARN("support of complex matrices is incomplete!\n");
-		if (error_state) goto ret;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		if ( vv == "summation" || vv == "sum" )
-			eflags=RSB_FLAG_DUPLICATES_SUM;
-		else
-		if ( vv == "unique" )
-			eflags=RSB_FLAG_DUPLICATES_KEEP_LAST;
-		else
-			goto errp;
-		retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).matrix_value(), eflags));
-	}
-	else
-	if (nargin == 6  && args(5).is_string())
-	{
-		rsb_flags_t eflags;
-		std::string vv= args(5).string_value();
-		if(ic0)RSBOI_WARN(RSBOI_0_ICSERRMSG);
-		if (error_state) goto ret;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		if ( vv == "summation" || vv == "sum" )
-			eflags=RSB_FLAG_DUPLICATES_SUM;
-		else
-		if ( vv == "unique" )
-			eflags=RSB_FLAG_DUPLICATES_KEEP_LAST;
-		else
-			goto errp;
-		retval.append(matrix=new octave_sparse_rsb_matrix( args(0).matrix_value(), args(1).matrix_value(), args(2).matrix_value(), eflags));
 	}
 	else
 		goto errp;

@@ -3,9 +3,9 @@ sz=2;
 #_rm=sparsersb((rand(sz)))
 #_rm=sparsersb([1,2,2],[1,1,2],[11,21,22])
 #_rm=sparsersb([11,12;21,22]); exit
-_rm=sparsersb([1,1,1,2,2],[1,1,1,1,2],[1,2,8,21,22],"summation")
+_rm=sparsersb([1,1,1,2,2],[1,1,1,1,2],[1,2,8,21,22],2,2,"summation")
 #exit
-#_rm=sparsersb([1,1,1,2,2],[1,1,1,1,2],[1,2,8,21,22],"unique")
+#_rm=sparsersb([1,1,1,2,2],[1,1,1,1,2],[1,2,8,21,22],2,2,"unique")
 _om=sparse([1,2,2],[1,1,2],[11,21,22])
 #_rm=sparsersb([1,1,2],[1,2,2],[11,12,22])
 #_om=sparse   ([1,1,2],[1,2,2],[11,12,22])
@@ -150,6 +150,7 @@ _rm&_dm
 #_rm--
 #_rm++
 #_rm=_dm
+printf(" [*] test passed\n");
 exit
 (_rm*x)
 u:srm*(y)

@@ -75,14 +75,14 @@
 	printf( __VA_ARGS__ )
 #define RSBOI_ERROR( MSG ) \
 	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"<<MSG
-#define RSBOI_EERROR( MSG ) \
-	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"
 #define RSBOI_DUMP RSBOI_PRINTF
 #else
 #define RSBOI_DUMP( ... )
 #define RSBOI_DEBUG_NOTICE( ... )
 #define RSBOI_ERROR( ... )
 #endif
+#define RSBOI_EERROR( MSG ) \
+	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"
 #define RSBOI_TYPECODE RSB_NUMERICAL_TYPE_DOUBLE
 #define RSBOI_RB RSB_DEFAULT_ROW_BLOCKING
 #define RSBOI_CB RSB_DEFAULT_COL_BLOCKING

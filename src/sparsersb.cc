@@ -31,6 +31,7 @@
  *    - from double to complex and viceversa, when calling rsb_get_coo
  *  - minimize copies around
  * subsref, dotref, subsasgn are incomplete: need error messages there
+ * in full_value(), bool arg is ignored
  * missing symmetry support (although librsb has it)!
  * shall document the semantics of the update and access operators
  * r=0;r=sparsersb([1+1i]),r*=(2+i) changes the format of r
@@ -171,7 +172,7 @@ static const RSBOI_T rsboi_zero= 0.0;
 
 static octave_base_value * default_numeric_conversion_function (const octave_base_value& a);
 
-static bool sparsersb_tester()
+static bool sparsersb_tester(void)
 {
 	if(sizeof(octave_idx_type)!=sizeof(rsb_coo_index_t))
 	{
@@ -434,7 +435,34 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			return SparseMatrix(VA,IA,JA,coo.m,coo.k);
 		}
 
+		virtual Matrix matrix_value(bool = false)const
+		{
+			/* FIXME: inefficient */
+			Matrix cm=sparse_matrix_value().matrix_value();
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			return cm;
+		}
+
+		virtual octave_value full_value(void)const
+		{
+			/* FIXME: inefficient */
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			if(this->is_real_type())
+				return matrix_value();
+			else
+				return complex_matrix_value();
+		}
+
 #if RSBOI_WANT_DOUBLE_COMPLEX
+		virtual ComplexMatrix complex_matrix_value(bool = false)const
+		{
+			/* FIXME: inefficient */
+			octave_sparse_complex_matrix ocm=sparse_complex_matrix_value();
+			ComplexMatrix cm=ocm.complex_matrix_value();
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			return cm;
+		}
+
 		virtual SparseComplexMatrix sparse_complex_matrix_value(bool = false)const
 		{
 			struct rsb_coo_matrix_t coo;

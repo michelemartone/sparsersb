@@ -3,18 +3,32 @@
 # A comparative tester for sparsersb.
 #
 # TODO:
+#
 # - shall integrate with the rsb.m tester
 # - isequal(find(a),find(b)) only checks for pattern!
 # - isequal(sparsersb(..),sparsersb(..)) is unfinished !
 # - need NZMAX as last arg testing
 # - in sparsersb, the == operator is not yet handled natively
 # - need testing for find(M,<something>?)
+# 
 
 function ase=are_spm_equal(OM,XM)
 	if(nnz(XM)!=nnz(OM));ase=0; return; end
+	if(columns(XM)!=columns(OM));ase=0; return; end
+	if(rows(XM)!=rows(OM));ase=0; return; end
+	if(length(XM)!=length(OM));ase=0; return; end
+	if(size(XM)!=size(OM));ase=0; return; end
+	if(full(XM)!=full(OM));ase=0; return; end
+	if((-XM)!=(-OM));ase=0; return; end
+	for ri=1:rows(XM)
+		if(XM(ri,:)!=OM(ri,:));ase=0; return; end
+	end
+	for ci=1:columns(XM)
+		if(XM(ci,:)!=OM(ci,:));ase=0; return; end
+	end
+	ase=1;
 	[oi,oj,ov]=find(OM);
 	[xi,xj,xv]=find(XM);
-	ase=1;
 	ase&=isequal(oi,xi);
 	ase&=isequal(oj,xj);
 	ase&=isequal(ov,xv);

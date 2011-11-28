@@ -16,8 +16,7 @@ $(SPARSERSB_OCT): sparsersb.cc
 	CXXFLAGS="$(CXXFLAGS)" $(MKOCTFILE)  -D''RSB_SPARSERSB_LABEL=sparsersb $(RSBOI_CXXFLAGS) $(LIBRSB_CXXFLAGS) -o $@ $< $(LIBRSB_LIBS)
 
 rtest: $(SPARSERSB_OCT)
-	$(OCTAVE) --silent rsb.m
-	$(OCTAVE) --silent sparsetester.m
+	$(OCTAVE) --silent sparsersbtester.m
 
 bench: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent obench.m

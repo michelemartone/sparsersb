@@ -10,6 +10,8 @@
 # - need NZMAX as last arg testing
 # - in sparsersb, the == operator is not yet handled natively
 # - need testing for find(M,<something>?)
+# - seems like non-square matrices are not tested
+# - shall test +-, &=, --, ++, .', ./, .\, /, -, +, .*, ./, .^, +0, ==, <=, >=, >, <, |, &
 # 
 
 function ase=are_spm_equal(OM,XM)
@@ -19,14 +21,23 @@ function ase=are_spm_equal(OM,XM)
 	if(length(XM)!=length(OM));ase=0; return; end
 	if(size(XM)!=size(OM));ase=0; return; end
 	if(full(XM)!=full(OM));ase=0; return; end
+	if((3*XM)!=(3*OM));ase=0; return; end
+	if((XM/2)!=(OM/2));ase=0; return; end
+	#if((XM.^2)!=(OM.^2));ase=0; return; end
 	if((-XM)!=(-OM));ase=0; return; end
 	for ri=1:rows(XM)
 		if(XM(ri,:)!=OM(ri,:));ase=0; return; end
 	end
 	for ci=1:columns(XM)
-		if(XM(ci,:)!=OM(ci,:));ase=0; return; end
+		if(XM(:,ci)!=OM(:,ci));ase=0; return; end
+	end
+	for ri=1:rows(XM)
+	for ci=1:columns(XM)
+		if(XM(ri,ci)!=OM(ri,ci));ase=0; return; end
+	end
 	end
 	ase=1;
+	if(XM(:,:)!=OM(:,:));ase=0; return; end
 	[oi,oj,ov]=find(OM);
 	[xi,xj,xv]=find(XM);
 	ase&=isequal(oi,xi);
@@ -181,8 +192,10 @@ function match=testmult(OM,XM)
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	OX=transpose(OM)*B; XX=transpose(XM)*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
+	match&=are_spm_equal(OX,XX);
 	OX=OM.'*B; XX=XM.'*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
+	match&=are_spm_equal(OX,XX);
 	testmsg(match,"multiply");
 end
 

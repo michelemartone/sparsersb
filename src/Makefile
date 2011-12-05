@@ -20,6 +20,7 @@ rtest: $(SPARSERSB_OCT)
 
 bench: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent obench.m
+	$(OCTAVE) --silent sparsersbbench.m
 	
 tests: rtest
 check: rtest

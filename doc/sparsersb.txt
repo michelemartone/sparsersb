@@ -33,7 +33,11 @@
  -- Loadable Function: S = sparsersb (M, N)
      Equivalent to `sparsersb ([], [], [], M, N, 0)'
 
-     See also: full
+     Please note that on `sparsersb' type variables are available most,
+     but not all of the operators available for `full' or `sparse'
+     typed variables.
+
+     See also: full, sparse
 
 
 

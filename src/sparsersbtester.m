@@ -105,7 +105,7 @@ function match=testsprsb(OM,XM)
 	match&=!are_spm_equal(RM,OM);
 	match&=!are_spm_equal(RM,XM);
 	clear RM;
-	testmsg(match,"find");
+	testmsg(match,"constructors");
 end
 
 function match=testfind(OM,XM)

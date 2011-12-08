@@ -870,13 +870,18 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		if(is_real_type())
 		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&alpha,RSB_NUMERICAL_TYPE_DOUBLE) );
 		else
+#if RSBOI_WANT_DOUBLE_COMPLEX
 		{Complex calpha;calpha+=alpha;
 		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&calpha,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX) );
 		}
+#else
+		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
+#endif
 #endif
 		return m;
 	}
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	octave_value rsboi_get_scaled_copy(const Complex alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -892,6 +897,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 #endif
 		return m;
 	}
+#endif
 
 	private:
 

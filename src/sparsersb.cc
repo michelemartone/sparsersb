@@ -286,6 +286,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE;
 			octave_idx_type nr = sm.rows (); octave_idx_type nc = sm.cols ();
 
+			if(nnz==0)/* FIXME: this branch is temporary */
+			{
 			for (octave_idx_type j = 0; j < nc; j++)
 			{
 				for (octave_idx_type k = sm.cidx(j); k < sm.cidx(j+1); k++)
@@ -303,6 +305,12 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz,typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
+			}
+			else
+			{
+			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
+			}
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);

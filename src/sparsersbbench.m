@@ -42,9 +42,6 @@ function sparsersbbench_battery(mstring,mint)
 	sparsersbbench_("",[finitstr,""],"C=sparsersb(A);clear C;","clear A C","",mint);
 	sparsersbbench_("",[rinitstr,""],"C=A.';        ;clear C;","clear A C","",mint);
 	sparsersbbench_("",[rinitstr,""],"C=transpose(A);clear C;","clear A C","",mint);
-	sparsersbbench_("",[rinitstr,"B=A;"],"C=A*B;clear C","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"D=ones(size(A)(1),1);"],"D=diag(A);","clear A D","",mint);
 	for nrhs=1:3
 	nrhss=sprintf("%d",nrhs);
 	sparsersbbench_("",[rinitstr,"C=ones(size(A)(1),",nrhss,");B=C;"],"C=A*B;","clear A B C","",mint);
@@ -56,6 +53,9 @@ function sparsersbbench_battery(mstring,mint)
 	end
 	end
 	clear A;
+	sparsersbbench_("",[rinitstr,"B=A;"],"C=A*B;clear C","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"D=ones(size(A)(1),1);"],"D=diag(A);","clear A D","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.*=2.0;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A./=2.0;","clear A","",mint);
 	#sparsersbbench_("",[rinitstr,""],"A.*=0.0;","clear A","",mint);
@@ -77,8 +77,8 @@ sparsersbbench_("n=6000; k=3500; oA=k*eye(n)+sprandn(n,n,.2); b=ones(n,1); P=dia
 end
 
 #for diml=0:0
-#for diml=1:11
 for diml=1:11
+#for diml=11:11
 #for diml=3:3
 #for cadd=1:1
 #for cadd=0:0
@@ -89,14 +89,19 @@ for cadd=0:1
 	#is=sprintf("ones(%d)",dim);
 
 	cmul=sprintf("(1+i*%d)",cadd);
-	#is=sprintf("ones(%d).*%s",dim,cmul);
-	#sparsersbbench_battery(is,btime)
-	#is=sprintf("tril(ones(%d).*%s)",dim,cmul);
-	#sparsersbbench_battery(is,btime)
-	#is=sprintf("diag(ones(%d,1)).*%s",dim,cmul);
-	#sparsersbbench_battery(is,btime)
-	is=sprintf("(diag(ones(%d,1))+sprand(%d,%d,0.1)).*%s",dim,dim,dim,cmul); # FIXME: non repeatable experiment :)
+	is=sprintf("ones(%d).*%s",dim,cmul);
 	sparsersbbench_battery(is,btime)
+	is=sprintf("tril(ones(%d).*%s)",dim,cmul);
+	sparsersbbench_battery(is,btime)
+	is=sprintf("diag(ones(%d,1)).*%s",dim,cmul);
+	sparsersbbench_battery(is,btime)
+
+       	# FIXME: follow non repeatable experiments :)
+	is=sprintf("(diag(ones(%d,1))+sprand(%d,%d,0.1)).*%s",dim,dim,dim,cmul);
+	sparsersbbench_battery(is,btime)
+	is=sprintf("(diag(ones(%d,1))+sprand(%d,%d,0.4)).*%s",dim,dim,dim,cmul);
+	sparsersbbench_battery(is,btime)
+
 	# FIXME: need a non-square matrices testing-benchmarking snippet
 end
 end

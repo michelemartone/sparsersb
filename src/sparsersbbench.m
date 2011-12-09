@@ -89,12 +89,15 @@ for cadd=0:1
 	#is=sprintf("ones(%d)",dim);
 
 	cmul=sprintf("(1+i*%d)",cadd);
-	is=sprintf("ones(%d).*%s",dim,cmul);
+	#is=sprintf("ones(%d).*%s",dim,cmul);
+	#sparsersbbench_battery(is,btime)
+	#is=sprintf("tril(ones(%d).*%s)",dim,cmul);
+	#sparsersbbench_battery(is,btime)
+	#is=sprintf("diag(ones(%d,1)).*%s",dim,cmul);
+	#sparsersbbench_battery(is,btime)
+	is=sprintf("(diag(ones(%d,1))+sprand(%d,%d,0.1)).*%s",dim,dim,dim,cmul); # FIXME: non repeatable experiment :)
 	sparsersbbench_battery(is,btime)
-	is=sprintf("tril(ones(%d).*%s)",dim,cmul);
-	sparsersbbench_battery(is,btime)
-	is=sprintf("diag(ones(%d,1)).*%s",dim,cmul);
-	sparsersbbench_battery(is,btime)
+	# FIXME: need a non-square matrices testing-benchmarking snippet
 end
 end
 

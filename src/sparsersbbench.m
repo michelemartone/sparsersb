@@ -34,9 +34,10 @@ function speedup=sparsersbbench_(gprecmd,precmd,cmd,postcmd,gpostcmd,mint)
 end
 
 function sparsersbbench_battery(mstring,mint)
-	rinitstr=["A=sparsersb(",mstring,");"];
+	rinitstr=["A=sparsersb(",mstring,");nr=size(A)(1);nc=size(A)(2);"];
 	finitstr=["A=full(",mstring,");"];
-	cinitstr=["[ia,ja,va]=find(sparse(",mstring,"));"];
+	cinitstr=["M=sparse(",mstring,");[ia,ja,va]=find(M);nr=size(M)(1);nc=size(M)(2);"];
+	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ia,ja,va,nr,nc);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ia,ja,va);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ja,ia,va);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[finitstr,""],"C=sparsersb(A);clear C;","clear A C","",mint);
@@ -45,18 +46,18 @@ function sparsersbbench_battery(mstring,mint)
 	sparsersbbench_("",[rinitstr,""],"C=transpose(A);clear C;","clear A C","",mint);
 	for nrhs=1:3
 	nrhss=sprintf("%d",nrhs);
-	sparsersbbench_("",[rinitstr,"C=ones(size(A)(1),",nrhss,");B=C;"],"C=A*B;","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"C=ones(size(A)(1),",nrhss,");B=C;"],"C=A.'*B;","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"C=ones(nr,",nrhss,");B=C;"],"C=A*B;","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"C=ones(nr,",nrhss,");B=C;"],"C=A.'*B;","clear A B C","",mint);
 	eval(finitstr);
 	if (tril(A)==A) || (triu(A)==A)
-	sparsersbbench_("",[rinitstr,"C=ones(size(A)(1),",nrhss,");B=C;"],"C=A\\B;","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"C=ones(size(A)(1),",nrhss,");B=C;"],"C=A.'\\B;","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"C=ones(nr,",nrhss,");B=C;"],"C=A\\B;","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"C=ones(nr,",nrhss,");B=C;"],"C=A.'\\B;","clear A B C","",mint);
 	end
 	end
 	clear A;
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A*B;clear C","clear A B C","",mint);
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"D=ones(size(A)(1),1);"],"D=diag(A);","clear A D","",mint);
+	sparsersbbench_("",[rinitstr,"D=ones(nr,1);"],"D=diag(A);","clear A D","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.*=2.0;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.*=2.5;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A./=2.0;","clear A","",mint);

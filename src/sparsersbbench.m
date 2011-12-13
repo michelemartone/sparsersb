@@ -40,6 +40,7 @@ function sparsersbbench_battery(mstring,mint)
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ia,ja,va);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ja,ia,va);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[finitstr,""],"C=sparsersb(A);clear C;","clear A C","",mint);
+	sparsersbbench_("",[rinitstr,""],"C=A;          ;clear C;","clear A C","",mint);
 	sparsersbbench_("",[rinitstr,""],"C=A.';        ;clear C;","clear A C","",mint);
 	sparsersbbench_("",[rinitstr,""],"C=transpose(A);clear C;","clear A C","",mint);
 	for nrhs=1:3
@@ -57,9 +58,12 @@ function sparsersbbench_battery(mstring,mint)
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
 	sparsersbbench_("",[rinitstr,"D=ones(size(A)(1),1);"],"D=diag(A);","clear A D","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.*=2.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.*=2.5;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A./=2.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A./=2.5;","clear A","",mint);
 	#sparsersbbench_("",[rinitstr,""],"A.*=0.0;","clear A","",mint);
 	#sparsersbbench_("",[rinitstr,""],"A./=0.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.^=2.5;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.^=2.0;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,""],"A.^=0.5;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A+B;","clear A B C","",mint);

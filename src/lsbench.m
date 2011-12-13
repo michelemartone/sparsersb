@@ -9,15 +9,23 @@
 # This one is based on what Carlo De Falco posted on the octave-dev mailing list:
 # (he used n=1000, k=15)
 n = 5000;
+maxit = n;
 k = 1500; 
-A = k * eye (n) + sprandn (n, n, .2);
+A_= k * eye (n) + sprandn (n, n, .2);
+[i,j,v]=find(sparse(A_));
+tic, Ao = sparse (i,j,v,n,n);bt=toc;
 b = ones (n, 1);
-nnz (A)
-P = diag (diag (A));
-tic, [x, flag] = gmres (A, b, [], 1e-7, n, P); dt=toc
-printf("Octave took %f s.\n",dt);
+nnz (Ao)
+P = diag (diag (Ao));
+tic, [X, FLAG, RELRES, ITER] = gmres (Ao, b, [], 1e-7, maxit, P); dt=toc;
+cs="Octave   ";
+nv=norm(Ao*X-b);
+printf("%s took %.4f = %.4f + %.4f s and gave residual %g, flag %d, error norm %g.\n",cs,bt+dt,bt,dt,RELRES,FLAG,nv);
 
-As = sparsersb (A);
-tic, [x, flag] = gmres (As, b, [], 1e-7, n, P); dt=toc
-printf("librsb took %f s.\n",dt);
+#tic, Ar = sparsersb (Ao);bt=toc;
+tic, Ar = sparsersb (i,j,v,n,n);bt=toc;
+tic, [X, FLAG, RELRES, ITER] = gmres (Ar, b, [], 1e-7, maxit, P); dt=toc;
+cs="sparsersb";
+nv=norm(Ar*X-b);
+printf("%s took %.4f = %.4f + %.4f s and gave residual %g, flag %d, error norm %g.\n",cs,bt+dt,bt,dt,RELRES,FLAG,nv);
 

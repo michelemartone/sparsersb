@@ -42,6 +42,7 @@
  * may define as map (see is_map) so that "a.type = ..." can work
  * is_struct, find_nonzero_elem_idx  are undefined
  * are octave_triangular_conv, default_numeric_conversion_function ok ? 
+ * error reporting is insufficient
  *
  * Developer notes:
  /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles

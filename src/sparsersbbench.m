@@ -37,6 +37,15 @@ function sparsersbbench_battery(mstring,mint)
 	rinitstr=["A=sparsersb(",mstring,");nr=size(A)(1);nc=size(A)(2);"];
 	finitstr=["A=full(",mstring,");"];
 	cinitstr=["M=sparse(",mstring,");[ia,ja,va]=find(M);nr=size(M)(1);nc=size(M)(2);"];
+	sparsersbbench_("",[rinitstr,""],"A.*=2.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.*=2.5;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A./=2.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A./=2.5;","clear A","",mint);
+	#sparsersbbench_("",[rinitstr,""],"A.*=0.0;","clear A","",mint);
+	#sparsersbbench_("",[rinitstr,""],"A./=0.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.^=2.5;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.^=2.0;","clear A","",mint);
+	sparsersbbench_("",[rinitstr,""],"A.^=0.5;","clear A","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ia,ja,va,nr,nc);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ia,ja,va);clear C;","clear A C ia ja va","",mint);
 	sparsersbbench_("",[cinitstr,""],"C=sparsersb(ja,ia,va);clear C;","clear A C ia ja va","",mint);
@@ -55,20 +64,11 @@ function sparsersbbench_battery(mstring,mint)
 	end
 	end
 	clear A;
-	sparsersbbench_("",[rinitstr,"B=A;"],"C=A*B;clear C","clear A B C","",mint);
-	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
 	sparsersbbench_("",[rinitstr,"D=ones(nr,1);"],"D=diag(A);","clear A D","",mint);
-	sparsersbbench_("",[rinitstr,""],"A.*=2.0;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A.*=2.5;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A./=2.0;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A./=2.5;","clear A","",mint);
-	#sparsersbbench_("",[rinitstr,""],"A.*=0.0;","clear A","",mint);
-	#sparsersbbench_("",[rinitstr,""],"A./=0.0;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A.^=2.5;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A.^=2.0;","clear A","",mint);
-	sparsersbbench_("",[rinitstr,""],"A.^=0.5;","clear A","",mint);
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A+B;","clear A B C","",mint);
 	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'+B;","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"B=A;"],"C=A*B;clear C","clear A B C","",mint);
+	sparsersbbench_("",[rinitstr,"B=A;"],"C=A.'*B;clear C","clear A B C","",mint);
 end
 
 

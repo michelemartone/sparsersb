@@ -237,14 +237,12 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			Array<rsb_coo_index_t> JAv( dim_vector(1,nnz) );
 #endif
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			bool islowtri=true,isupptri=true;
 #if RSBOI_WANT_DOUBLE_COMPLEX
 			rsb_type_t typecode=iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
 #else
 			rsb_type_t typecode=RSBOI_TYPECODE;
 #endif
 			const rsb_coo_index_t *IA=NULL,*JA=NULL;
-
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 
 #if RSBOI_WANT_IDX_VECTOR_CONST
@@ -254,14 +252,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			IA=(const rsb_coo_index_t*)IM.data();
 			JA=(const rsb_coo_index_t*)JM.data();
 #endif
-			for (octave_idx_type n = 0; n < nnz; n++)
-			{
-				rsb_coo_index_t i=IA[n]-1,j=JA[n]-1;
-				if(i>j)isupptri=false;
-				else if(i<j)islowtri=false;
-			}
-			if(isupptri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_UPPER_TRIANGULAR);
-			if(islowtri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_TRIANGULAR);
+			RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_MP(this->A);

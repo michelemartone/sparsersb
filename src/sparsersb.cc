@@ -756,68 +756,22 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		return retval;
 	}
 
-	rsb_err_t rsboi_scale_inv(RSBOI_T alpha)
-	{
-		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		//errval=rsb_elemental_scale_inv(this->A,&alpha);
-	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
-		RSBOI_PERROR(errval);
-		return errval;
-	}
-
-	rsb_err_t rsboi_scale_inv(Complex alpha)
-	{
-		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		//errval=rsb_elemental_scale_inv(this->A,&alpha);
-	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
-		RSBOI_PERROR(errval);
-		return errval;
-	}
-
 	octave_value rsboi_get_scaled_copy_inv(const RSBOI_T alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
+		RSBOI_T one=1.0;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		m = new octave_sparse_rsb_matrix(*this);
-		if(!m)return m;
-		errval=m->rsboi_scale_inv(alpha);
-		RSBOI_PERROR(errval);
-		return m;
+		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
 	}
 
 	octave_value rsboi_get_scaled_copy_inv(const Complex alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
+		Complex one=1.0;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		m = new octave_sparse_rsb_matrix(*this);
-		if(!m)return m;
-		errval=m->rsboi_scale_inv(alpha);
-		RSBOI_PERROR(errval);
-		return m;
-	}
-
-	rsb_err_t rsboi_scale(RSBOI_T alpha)
-	{
-		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		//errval=rsb_elemental_scale(this->A,&alpha);
-	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
-		RSBOI_PERROR(errval);
-		return errval;
-	}
-
-	rsb_err_t rsboi_scale(Complex alpha)
-	{
-		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		//errval=rsb_elemental_scale(this->A,&alpha);
-	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
-		RSBOI_PERROR(errval);
-		return errval;
+		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
 	}
 
 	octave_value rsboi_get_scaled_copy(const RSBOI_T alpha)const
@@ -1118,6 +1072,26 @@ DEFASSIGNOP(rsb_op_mul_eq_s, sparse_rsb_matrix, scalar)
 	return retval;
 }
 
+	rsb_err_t rsboi_scale(RSBOI_T alpha)
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		//errval=rsb_elemental_scale(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
+		RSBOI_PERROR(errval);
+		return errval;
+	}
+
+	rsb_err_t rsboi_scale(Complex alpha)
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		//errval=rsb_elemental_scale(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
+		RSBOI_PERROR(errval);
+		return errval;
+	}
+
 DEFASSIGNOP(rsb_op_div_eq_s, sparse_rsb_matrix, scalar)
 {
 	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_scalar&);
@@ -1127,6 +1101,26 @@ DEFASSIGNOP(rsb_op_div_eq_s, sparse_rsb_matrix, scalar)
 	retval=v1.matrix_value();
 	return retval;
 }
+
+	rsb_err_t rsboi_scale_inv(RSBOI_T alpha)
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		//errval=rsb_elemental_scale_inv(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
+		RSBOI_PERROR(errval);
+		return errval;
+	}
+
+	rsb_err_t rsboi_scale_inv(Complex alpha)
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		//errval=rsb_elemental_scale_inv(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
+		RSBOI_PERROR(errval);
+		return errval;
+	}
 #endif
 
 DEFBINOP(rsb_el_mul_s, sparse_rsb_matrix, scalar)

@@ -900,7 +900,8 @@ DEFUNOP (uminus, sparse_rsb_matrix)
 	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
 	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
 	if(!m)return m;
-	rsb_negation(m->A);
+	//rsb_negation(m->A);
+	rsb_elemental_unop(m->A,RSB_ELOPF_NEG);
 	return m;
 }
 
@@ -912,7 +913,8 @@ DEFUNOP (transpose, sparse_rsb_matrix)
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	if(!m)return m;
-	errval=rsb_transpose(&m->A);
+	//errval=rsb_transpose(&m->A);
+	rsb_elemental_unop(m->A,RSB_ELOPF_TRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }
@@ -925,7 +927,8 @@ DEFUNOP (htranspose, sparse_rsb_matrix)
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	if(!m)return m;
-	errval=rsb_htranspose(&m->A);
+	//errval=rsb_htranspose(&m->A);
+	rsb_elemental_unop(m->A,RSB_ELOPF_HTRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }

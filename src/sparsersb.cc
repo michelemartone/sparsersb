@@ -66,10 +66,12 @@
 #if 0
 #define RSBOI_WARN( MSG ) \
 	octave_stdout << "Warning in "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n" << MSG;
+#define RSBOI_FIXME( MSG ) RSBOI_WARN( MSG )/* new */
 #else
 #define RSBOI_WARN( MSG )
 #endif
 #define RSBOI_TODO( MSG ) RSBOI_WARN( MSG )/* new */
+#define RSBOI_FIXME( MSG ) RSBOI_WARN( "FIXME: "MSG )/* new */
 
 #define RSBOI_PRINTF( ... ) printf( __VA_ARGS__ )
 #if RSBOI_VERBOSE
@@ -238,7 +240,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #endif
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 #if RSBOI_WANT_DOUBLE_COMPLEX
-			rsb_type_t typecode=this->iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
+			rsb_type_t typecode=iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
 #else
 			rsb_type_t typecode=RSBOI_TYPECODE;
 #endif
@@ -440,7 +442,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 
 		virtual Matrix matrix_value(bool = false)const
 		{
-			/* FIXME: inefficient */
+			RSBOI_FIXME("inefficient!");
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			Matrix cm=this->sparse_matrix_value().matrix_value();
 			return cm;
@@ -448,7 +450,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 
 		virtual octave_value full_value(void)const
 		{
-			/* FIXME: inefficient */
+			RSBOI_FIXME("inefficient!");
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			if(this->is_real_type())
 				return this->matrix_value();
@@ -459,7 +461,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		virtual ComplexMatrix complex_matrix_value(bool = false)const
 		{
-			/* FIXME: inefficient */
+			RSBOI_FIXME("inefficient!");
 			octave_sparse_complex_matrix ocm=this->sparse_complex_matrix_value();
 			ComplexMatrix cm=ocm.complex_matrix_value();
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -727,7 +729,7 @@ skipimpl:
 
 		void print (std::ostream& os, bool pr_as_read_syntax = false) const
 		{
-			/* FIXME: what to do with pr_as_read_syntax ? */
+			RSBOI_FIXME("what to do with pr_as_read_syntax ?");
 			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz=this->nnz(),nzi;
@@ -1093,7 +1095,7 @@ DEFBINOP(rsb_s_pow, sparse_rsb_matrix, scalar)
 
 DEFASSIGNOP (assign, sparse_rsb_matrix, sparse_rsb_matrix)
 {
-	/* FIXME : I dunno how to trigger this! */
+	RSBOI_FIXME("I dunno how to trigger this!");
 	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_sparse_rsb_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	rsb_assign(v1.A, v2.A);
@@ -1181,7 +1183,7 @@ DEFBINOP(op_sub, sparse_rsb_matrix, sparse_rsb_matrix)
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	/* FIXME */
+	RSBOI_FIXME("");
 	sm->A=rsb_matrix_sum(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
@@ -1375,7 +1377,8 @@ static void install_sparse_rsb (void)
 		}
 		if(RSBOI_SOME_ERROR(errval=rsb_init(RSB_NULL_INIT_OPTIONS)))
 		{
-			RSBOI_PERROR(errval);//FIXME: temporary
+			RSBOI_FIXME("temporary style of error handling");
+			RSBOI_PERROR(errval); 
 			RSBOI_ERROR("");
 			goto err;
 		}

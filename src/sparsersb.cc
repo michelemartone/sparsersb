@@ -164,12 +164,12 @@ extern "C" {
 }
 #endif
 
-struct rsb_coo_matrix_t
+struct rsboi_coo_matrix_t
 {
 	octave_idx_type * IA, * JA;	 /** row and columns indices */
 	octave_idx_type m,k;		 /** matrix (declared) nonzeros */
 	octave_idx_type nnz;		 /** matrix rows, columns */
-	void * VA;					 /** values of data elements */
+	void * VA;			 /** values of data elements */
 	rsb_type_t typecode;		 /** as specified in the RSB_NUMERICAL_TYPE_* preprocessor symbols in types.h 	*/
 };
 
@@ -184,7 +184,6 @@ static bool sparsersb_tester(void)
 	if(sizeof(octave_idx_type)!=sizeof(rsb_coo_index_t))
 	{
 		RSBOI_ERROR(RSBOI_0_INMISMMSG);
-	//	RSBOI_O_ERROR(RSBOI_0_INMISMMSG);
 		goto err;
 	}
 	RSBOI_WARN(RSBOI_0_INCFERRMSG);
@@ -223,11 +222,11 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		//void rsboi_allocate_rsb_matrix_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
+		//void allocate_rsb_matrix_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 #if RSBOI_WANT_IDX_VECTOR_CONST
-		void rsboi_allocate_rsb_matrix_from_coo_copy(idx_vector & IM, idx_vector & JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
+		void allocate_rsb_matrix_from_coo_copy(idx_vector & IM, idx_vector & JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 #else
-		void rsboi_allocate_rsb_matrix_from_coo_copy(const Matrix &IM, const Matrix &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
+		void allocate_rsb_matrix_from_coo_copy(const Matrix &IM, const Matrix &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 #endif
 		{
 #if RSBOI_WANT_IDX_VECTOR_CONST
@@ -239,7 +238,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #endif
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 #if RSBOI_WANT_DOUBLE_COMPLEX
-			rsb_type_t typecode=iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
+			rsb_type_t typecode=this->iscomplex?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE;
 #else
 			rsb_type_t typecode=RSBOI_TYPECODE;
 #endif
@@ -269,14 +268,14 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
+			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
 		}
 #else
 		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const ComplexMatrix &SM,
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
+			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
 		}
 #endif
 #endif
@@ -286,18 +285,18 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
+			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
 		}
 #else
 		octave_sparse_rsb_matrix (const Matrix &IM, const Matrix &JM, const Matrix &SM,
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
+			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
 		}
 #endif
 
-		void rsboi_allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
+		void allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			octave_idx_type nnz=0;
@@ -307,35 +306,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE;
-			octave_idx_type nr = sm.rows (); octave_idx_type nc = sm.cols ();
-
-#if 0
-			if(nnz==0)/* FIXME: this branch is temporary */
-			{
-			for (octave_idx_type j = 0; j < nc; j++)
-			{
-				for (octave_idx_type k = sm.cidx(j); k < sm.cidx(j+1); k++)
-				{
-					octave_idx_type i=sm.ridx(k);
-					IA(k)=i;
-					JA(k)=j;
-					++nnz;
-					if(i>j)isupptri=false;
-					else if(i<j)islowtri=false;
-				}
-			}
-			if(isupptri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_UPPER_TRIANGULAR);
-			if(islowtri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_TRIANGULAR);
-
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz,typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
-			}
-			else
-#endif
-			{
+			octave_idx_type nr = sm.rows (), nc = sm.cols ();
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
-			}
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -345,11 +318,11 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			SparseMatrix sm(m);
-			rsboi_allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_matrix_from_csc_copy(sm);
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
-		void rsboi_allocate_rsb_matrix_from_csc_copy(const SparseComplexMatrix &sm)
+		void allocate_rsb_matrix_from_csc_copy(const SparseComplexMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			octave_idx_type nr = sm.rows ();
@@ -361,28 +334,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
-#if 0
-			for (octave_idx_type j = 0; j < nc; j++)
-			{
-				for (octave_idx_type k = sm.cidx(j); k < sm.cidx(j+1); k++)
-				{
-					octave_idx_type i=sm.ridx(k);
-					IA(k)=i;
-					JA(k)=j;
-					++nnz;
-					if(i>j)isupptri=false;
-					else if(i<j)islowtri=false;
-				}
-			}
-			if(isupptri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_UPPER_TRIANGULAR);
-			if(islowtri) RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_TRIANGULAR);
-
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(sm.data(), (rsb_coo_index_t*)IA.data(), (rsb_coo_index_t*)JA.data(), nnz,typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
-				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
-#else
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
-#endif
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -391,20 +344,20 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		octave_sparse_rsb_matrix (const ComplexMatrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_csc_copy(SparseComplexMatrix(m));
+			this->allocate_rsb_matrix_from_csc_copy(SparseComplexMatrix(m));
 		}
 
 		octave_sparse_rsb_matrix (const SparseComplexMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_matrix_from_csc_copy(sm);
 		}
 #endif
 
 		octave_sparse_rsb_matrix (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsboi_allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_matrix_from_csc_copy(sm);
 		}
 
 		octave_sparse_rsb_matrix (struct rsb_matrix_t * matrix) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX), A(matrix)
@@ -434,7 +387,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		{
 			RSBOI_DEBUG_NOTICE("destroying librsb matrix %p\n",this->A);
 			RSBOI_DESTROY(this->A);
-		};
+		}
 
 		virtual octave_base_value *clone (void) const
 		{
@@ -452,11 +405,12 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		octave_value do_index_op(const octave_value_list& idx, bool resize_ok)
 		{
 			...
+		}
 #endif
 
 		virtual SparseMatrix sparse_matrix_value(bool = false)const
 		{
-			struct rsb_coo_matrix_t coo;
+			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -487,8 +441,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		virtual Matrix matrix_value(bool = false)const
 		{
 			/* FIXME: inefficient */
-			Matrix cm=sparse_matrix_value().matrix_value();
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			Matrix cm=this->sparse_matrix_value().matrix_value();
 			return cm;
 		}
 
@@ -497,16 +451,16 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			/* FIXME: inefficient */
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			if(this->is_real_type())
-				return matrix_value();
+				return this->matrix_value();
 			else
-				return complex_matrix_value();
+				return this->complex_matrix_value();
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		virtual ComplexMatrix complex_matrix_value(bool = false)const
 		{
 			/* FIXME: inefficient */
-			octave_sparse_complex_matrix ocm=sparse_complex_matrix_value();
+			octave_sparse_complex_matrix ocm=this->sparse_complex_matrix_value();
 			ComplexMatrix cm=ocm.complex_matrix_value();
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			return cm;
@@ -514,7 +468,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 
 		virtual SparseComplexMatrix sparse_complex_matrix_value(bool = false)const
 		{
-			struct rsb_coo_matrix_t coo;
+			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -771,30 +725,10 @@ skipimpl:
 			return default_numeric_conversion_function;
 		}
 
-	#if 0
-		bool isupper (void) const { return false; /**/ }
-		bool islower (void) const { return false; /**/ }
-
-		void assign (const octave_value_list& idx, const Matrix& rhs)
-		{
-			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
-			std::cerr << "octave_sparse_matrix::assign(idx, rhs);\n";
-			//octave_sparse_matrix::assign(idx, rhs);
-		}
-
-		octave_sparse_rsb_matrix transpose (void) const
-		{
-			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
-			return octave_sparse_rsb_matrix();
-		}
-	#endif
-
 		void print (std::ostream& os, bool pr_as_read_syntax = false) const
 		{
 			/* FIXME: what to do with pr_as_read_syntax ? */
-			struct rsb_coo_matrix_t coo;
+			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			rsb_nnz_index_t nnz=this->nnz(),nzi;
 			bool ic=this->is_real_type()?false:true;
@@ -898,12 +832,6 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-#if 0
-		m = new octave_sparse_rsb_matrix(*this);
-		if(!m)return m;
-		errval=m->rsboi_scale(alpha);
-		RSBOI_PERROR(errval);
-#else
 		if(is_real_type())
 		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&alpha,RSB_NUMERICAL_TYPE_DOUBLE) );
 		else
@@ -914,7 +842,6 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
 #endif
-#endif
 		return m;
 	}
 
@@ -924,14 +851,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-#if 0
-		m = new octave_sparse_rsb_matrix(*this);
-		if(!m)return m;
-		errval=m->rsboi_scale(alpha);
-		RSBOI_PERROR(errval);
-#else
 		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&alpha,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX) );
-#endif
 		return m;
 	}
 #endif
@@ -959,23 +879,10 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 	CAST_CONV_ARG (const octave_sparse_rsb_matrix&);
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_WARN(RSBOI_0_UNFFEMSG);
-
-	//octave_base_value ovb=try_narrowing_conversion(void);
-	//return new octave_sparse_matrix (v.array_value ());
-	/* FIXME: should use conversion to sparse, here, without using dense */
-	#if 0
-	Matrix m( v.dims() );
-	m.fill(0);
-	errval|=rsb_matrix_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)m.data(),v.rows(),v.rows(),v.cols(),RSB_BOOL_TRUE);
-	RSBOI_PERROR(errval);
-	return new octave_sparse_matrix (m);
-	#else
-	//IA+=1; JA+=1;
 	if(v.is_real_type())
 		return new octave_sparse_matrix (v.sparse_matrix_value());
 	else
 		return new octave_sparse_complex_matrix (v.sparse_complex_matrix_value());
-	#endif
 }
 
 DEFINE_OCTAVE_ALLOCATOR (octave_sparse_rsb_matrix);

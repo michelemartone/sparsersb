@@ -897,11 +897,12 @@ DEFUNOP (uminus, sparse_rsb_matrix)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
 	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
 	if(!m)return m;
-	//rsb_negation(m->A);
-	rsb_elemental_unop(m->A,RSB_ELOPF_NEG);
+	//errval=rsb_negation(m->A);
+	errval=rsb_elemental_unop(m->A,RSB_ELOPF_NEG);
 	return m;
 }
 
@@ -913,8 +914,8 @@ DEFUNOP (transpose, sparse_rsb_matrix)
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	if(!m)return m;
-	//errval=rsb_transpose(&m->A);
-	rsb_elemental_unop(m->A,RSB_ELOPF_TRANS);
+	errval=rsb_transpose(&m->A);
+	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_TRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }
@@ -927,8 +928,8 @@ DEFUNOP (htranspose, sparse_rsb_matrix)
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	if(!m)return m;
-	//errval=rsb_htranspose(&m->A);
-	rsb_elemental_unop(m->A,RSB_ELOPF_HTRANS);
+	errval=rsb_htranspose(&m->A);
+	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_HTRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }

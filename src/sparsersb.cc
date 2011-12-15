@@ -43,6 +43,7 @@
  * is_struct, find_nonzero_elem_idx  are undefined
  * are octave_triangular_conv, default_numeric_conversion_function ok ? 
  * error reporting is insufficient
+ * elemental division support for complex matrices is incomplete
  *
  * Developer notes:
  /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles
@@ -759,7 +760,18 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		errval=rsb_elemental_scale_inv(this->A,&alpha);
+		//errval=rsb_elemental_scale_inv(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
+		RSBOI_PERROR(errval);
+		return errval;
+	}
+
+	rsb_err_t rsboi_scale_inv(Complex alpha)
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		//errval=rsb_elemental_scale_inv(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_DIV,&alpha);
 		RSBOI_PERROR(errval);
 		return errval;
 	}
@@ -776,11 +788,24 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		return m;
 	}
 
+	octave_value rsboi_get_scaled_copy_inv(const Complex alpha)const
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		octave_sparse_rsb_matrix * m = NULL;
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		m = new octave_sparse_rsb_matrix(*this);
+		if(!m)return m;
+		errval=m->rsboi_scale_inv(alpha);
+		RSBOI_PERROR(errval);
+		return m;
+	}
+
 	rsb_err_t rsboi_scale(RSBOI_T alpha)
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		errval=rsb_elemental_scale(this->A,&alpha);
+		//errval=rsb_elemental_scale(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
 		RSBOI_PERROR(errval);
 		return errval;
 	}
@@ -789,7 +814,8 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		errval=rsb_elemental_scale(this->A,&alpha);
+		//errval=rsb_elemental_scale(this->A,&alpha);
+	       	errval=rsb_elemental_op(this->A,RSB_ELOPF_MUL,&alpha);
 		RSBOI_PERROR(errval);
 		return errval;
 	}

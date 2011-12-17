@@ -242,7 +242,6 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_MP(this->A);
-			RSBOI_MP(this->A);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);

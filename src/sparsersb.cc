@@ -765,6 +765,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
 	}
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	octave_value rsboi_get_scaled_copy_inv(const Complex alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -773,6 +774,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
 	}
+#endif
 
 	octave_value rsboi_get_scaled_copy(const RSBOI_T alpha)const
 	{
@@ -780,11 +782,11 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		if(is_real_type())
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&alpha,RSB_NUMERICAL_TYPE_DOUBLE) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE,RSB_TRANSPOSITION_N,&alpha,this->A) );
 		else
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		{Complex calpha;calpha+=alpha;
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&calpha,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&calpha,this->A) );
 		}
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
@@ -798,7 +800,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(this->A,RSB_TRANSPOSITION_N,&alpha,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A) );
 		return m;
 	}
 #endif

@@ -16,7 +16,7 @@ minres=1e-7;
 printf("Solving a system of %d equations, %d nonzeroes.\n",n,nnz(A));
 
 tic; Ao = sparse (i,j,v,n,n);obt=toc;
-onz=nnz(Ao)
+onz=nnz(Ao);
 tic; [X, FLAG, RELRES, ITER] = gmres (Ao, b, [], minres, maxit, P); odt=toc;
 cs="Octave   ";
 onv=norm(Ao*X-b);
@@ -25,7 +25,7 @@ printf("%s took %.4f = %.4f + %.4f s and gave residual %g, flag %d, error norm %
 
 tic; Ar = sparsersb (i,j,v,n,n);rbt=toc;
 #tic; Ar = sparsersb (Ao);rbt=toc;
-rnz=nnz(Ar)
+rnz=nnz(Ar);
 tic; [X, FLAG, RELRES, ITER] = gmres (Ar, b, [], minres, maxit, P); rdt=toc;
 cs="sparsersb";
 rnv=norm(Ar*X-b);
@@ -44,6 +44,7 @@ if (RELRES>minres ) && (oRELRES<minres )
 else
 	printf("Both systems were solved, speedups for overall: %g, constructor: %g, iterations: %g.\n",(obt+odt)/(rbt+rdt),(obt)/(rbt),(odt)/(rdt));
 end
+	printf("\n");
 end
 
 # This one is based on what Carlo De Falco posted on the octave-dev mailing list:

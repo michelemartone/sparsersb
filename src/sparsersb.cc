@@ -109,6 +109,7 @@
 #define RSBOI_0_BADINVOERRMSG "invoking this function in the wrong way!\n"
 #define RSBOI_0_ALLERRMSG "error allocating matrix!\n"
 #define RSBOI_0_NOCOERRMSG "compiled without complex type support!\n"
+#define RSBOI_0_NOTERRMSG "matrix is not triangular!\n"
 #define RSBOI_0_ICSERRMSG "compiled with incomplete complex type support!\n"
 #define RSBOI_0_EMERRMSG  "data structure is corrupt (unexpected NULL matrix pointer)!\n"
 #define RSBOI_0_UNFFEMSG  "unfinished feature\n"
@@ -121,7 +122,7 @@
 #define RSBOI_0_FATALNBMSG  "fatal error! matrix NOT built!\n"
 #define RSBOI_0_ASSERRMSG  "assignment is still unsupported on 'sparse_rsb' matrices"
 #define RSBOI_0_NSQERRMSG  "matrix is not square"
-#define RSBOI_D_EMPTY_MSG  "complex support is yet incomplete\n"
+#define RSBOI_D_EMPTY_MSG  ""
 #define RSBOI_O_MISSIMPERRMSG  "implementation missing here\n"
 #define RSBOI_O_NPMSERR  "providing non positive matrix size is not allowed!"
 #define RSBOI_0_EMCHECK(M) if(!(M))RSBOI_0_ERROR(RSBOI_0_EMERRMSG);
@@ -157,6 +158,10 @@
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
 #include <octave/ov-cx-mat.h>
 #include <octave/ov-cx-sparse.h>
+#endif
+
+#ifndef RSBOI_RSB_MATRIX_SOLVE
+#define RSBOI_RSB_MATRIX_SOLVE(V1,V2) RSBOI_0_ERROR(RSBOI_0_NOTERRMSG)  /* any solution routine shall attached here */
 #endif
 
 #if RSBOI_WANT_HEAVY_DEBUG
@@ -551,6 +556,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
+		bool is__triangular (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); if(this->A) return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE; return RSB_BOOL_FALSE; }
 //		int is_struct (void) const { return false; }
 
 		octave_value subsasgn (const std::string& type, const std::list<octave_value_list>& idx, const octave_value& rhs)
@@ -986,14 +992,22 @@ octave_value rsboi_spsv(const octave_sparse_rsb_matrix&v1, const octave_matrix&v
 
 DEFBINOP(ldiv, sparse_rsb_matrix, matrix)
 {
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
-	return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_N);
+	if(v1.is__triangular()) 
+		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_N);
+	else
+		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
 DEFBINOP(trans_ldiv, sparse_rsb_matrix, matrix)
 {
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
-	return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_T);
+	if(v1.is__triangular()) 
+		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_T);
+	else
+		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
 DEFBINOP(el_div, sparse_rsb_matrix, matrix)

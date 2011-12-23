@@ -150,6 +150,7 @@
 #define ORSB_RSB_TYPE_FLAG(OBJ) RSB_NUMERICAL_TYPE_DOUBLE
 #endif
 
+#define RSBOI_WANT_SYMMETRY 0
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)
@@ -168,6 +169,11 @@
 extern "C" {
 	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_matrix_t *matrix); // forward declaration
 }
+#endif
+#if RSBOI_WANT_DOUBLE_COMPLEX
+#define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) (((V1).iscomplex()||(V2).iscomplex())?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE)
+#else
+#define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) RSBOI_TYPECODE
 #endif
 
 struct rsboi_coo_matrix_t
@@ -240,7 +246,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #endif
 			const rsb_coo_index_t *IA=NULL,*JA=NULL;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-
+#if RSBOI_WANT_SYMMETRY
+			/* shall verify if any symmetry is present */
+#endif
 			IA=(const rsb_coo_index_t*)IM.raw();
 		       	JA=(const rsb_coo_index_t*)JM.raw();
 			RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
@@ -271,7 +279,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		void allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			octave_idx_type nnz=0;
+			rsb_nnz_index_t nnz=0;
 			Array<rsb_coo_index_t> IA( dim_vector(1,sm.nnz()) );
 			Array<rsb_coo_index_t> JA( dim_vector(1,sm.nnz()) );
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -279,6 +287,10 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE;
 			octave_idx_type nr = sm.rows (), nc = sm.cols ();
+#if RSBOI_WANT_SYMMETRY
+			if(sm.is_symmetric())
+				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
+#endif
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
@@ -306,6 +318,11 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
+#if RSBOI_WANT_SYMMETRY
+			/* FIXME: and hermitian ? */
+			if(sm.is_symmetric())
+				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
+#endif
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
@@ -396,6 +413,10 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			{
 				Array<Complex> VAC( dim_vector(1,nnz) );
 				coo.VA=(RSBOI_T*)VAC.data();
+#if RSBOI_WANT_SYMMETRY
+				/* FIXME: and now ? */
+#endif
+				/* FIXME: shall use some librsb's dedicated call for this */
 				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 				for(nzi=0;nzi<nnz;++nzi)
 					((RSBOI_T*)VA.data())[nzi]=((RSBOI_T*)coo.VA)[2*nzi];
@@ -452,6 +473,10 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
 			coo.VA=(RSBOI_T*)VA.data();
 			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+#if RSBOI_WANT_SYMMETRY
+			/* FIXME: and now ? */
+#endif
+			/* FIXME: shall use some librsb's dedicated call for this */
 			if(this->is_real_type())
 				for(nzi=0;nzi<nnz;++nzi)
 					((RSBOI_T*)VA.data())[2*(nnz-1-nzi)+0]=((RSBOI_T*)VA.data())[(nnz-1-nzi)+0],
@@ -480,6 +505,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 	    					idx_vector i = idx.front() (0).index_vector ();
 	    					if (! error_state)
 	      					{
+#if RSBOI_WANT_SYMMETRY
+							/* FIXME: and now ? */
+#endif
 							if(is_real_type())
 							{
 								idx_vector j = idx.front() (1).index_vector ();
@@ -556,7 +584,20 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
-		bool is__triangular (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); if(this->A) return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE; return RSB_BOOL_FALSE; }
+		bool is__triangular (void) const
+	       	{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		       	if(this->A 
+#if RSBOI_WANT_SYMMETRY
+				&& !RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)
+#endif
+			  )
+			{
+				return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
+			}
+			else
+			       	return RSB_BOOL_FALSE;
+		}
 //		int is_struct (void) const { return false; }
 
 		octave_value subsasgn (const std::string& type, const std::list<octave_value_list>& idx, const octave_value& rhs)
@@ -601,6 +642,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 										RSBOI_T rv=rhs.double_value();
 										ii=i(0); jj=j(0);
 										RSBOI_DEBUG_NOTICE("update elements (%d %d)\n",ii,jj);
+#if RSBOI_WANT_SYMMETRY
+										/* FIXME: and now ? */
+#endif
 										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
@@ -618,6 +662,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 										Complex rv=rhs.complex_value();
 										ii=i(0); jj=j(0);
 										RSBOI_DEBUG_NOTICE("update elements (%d %d) complex\n",ii,jj);
+#if RSBOI_WANT_SYMMETRY
+				/* FIXME: and now ? */
+#endif
 										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
@@ -711,13 +758,23 @@ skipimpl:
 			std::string c=ic?"complex":"real";
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+#if RSBOI_WANT_SYMMETRY
+			/* FIXME: and now ? */
+#endif
 			if(coo.VA==NULL)
 				nnz=0;
 			else
 				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			coo.m=this->rows();
 			coo.k=this->cols();
-			octave_stdout<<RSBOI_FSTR<< "  (rows = "<<coo.m<<", cols = "<<coo.k<<", nnz = "<<nnz<<" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<"%], "<<c<<")\n";
+			octave_stdout<<RSBOI_FSTR<< "  (rows = "<<coo.m<<
+				", cols = "<<coo.k<<
+				", nnz = "<<nnz<<
+#if RSBOI_WANT_SYMMETRY
+				", symm = "<<RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)<< // FIXME: need a mechanism to print out these flags from rsb itself
+#endif
+				" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<
+				"%], "<<c<<")\n";
 			if(ic)
 			for(nzi=0;nzi<nnz;++nzi)
 				octave_stdout<<"  ("<<1+IA(nzi)<<", "<<1+JA(nzi)<<") -> "<<((RSBOI_T*)coo.VA)[2*nzi+0]<<" + " <<((RSBOI_T*)coo.VA)[2*nzi+1]<<"i\n";
@@ -1188,7 +1245,10 @@ DEFBINOP(op_sub, sparse_rsb_matrix, sparse_rsb_matrix)
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_FIXME("");
-	sm->A=rsb_matrix_sum(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
+#if RSBOI_WANT_SYMMETRY
+	/* FIXME: and now ? */
+#endif
+	sm->A=rsb_matrix_sum(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -1202,7 +1262,10 @@ DEFBINOP(op_add, sparse_rsb_matrix, sparse_rsb_matrix)
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	sm->A=rsb_matrix_sum(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
+#if RSBOI_WANT_SYMMETRY
+	/* FIXME: and now ? */
+#endif
+	sm->A=rsb_matrix_sum(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -1216,8 +1279,11 @@ DEFBINOP(op_spmul, sparse_rsb_matrix, sparse_rsb_matrix)
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+#if RSBOI_WANT_SYMMETRY
+	/* FIXME: and now ? */
+#endif
 	/* FIXME: what if they are not both of the same type ? it would be nice to have a conversion.. */
-	sm->A=rsb_matrix_mul(RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
+	sm->A=rsb_matrix_mul(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);

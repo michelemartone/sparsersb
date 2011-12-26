@@ -579,6 +579,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		bool is_map (void) const { return true; }
 		bool is_sparse_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return true; }
 		bool is_real_type (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return this->A->typecode==RSB_NUMERICAL_TYPE_DOUBLE?true:false; }
+		bool is_diagonal (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_DIAGONAL)?true:false; }/* FIXME: new: not sure whether this is ever called */
+		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
+		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_complex_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
 		bool is_bool_type (void) const { return false; }
 		bool is_integer_type (void) const { return false; }
@@ -589,7 +592,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		       	if(this->A 
 #if RSBOI_WANT_SYMMETRY
-				&& !RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)
+				&& ((!RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_DIAGONAL))
 #endif
 			  )
 			{

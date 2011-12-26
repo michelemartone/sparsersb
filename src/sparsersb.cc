@@ -100,6 +100,7 @@
 #define RSBOI_RF RSB_FLAG_DEFAULT_RSB_MATRIX_FLAGS 
 #define RSBOI_DCF RSB_FLAG_DUPLICATES_SUM
 #define RSBOI_NF RSB_FLAG_NOFLAGS
+#define RSBOI_EXPF RSB_FLAG_NOFLAGS
 #define RSBOI_T double
 #define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
@@ -319,9 +320,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			rsb_flags_t eflags=RSBOI_RF;
 			rsb_type_t typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
 #if RSBOI_WANT_SYMMETRY
-			/* FIXME: and hermitian ? */
-			if(sm.is_symmetric())
-				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
+			if(sm.is_hermitian())
+				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_HERMITIAN|RSB_FLAG_TRIANGULAR);
 #endif
 			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
@@ -771,7 +771,10 @@ skipimpl:
 				", cols = "<<coo.k<<
 				", nnz = "<<nnz<<
 #if RSBOI_WANT_SYMMETRY
-				", symm = "<<RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)<< // FIXME: need a mechanism to print out these flags from rsb itself
+				", symm = "<<
+				(RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)?"S":
+				(RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)?"H":"U"))
+				<< // FIXME: need a mechanism to print out these flags from rsb itself
 #endif
 				" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<
 				"%], "<<c<<")\n";
@@ -844,11 +847,11 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		if(is_real_type())
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE,RSB_TRANSPOSITION_N,&alpha,this->A) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF ) );
 		else
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		{Complex calpha;calpha+=alpha;
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&calpha,this->A) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&calpha,this->A,RSBOI_EXPF) );
 		}
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
@@ -862,7 +865,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A) );
+		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF) );
 		return m;
 	}
 #endif

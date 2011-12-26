@@ -151,7 +151,8 @@
 #define ORSB_RSB_TYPE_FLAG(OBJ) RSB_NUMERICAL_TYPE_DOUBLE
 #endif
 
-#define RSBOI_WANT_SYMMETRY 0
+#define RSBOI_INFOBUF	256
+#define RSBOI_WANT_SYMMETRY 1
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)
@@ -759,6 +760,8 @@ skipimpl:
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<RSBOI_T> VA( dim_vector(1,(ic?2:1)*nnz) );
 			std::string c=ic?"complex":"real";
+			char ss[RSBOI_INFOBUF];
+			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->A));
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
 #if RSBOI_WANT_SYMMETRY
@@ -780,7 +783,8 @@ skipimpl:
 				<< // FIXME: need a mechanism to print out these flags from rsb itself
 #endif
 				" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<
-				"%], "<<c<<")\n";
+				"%], "<<c<< ")\n";
+			octave_stdout<< "{{"<< ss <<"}}\n"; /* FIXME: this is temporary */
 			if(ic)
 			for(nzi=0;nzi<nnz;++nzi)
 				octave_stdout<<"  ("<<1+IA(nzi)<<", "<<1+JA(nzi)<<") -> "<<((RSBOI_T*)coo.VA)[2*nzi+0]<<" + " <<((RSBOI_T*)coo.VA)[2*nzi+1]<<"i\n";

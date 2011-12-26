@@ -44,6 +44,7 @@
  * are octave_triangular_conv, default_numeric_conversion_function ok ? 
  * error reporting is insufficient
  * elemental division support for complex matrices is incomplete
+ * shall update to symmetric be forbidden or rather trigger a conversion ?
  *
  * Developer notes:
  /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles
@@ -152,7 +153,7 @@
 #endif
 
 #define RSBOI_INFOBUF	256
-#define RSBOI_WANT_SYMMETRY 1
+#define RSBOI_WANT_SYMMETRY 0
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)

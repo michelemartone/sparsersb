@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011   Michele Martone   <michele.martone@ipp.mpg.de>
+ Copyright (C) 2011-2012   Michele Martone   <michele.martone@ipp.mpg.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -414,6 +414,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			if(!this->is_real_type())
 			{
 				Array<Complex> VAC( dim_vector(1,nnz) );
+				RSBOI_T* VAp=((RSBOI_T*)VA.data());
 				coo.VA=(RSBOI_T*)VAC.data();
 #if RSBOI_WANT_SYMMETRY
 				/* FIXME: and now ? */
@@ -421,7 +422,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				/* FIXME: shall use some librsb's dedicated call for this */
 				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 				for(nzi=0;nzi<nnz;++nzi)
-					((RSBOI_T*)VA.data())[nzi]=((RSBOI_T*)coo.VA)[2*nzi];
+					VAp[nzi]=((RSBOI_T*)coo.VA)[2*nzi];
 			}
 			else
 			{
@@ -472,8 +473,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<Complex> VA( dim_vector(1,nnz) );
+			RSBOI_T* VAp=((RSBOI_T*)VA.data());
 			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
-			coo.VA=(RSBOI_T*)VA.data();
+			coo.VA=VAp;
 			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 #if RSBOI_WANT_SYMMETRY
 			/* FIXME: and now ? */
@@ -481,8 +483,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			/* FIXME: shall use some librsb's dedicated call for this */
 			if(this->is_real_type())
 				for(nzi=0;nzi<nnz;++nzi)
-					((RSBOI_T*)VA.data())[2*(nnz-1-nzi)+0]=((RSBOI_T*)VA.data())[(nnz-1-nzi)+0],
-					((RSBOI_T*)VA.data())[2*(nnz-1-nzi)+1]=0;
+					VAp[2*(nnz-1-nzi)+0]=VAp[(nnz-1-nzi)+0],
+					VAp[2*(nnz-1-nzi)+1]=0;
 			coo.m=this->rows();
 			coo.k=this->cols();
 			return SparseComplexMatrix(VA,IA,JA,coo.m,coo.k);

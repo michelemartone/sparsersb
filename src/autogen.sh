@@ -11,6 +11,16 @@ if test x\$LIBRSB_CONFIG = x ; then LIBRSB_CONFIG=librsb-config ; fi
 LIBRSB_CXXFLAGS="\`\$LIBRSB_CONFIG --cflags\`"
 LIBRSB_LIBS="\`\$LIBRSB_CONFIG --ldflags | sed s/-static//g\` -lgomp"
 AC_OPENMP([])
+##
+STATUS_MSG="
+\$STATUS_MSG
+
+librsb configured as:
+      LIBRSB_CONFIG=\${LIBRSB_CONFIG}
+      LIBRSB_CXXFLAGS=\${LIBRSB_CXXFLAGS}
+      LIBRSB_LIBS=\${LIBRSB_LIBS}
+"
+##
 EOF
 cat <<EOF >> configure.in
   AC_OUTPUT(\$CONFIGURE_OUTPUTS)

@@ -17,6 +17,7 @@ $(SPARSERSB_OCT): sparsersb.cc
 
 rtest: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent sparsersbtester.m
+	$(OCTAVE) --silent octavebench.m pd.mtx
 
 bench: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent obench.m

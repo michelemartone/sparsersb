@@ -43,8 +43,9 @@ for ski=1:2
 	# FIXME: what about symmetry ?
 	sparsekw="sparse";
 	if(ski==2)sparsekw="sparsersb";endif
+	mrc=rows(nm); mcc=columns(nm);
 	tic();
-	eval(["for i=1:n;  om=",sparsekw,"(ia,ja,va,\"summation\"); end"]);
+	eval(["for i=1:n;  om=",sparsekw,"(ia,ja,va,mrc,mcc,\"summation\"); end"]);
 	at=toc();
 	mnz=nnz(om);
 	amflops=n*2.0*mnz/(10^6 * at);

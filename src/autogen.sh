@@ -9,7 +9,7 @@ AC_PATH_PROG(LIBRSB_CONFIG,librsb-config)
 test -z "\$LIBRSB_CONFIG" && AC_MSG_ERROR('librsb-config not found in the path. Did you install librsb ?')
 if test x\$LIBRSB_CONFIG = x ; then LIBRSB_CONFIG=librsb-config ; fi
 LIBRSB_CXXFLAGS="\`\$LIBRSB_CONFIG --cflags\`"
-LIBRSB_LIBS="\`\$LIBRSB_CONFIG --ldflags | sed s/-static//g\` -lgomp"
+LIBRSB_LIBS="\`\$LIBRSB_CONFIG --ldflags | sed 's/ -static/ /g'\` -lgomp"
 AC_OPENMP([])
 ##
 STATUS_MSG="

@@ -1,4 +1,5 @@
 function mbench(fname)
+addpath ext/
 mp=matlabpath();
 n=10;
 for f=1:nargin

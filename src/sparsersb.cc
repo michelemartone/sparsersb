@@ -1523,7 +1523,10 @@ same @var{i}, @var{j} indices, the last specified value will be used.\n\
 Uses @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{m}, @var{n})\n\
-Equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
+If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
+\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
+If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
 \n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/
@@ -1557,12 +1560,28 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	if (nargin == 1 || nargin == 2)
 	{
 		rsb_type_t typecode=RSBOI_TYPECODE;
-		if (nargin >= 2)
+		if (nargin >= 2)/* FIXME: this is wierd ! */
 #if RSBOI_WANT_DOUBLE_COMPLEX
 			typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
 #else
 			RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
+			octave_stdout << "info?\n";
+		if (nargin == 2 && args(0).type_name()==RSB_OI_TYPEINFO_STRING && args(1).is_string())
+		{
+			char ss[RSBOI_INFOBUF];
+			const struct rsb_matrix_t*matrix=NULL;//((octave_sparse_rsb_matrix)(args(0).get_rep())).A;
+			matrix=((octave_sparse_rsb_matrix*)(args(0).internal_rep()))->A;
+			if(!matrix)goto ret;/* FIXME: error handling missing here */
+			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(matrix));
+			/* FIXME: to add interpretation */
+			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
+			octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
+			/* FIXME: shall not print out, but rather return the info as a string*/
+			//retval.append("place info string here !\n");
+			goto ret;
+		}
+		else
 		if(args(0).is_sparse_type())
 		{
 			if(args(0).type_name()==RSB_OI_TYPEINFO_STRING)

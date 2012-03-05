@@ -1,5 +1,6 @@
 #!/usr/bin/octave -q
 # TODO: document this file's functions so they get installed and are properly usable.
+# TODO: sprand should not be used in a consistent way
 
 function dt=sparsersbbench(precmd,cmd,postcmd,mint)
 # ..
@@ -27,10 +28,12 @@ function speedup=sparsersbbench_(gprecmd,precmd,cmd,postcmd,gpostcmd,mint)
 	postdots=sprintf(";until ((dt=toc())>=%f);",mint);
 	all=[gprecmd,dots,precmd,predots,cmd,postdots,postcmd,dots,gpostcmd];
 #	printf("will see speedup for %s\n",all);
+	printf("#%s #-> speedup is...",all);
 	dtr=sparsersbbench([gprecmd,"", precmd,""], cmd,[ postcmd,":",gpostcmd],mint);
 	dto=sparsersbbench([gprecmd,"",rprecmd,""],rcmd,[rpostcmd,":",gpostcmd],mint);
 	speedup=dto/dtr;
-	printf("%.2f speedup for %s\n",speedup,all);
+	printf("%.2f\n",speedup);
+#	printf("%.2f speedup for %s\n",speedup,all);
 end
 
 function sparsersbbench_battery(mstring,mint)

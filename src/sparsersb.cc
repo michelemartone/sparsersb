@@ -1525,6 +1525,9 @@ Uses @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{m}, @var{n})\n\
 If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
 \n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
+If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set.\n\
+\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
 \n"\
@@ -1557,16 +1560,25 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
 	install_sparse_rsb();
-	if (nargin == 1 || nargin == 2)
+         if( nargin == 3 && args(0).is_string() && args(0).string_value()=="set" && args(1).is_string() && args(2).is_string())
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		const char *os=args(1).string_value().c_str();
+		const char *ov=args(2).string_value().c_str();
+		errval=rsb_set_initopt_as_string(os,ov);
+		/* FIXME: missing some diagnostic output */
+		goto ret;
+	}
+
+	if ( nargin == 1 || nargin == 2 )
 	{
 		rsb_type_t typecode=RSBOI_TYPECODE;
-		if (nargin >= 2)/* FIXME: this is wierd ! */
+		if (nargin >= 2)/* FIXME: this is weird ! */
 #if RSBOI_WANT_DOUBLE_COMPLEX
 			typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
 #else
 			RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
-			octave_stdout << "info?\n";
 		if (nargin == 2 && args(0).type_name()==RSB_OI_TYPEINFO_STRING && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];

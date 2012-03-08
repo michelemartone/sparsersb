@@ -1526,7 +1526,10 @@ Uses @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}\n\
 If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
-If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set.\n\
+If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set to that value.\n\
+\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_get_matrix_info_from_string()), then the correspondent value will be returned for matrix @var{A}.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
@@ -1560,13 +1563,32 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
 	install_sparse_rsb();
-         if( nargin == 3 && args(0).is_string() && args(0).string_value()=="set" && args(1).is_string() && args(2).is_string())
+	if( nargin == 3 && args(0).is_string() && args(0).string_value()=="set" && args(1).is_string() && args(2).is_string())
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		const char *os=args(1).string_value().c_str();
 		const char *ov=args(2).string_value().c_str();
 		errval=rsb_set_initopt_as_string(os,ov);
 		/* FIXME: missing some diagnostic output */
+		goto ret;
+	}
+
+	if (nargin == 3 && args(0).type_name()==RSB_OI_TYPEINFO_STRING
+ 		&& args(1).is_string() && args(1).string_value()=="get"
+		&& args(2).is_string())
+	{
+		/* FIXME: undocumented feature */
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		const char *mis=args(2).string_value().c_str();
+		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
+		const struct rsb_matrix_t*matrix=((octave_sparse_rsb_matrix*)(args(0).internal_rep()))->A;
+		if(!matrix)goto ret;/* FIXME: error handling missing here */
+		errval=rsb_get_matrix_info_from_string(matrix,mis,&miv);
+		/* FIXME: serious error handling missing here */
+		if(RSBOI_SOME_ERROR(errval))
+			retval.append(std::string("Error returned from rsb_get_matrix_info_from_string()"));
+		else
+			retval.append(octave_value(miv));
 		goto ret;
 	}
 
@@ -1579,6 +1601,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 #else
 			RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
+
 		if (nargin == 2 && args(0).type_name()==RSB_OI_TYPEINFO_STRING && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];

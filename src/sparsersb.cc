@@ -45,6 +45,7 @@
  * error reporting is insufficient
  * elemental division support for complex matrices is incomplete
  * shall update to symmetric be forbidden or rather trigger a conversion ?
+ * after file read, shall return various structural info
  *
  * Developer notes:
  /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles

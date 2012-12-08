@@ -158,8 +158,7 @@
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)
-#define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E))octave_stdout<<"librsb error:"<<rsb_strerror(E)<<"\n"
-
+#define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
 #include <octave/ov-cx-mat.h>
 #include <octave/ov-cx-sparse.h>
@@ -180,6 +179,14 @@ extern "C" {
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) RSBOI_TYPECODE
 #endif
 
+void rsboi_strerr(rsb_err_t errval)
+{
+	const int errstrlen=128;
+	char errstr[errstrlen];
+	rsb_strerror_r(errval,errstr,errstrlen);
+	octave_stdout<<"librsb error:"<<errstr<<"\n";
+}
+
 struct rsboi_coo_matrix_t
 {
 	octave_idx_type * IA, * JA;	 /** row and columns indices */
@@ -189,9 +196,9 @@ struct rsboi_coo_matrix_t
 	rsb_type_t typecode;		 /** as specified in the RSB_NUMERICAL_TYPE_* preprocessor symbols in types.h 	*/
 };
 
-static const RSBOI_T rsboi_one = 1.0; 
-static const RSBOI_T rsboi_mone=-1.0; 
-static const RSBOI_T rsboi_zero= 0.0; 
+static const RSBOI_T rsboi_one []={ 1.0,0.0}; 
+static const RSBOI_T rsboi_mone[]={-1.0,0.0}; 
+static const RSBOI_T rsboi_zero[]={ 0.0,0.0}; /* two elements, as shall work also with complex */
 
 static octave_base_value * default_numeric_conversion_function (const octave_base_value& a);
 

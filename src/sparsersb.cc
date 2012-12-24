@@ -380,7 +380,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
-		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);return rsb_sizeof(this->A); }
+		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);size_t so=0;rsb_get_matrix_info(this->A,RSB_MIF_BYTE_SIZE__TO__SIZE_T,&so);return so; }
 
 		virtual ~octave_sparse_rsb_matrix (void)
 		{
@@ -1242,7 +1242,7 @@ DEFBINOP(el_pow, sparse_rsb_matrix, scalar)
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_T alpha=v2.scalar_value();
 	if(!m)return m;
-	errval=rsb_elemental_pow(m->A,&alpha);
+	errval = rsb_elemental_binop(m->A,RSB_ELOPF_POW,&alpha);
 	RSBOI_PERROR(errval);
 	return m;
 }

@@ -46,6 +46,7 @@
  * elemental division support for complex matrices is incomplete
  * shall update to symmetric be forbidden or rather trigger a conversion ?
  * after file read, shall return various structural info
+ * norm computation
  *
  * Developer notes:
  /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles
@@ -102,7 +103,8 @@
 #define RSBOI_RF RSB_FLAG_DEFAULT_RSB_MATRIX_FLAGS 
 #define RSBOI_DCF RSB_FLAG_DUPLICATES_SUM
 #define RSBOI_NF RSB_FLAG_NOFLAGS
-#define RSBOI_EXPF RSB_FLAG_NOFLAGS
+//#define RSBOI_EXPF RSB_FLAG_NOFLAGS
+#define RSBOI_EXPF RSB_FLAG_IDENTICAL_FLAGS
 #define RSBOI_T double
 #define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
@@ -367,7 +369,14 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		}
 
 		octave_sparse_rsb_matrix (const octave_sparse_rsb_matrix& T) :
-		octave_sparse_matrix (T)  { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); this->A=rsb_clone(T.A); };
+		octave_sparse_matrix (T)  {
+			rsb_err_t errval=RSB_ERR_NO_ERROR;
+			struct rsb_matrix_t*matrixp=NULL;
+		       	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			//this->A=rsb_clone(T.A);
+			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,T.A,RSBOI_EXPF);
+			this->A=matrixp;
+		};
 		octave_idx_type length (void) const { return this->nnz(); }
 		octave_idx_type nelem (void) const { return this->nnz(); }
 		octave_idx_type numel (void) const { return this->nnz(); }
@@ -864,16 +873,21 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		struct rsb_matrix_t*matrixp=NULL;
 		if(is_real_type())
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF ) );
+		{
+			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N        , &alpha,this->A,RSBOI_EXPF);
+		}
 		else
 #if RSBOI_WANT_DOUBLE_COMPLEX
-		{Complex calpha;calpha+=alpha;
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&calpha,this->A,RSBOI_EXPF) );
+		{
+			Complex calpha;calpha+=alpha;
+			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&calpha,this->A,RSBOI_EXPF);
 		}
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
 #endif
+		m = new octave_sparse_rsb_matrix( matrixp );
 		return m;
 	}
 
@@ -882,8 +896,10 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		octave_sparse_rsb_matrix * m = NULL;
+		struct rsb_matrix_t*matrixp=NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		m = new octave_sparse_rsb_matrix( rsb_clone_transformed(RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF) );
+		errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF);
+		m = new octave_sparse_rsb_matrix( matrixp );
 		return m;
 	}
 #endif
@@ -993,13 +1009,14 @@ DEFUNOP (uminus, sparse_rsb_matrix)
 
 DEFUNOP (transpose, sparse_rsb_matrix)
 {
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
 	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	if(!m)return m;
-	errval=rsb_transpose(&m->A);
+	//errval=rsb_transpose(&m->A);
+	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_T,NULL,m->A,RSBOI_EXPF);
 	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_TRANS);
 	RSBOI_PERROR(errval);
 	return m;
@@ -1010,10 +1027,11 @@ DEFUNOP (htranspose, sparse_rsb_matrix)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
 	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
-	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	if(!m)return m;
-	errval=rsb_htranspose(&m->A);
+	//errval=rsb_htranspose(&m->A);
+	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_C,NULL,m->A,RSBOI_EXPF);
 	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_HTRANS);
 	RSBOI_PERROR(errval);
 	return m;
@@ -1137,10 +1155,12 @@ DEFBINOP(rsb_s_pow, sparse_rsb_matrix, scalar)
 
 DEFASSIGNOP (assign, sparse_rsb_matrix, sparse_rsb_matrix)
 {
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_FIXME("I dunno how to trigger this!");
 	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_sparse_rsb_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	rsb_assign(v1.A, v2.A);
+	//rsb_assign(v1.A, v2.A);
+	errval = rsb_clone_transformed(&v1.A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,v2.A,RSBOI_EXPF);
 	return octave_value();
 }
 

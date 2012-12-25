@@ -108,7 +108,7 @@
 #define RSBOI_T double
 #define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
-#define RSBOI_DESTROY(OM) {rsb_free_sparse_matrix(OM);(OM)=NULL;}
+#define RSBOI_DESTROY(OM) {rsb_matrix_free(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
 #define RSBOI_0_ERROR error
 #define RSBOI_0_BADINVOERRMSG "invoking this function in the wrong way!\n"
@@ -264,8 +264,8 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #endif
 			IA=(const rsb_coo_index_t*)IM.raw();
 		       	JA=(const rsb_coo_index_t*)JM.raw();
-			RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
+			//RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
+			if(!(this->A = rsb_allocate_rsb_sparse_matrix_from_coo_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_MP(this->A);
 			RSBOI_PERROR(errval);
@@ -831,13 +831,15 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 			if(this->is_real_type())
 			{
 				Matrix DA(this->rows(),1);
-				errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());
+				//errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());
+				errval = rsb_matrix_rowwise_cbinop(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
 				retval=(DA);
 			}
 			else
 			{
 				ComplexMatrix DA(this->rows(),1);
-				errval=rsb_getdiag (this->A,(void*)DA.data());
+				//errval=rsb_getdiag (this->A,(void*)DA.data());
+				errval = rsb_matrix_rowwise_cbinop(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
 				retval=(DA);
 			}
 		}
@@ -1003,7 +1005,7 @@ DEFUNOP (uminus, sparse_rsb_matrix)
 	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
 	if(!m)return m;
 	//errval=rsb_negation(m->A);
-	errval=rsb_elemental_unop(m->A,RSB_ELOPF_NEG);
+	errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_NEG);
 	return m;
 }
 
@@ -1017,7 +1019,7 @@ DEFUNOP (transpose, sparse_rsb_matrix)
 	if(!m)return m;
 	//errval=rsb_transpose(&m->A);
 	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_T,NULL,m->A,RSBOI_EXPF);
-	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_TRANS);
+	//errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_TRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }
@@ -1032,7 +1034,7 @@ DEFUNOP (htranspose, sparse_rsb_matrix)
 	if(!m)return m;
 	//errval=rsb_htranspose(&m->A);
 	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_C,NULL,m->A,RSBOI_EXPF);
-	//errval=rsb_elemental_unop(m->A,RSB_ELOPF_HTRANS);
+	//errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_HTRANS);
 	RSBOI_PERROR(errval);
 	return m;
 }
@@ -1262,7 +1264,7 @@ DEFBINOP(el_pow, sparse_rsb_matrix, scalar)
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_T alpha=v2.scalar_value();
 	if(!m)return m;
-	errval = rsb_elemental_binop(m->A,RSB_ELOPF_POW,&alpha);
+	errval = rsb_matrix_elemental_binop(m->A,RSB_ELOPF_POW,&alpha);
 	RSBOI_PERROR(errval);
 	return m;
 }

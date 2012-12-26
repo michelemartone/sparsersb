@@ -29,7 +29,7 @@
  *  - conversion with indices adjustments and triangle computation:
  *    - from csc 
  *    - from coo 
- *    - from double to complex and viceversa, when calling rsb_get_coo
+ *    - from double to complex and viceversa, when calling rsb_mtx_get_coo
  *  - minimize copies around
  * subsref, dotref, subsasgn are incomplete: need error messages there
  * in full_value(), bool arg is ignored
@@ -108,7 +108,7 @@
 #define RSBOI_T double
 #define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
-#define RSBOI_DESTROY(OM) {rsb_matrix_free(OM);(OM)=NULL;}
+#define RSBOI_DESTROY(OM) {rsb_mtx_free(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
 #define RSBOI_0_ERROR error
 #define RSBOI_0_BADINVOERRMSG "invoking this function in the wrong way!\n"
@@ -172,7 +172,7 @@
 
 #if RSBOI_WANT_HEAVY_DEBUG
 extern "C" {
-	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_matrix_t *matrix); // forward declaration
+	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_mtx_t *matrix); // forward declaration
 }
 #endif
 #if RSBOI_WANT_DOUBLE_COMPLEX
@@ -219,36 +219,36 @@ err:
 
 static bool rsboi_sparse_rsb_loaded = false;
 
-class octave_sparse_rsb_matrix : public octave_sparse_matrix
+class octave_sparse_rsb_mtx : public octave_sparse_matrix
 {
 	private:
 	public:
-	struct rsb_matrix_t * A;
+	struct rsb_mtx_t * A;
 	public:
-		octave_sparse_rsb_matrix (void) : octave_sparse_matrix(RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (void) : octave_sparse_matrix(RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			this->A=NULL;
 		}
 
-		octave_sparse_rsb_matrix (const octave_sparse_matrix &sm) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const octave_sparse_matrix &sm) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		}
 
-		octave_sparse_rsb_matrix (const std::string &fn, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const std::string &fn, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			if(!(this->A=rsb_load_matrix_file_as_matrix_market(fn.c_str(),RSBOI_RF,typecode,&errval)))
+			if(!(this->A = rsb_file_mtx_load(fn.c_str(),RSBOI_RF,typecode,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		//void allocate_rsb_matrix_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
-		void allocate_rsb_matrix_from_coo_copy(idx_vector & IM, idx_vector & JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
+		//void allocate_rsb_mtx_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
+		void allocate_rsb_mtx_from_coo_copy(idx_vector & IM, idx_vector & JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 		{
 			octave_idx_type nnz=IM.length();
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -265,7 +265,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			IA=(const rsb_coo_index_t*)IM.raw();
 		       	JA=(const rsb_coo_index_t*)JM.raw();
 			//RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
-			if(!(this->A = rsb_allocate_rsb_sparse_matrix_from_coo_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
+			if(!(this->A = rsb_mtx_alloc_from_coo_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_MP(this->A);
 			RSBOI_PERROR(errval);
@@ -274,22 +274,22 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
-		octave_sparse_rsb_matrix (idx_vector &IM, idx_vector &JM, const ComplexMatrix &SM,
+		octave_sparse_rsb_mtx (idx_vector &IM, idx_vector &JM, const ComplexMatrix &SM,
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
+			this->allocate_rsb_mtx_from_coo_copy(IM,JM,SM.data(),nr,nc,true,eflags);
 		}
 #endif
 
-		octave_sparse_rsb_matrix (idx_vector &IM, idx_vector &JM, const Matrix &SM,
+		octave_sparse_rsb_mtx (idx_vector &IM, idx_vector &JM, const Matrix &SM,
 			octave_idx_type nr, octave_idx_type nc, rsb_flags_t eflags) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			this->allocate_rsb_matrix_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
+			this->allocate_rsb_mtx_from_coo_copy(IM,JM,SM.data(),nr,nc,false,eflags);
 		}
 
-		void allocate_rsb_matrix_from_csc_copy(const SparseMatrix &sm)
+		void allocate_rsb_mtx_from_csc_copy(const SparseMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			rsb_nnz_index_t nnz=0;
@@ -304,22 +304,22 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			if(sm.is_symmetric())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
 #endif
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+			if(!(this->A = rsb_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		octave_sparse_rsb_matrix (const Matrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const Matrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			SparseMatrix sm(m);
-			this->allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_mtx_from_csc_copy(sm);
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
-		void allocate_rsb_matrix_from_csc_copy(const SparseComplexMatrix &sm)
+		void allocate_rsb_mtx_from_csc_copy(const SparseComplexMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			octave_idx_type nr = sm.rows ();
@@ -335,46 +335,46 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			if(sm.is_hermitian())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_HERMITIAN|RSB_FLAG_TRIANGULAR);
 #endif
-			if(!(this->A=rsb_allocate_rsb_sparse_matrix_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+			if(!(this->A = rsb_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnz=sm.nnz(),typecode, nr, nc, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		octave_sparse_rsb_matrix (const ComplexMatrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const ComplexMatrix &m) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			this->allocate_rsb_matrix_from_csc_copy(SparseComplexMatrix(m));
+			this->allocate_rsb_mtx_from_csc_copy(SparseComplexMatrix(m));
 		}
 
-		octave_sparse_rsb_matrix (const SparseComplexMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const SparseComplexMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			this->allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_mtx_from_csc_copy(sm);
 		}
 #endif
 
-		octave_sparse_rsb_matrix (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const SparseMatrix &sm, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			this->allocate_rsb_matrix_from_csc_copy(sm);
+			this->allocate_rsb_mtx_from_csc_copy(sm);
 		}
 
-		octave_sparse_rsb_matrix (struct rsb_matrix_t * matrix) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX), A(matrix)
+		octave_sparse_rsb_mtx (struct rsb_mtx_t * matrix) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX), A(matrix)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 		}
 
-		octave_sparse_rsb_matrix (const octave_sparse_rsb_matrix& T) :
+		octave_sparse_rsb_mtx (const octave_sparse_rsb_mtx& T) :
 		octave_sparse_matrix (T)  {
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			struct rsb_matrix_t*matrixp=NULL;
+			struct rsb_mtx_t*matrixp=NULL;
 		       	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			//this->A=rsb_clone(T.A);
-			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,T.A,RSBOI_EXPF);
+			errval = rsb_mtx_clone(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,T.A,RSBOI_EXPF);
 			this->A=matrixp;
 		};
 		octave_idx_type length (void) const { return this->nnz(); }
@@ -389,9 +389,9 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
-		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);size_t so=0;rsb_get_matrix_info(this->A,RSB_MIF_BYTE_SIZE__TO__SIZE_T,&so);return so; }
+		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);size_t so=0;rsb_mtx_get_info(this->A,RSB_MIF_BYTE_SIZE__TO__SIZE_T,&so);return so; }
 
-		virtual ~octave_sparse_rsb_matrix (void)
+		virtual ~octave_sparse_rsb_mtx (void)
 		{
 			RSBOI_DEBUG_NOTICE("destroying librsb matrix %p\n",this->A);
 			RSBOI_DESTROY(this->A);
@@ -400,13 +400,13 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 		virtual octave_base_value *clone (void) const
 		{
 			RSBOI_DEBUG_NOTICE("cloning librsb matrix %p\n",this->A);
-			return new octave_sparse_rsb_matrix (*this);
+			return new octave_sparse_rsb_mtx (*this);
 		}
 
 		virtual octave_base_value *empty_clone (void) const
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			return new octave_sparse_rsb_matrix ();
+			return new octave_sparse_rsb_mtx ();
 		}
 
 #if 0
@@ -437,14 +437,14 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 				/* FIXME: and now ? */
 #endif
 				/* FIXME: shall use some librsb's dedicated call for this */
-				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 				for(nzi=0;nzi<nnz;++nzi)
 					VAp[nzi]=((RSBOI_T*)coo.VA)[2*nzi];
 			}
 			else
 			{
 				coo.VA=(RSBOI_T*)VA.data();
-				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			}
 			coo.m=this->rows();
 			coo.k=this->cols();
@@ -493,7 +493,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 			RSBOI_T* VAp=((RSBOI_T*)VA.data());
 			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
 			coo.VA=VAp;
-			errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+			errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 #if RSBOI_WANT_SYMMETRY
 			/* FIXME: and now ? */
 #endif
@@ -537,7 +537,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 								rsb_err_t errval=RSB_ERR_NO_ERROR;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
-       								errval=rsb_get_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+       								errval = rsb_mtx_get_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 								retval=rv;
 								if (! error_state)
 								  ;
@@ -550,7 +550,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 								rsb_err_t errval=RSB_ERR_NO_ERROR;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d) complex\n",ii,jj);
-       								errval=rsb_get_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+       								errval = rsb_mtx_get_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 								retval=rv;
 								if (! error_state)
 								  ;
@@ -669,7 +669,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #if RSBOI_WANT_SYMMETRY
 										/* FIXME: and now ? */
 #endif
-										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+										errval = rsb_mtx_set_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
 										//retval=rhs.double_value(); // this does not match octavej
@@ -689,7 +689,7 @@ class octave_sparse_rsb_matrix : public octave_sparse_matrix
 #if RSBOI_WANT_SYMMETRY
 				/* FIXME: and now ? */
 #endif
-										errval=rsb_update_elements(this->A,&rv,&ii,&jj,1,RSBOI_NF);
+										errval = rsb_mtx_set_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
 										//retval=rhs.double_value(); // this does not match octavej
@@ -790,7 +790,7 @@ skipimpl:
 			if(coo.VA==NULL)
 				nnz=0;
 			else
-				errval=rsb_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			coo.m=this->rows();
 			coo.k=this->cols();
 			octave_stdout<<RSBOI_FSTR<< "  (rows = "<<coo.m<<
@@ -832,14 +832,14 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 			{
 				Matrix DA(this->rows(),1);
 				//errval=rsb_getdiag (this->A,(RSBOI_T*)DA.data());
-				errval = rsb_matrix_rowwise_cbinop(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
+				errval = rsb_mtx_get_vec(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
 				retval=(DA);
 			}
 			else
 			{
 				ComplexMatrix DA(this->rows(),1);
 				//errval=rsb_getdiag (this->A,(void*)DA.data());
-				errval = rsb_matrix_rowwise_cbinop(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
+				errval = rsb_mtx_get_vec(this->A,(RSBOI_T*)DA.data(),RSB_EXTF_DIAG);
 				retval=(DA);
 			}
 		}
@@ -853,7 +853,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	octave_value rsboi_get_scaled_copy_inv(const RSBOI_T alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		octave_sparse_rsb_matrix * m = NULL;
+		octave_sparse_rsb_mtx * m = NULL;
 		RSBOI_T one=1.0;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
@@ -863,7 +863,7 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	octave_value rsboi_get_scaled_copy_inv(const Complex alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		octave_sparse_rsb_matrix * m = NULL;
+		octave_sparse_rsb_mtx * m = NULL;
 		Complex one=1.0;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		return rsboi_get_scaled_copy(one/alpha);/* FIXME: is this correct ? */
@@ -873,23 +873,23 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	octave_value rsboi_get_scaled_copy(const RSBOI_T alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		octave_sparse_rsb_matrix * m = NULL;
+		octave_sparse_rsb_mtx * m = NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		struct rsb_matrix_t*matrixp=NULL;
+		struct rsb_mtx_t*matrixp=NULL;
 		if(is_real_type())
 		{
-			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N        , &alpha,this->A,RSBOI_EXPF);
+			errval = rsb_mtx_clone(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N        , &alpha,this->A,RSBOI_EXPF);
 		}
 		else
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		{
 			Complex calpha;calpha+=alpha;
-			errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&calpha,this->A,RSBOI_EXPF);
+			errval = rsb_mtx_clone(&matrixp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&calpha,this->A,RSBOI_EXPF);
 		}
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
 #endif
-		m = new octave_sparse_rsb_matrix( matrixp );
+		m = new octave_sparse_rsb_mtx( matrixp );
 		return m;
 	}
 
@@ -897,11 +897,11 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 	octave_value rsboi_get_scaled_copy(const Complex alpha)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		octave_sparse_rsb_matrix * m = NULL;
-		struct rsb_matrix_t*matrixp=NULL;
+		octave_sparse_rsb_mtx * m = NULL;
+		struct rsb_mtx_t*matrixp=NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		errval = rsb_clone_transformed(&matrixp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF);
-		m = new octave_sparse_rsb_matrix( matrixp );
+		errval = rsb_mtx_clone(&matrixp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->A,RSBOI_EXPF);
+		m = new octave_sparse_rsb_mtx( matrixp );
 		return m;
 	}
 #endif
@@ -910,10 +910,10 @@ done:			RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 
 		DECLARE_OCTAVE_ALLOCATOR
 			DECLARE_OV_TYPEID_FUNCTIONS_AND_DATA
-};/* end of class octave_sparse_rsb_matrix definition  */
+};/* end of class octave_sparse_rsb_mtx definition  */
 
 #if 0
-octave_value_list find_nonzero_elem_idx (const class octave_sparse_rsb_matrix & nda, int nargout, octave_idx_type n_to_find, int direction)
+octave_value_list find_nonzero_elem_idx (const class octave_sparse_rsb_mtx & nda, int nargout, octave_idx_type n_to_find, int direction)
 {
 	// useless
 	octave_value retval;
@@ -926,7 +926,7 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_CONV_ARG (const octave_sparse_rsb_matrix&);
+	CAST_CONV_ARG (const octave_sparse_rsb_mtx&);
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_WARN(RSBOI_0_UNFFEMSG);
 	if(v.is_real_type())
@@ -935,112 +935,107 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 		return new octave_sparse_complex_matrix (v.sparse_complex_matrix_value());
 }
 
-DEFINE_OCTAVE_ALLOCATOR (octave_sparse_rsb_matrix);
-DEFINE_OV_TYPEID_FUNCTIONS_AND_DATA (octave_sparse_rsb_matrix,
+DEFINE_OCTAVE_ALLOCATOR (octave_sparse_rsb_mtx);
+DEFINE_OV_TYPEID_FUNCTIONS_AND_DATA (octave_sparse_rsb_mtx,
 RSB_OI_TYPEINFO_STRING,
 RSB_OI_TYPEINFO_TYPE);
 
-DEFCONV (octave_triangular_conv, octave_sparse_rsb_matrix, matrix)
+DEFCONV (octave_triangular_conv, octave_sparse_rsb_mtx, matrix)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
-	CAST_CONV_ARG (const octave_sparse_rsb_matrix &);
+	CAST_CONV_ARG (const octave_sparse_rsb_mtx &);
 	return new octave_sparse_matrix (v.matrix_value ());
 }
 
 #if 0
-DEFCONV (octave_sparse_rsb_to_octave_sparse_conv, sparse_rsb_matrix, sparse_matrix)
+DEFCONV (octave_sparse_rsb_to_octave_sparse_conv, sparse_rsb_mtx, sparse_matrix)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_CONV_ARG (const octave_sparse_rsb_matrix &);
+	CAST_CONV_ARG (const octave_sparse_rsb_mtx &);
 	return new octave_sparse_matrix (v.matrix_value ());
 }
 #endif
 
-DEFUNOP (uplus, sparse_rsb_matrix)
+DEFUNOP (uplus, sparse_rsb_mtx)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
-	return new octave_sparse_rsb_matrix (v);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
+	return new octave_sparse_rsb_mtx (v);
 }
 
 #if 0
-DEFUNOP (op_incr, sparse_rsb_matrix)
+DEFUNOP (op_incr, sparse_rsb_mtx)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
 	const octave_idx_type rn=v.A->m,cn=v.A->k;
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	errval|=rsb_matrix_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
+	errval|=rsb_mtx_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
 	//v=octave_ma(idx, v2.matrix_value());
 	return v2;
 }
 
-DEFUNOP (op_decr, sparse_rsb_matrix)
+DEFUNOP (op_decr, sparse_rsb_mtx)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
 	const octave_idx_type rn=v.A->m,cn=v.A->k;
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	errval|=rsb_matrix_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
+	errval|=rsb_mtx_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
 	//v=octave_ma(idx, v2.matrix_value());
 	return v2;
 }
 #endif
 
-DEFUNOP (uminus, sparse_rsb_matrix)
+DEFUNOP (uminus, sparse_rsb_mtx)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx * m = new octave_sparse_rsb_mtx(v);
 	if(!m)return m;
-	//errval=rsb_negation(m->A);
-	errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_NEG);
+	errval = rsb_mtx_upd_values(m->A,RSB_ELOPF_NEG,NULL);
 	return m;
 }
 
-DEFUNOP (transpose, sparse_rsb_matrix)
+DEFUNOP (transpose, sparse_rsb_mtx)
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx * m = new octave_sparse_rsb_mtx(v);
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	if(!m)return m;
-	//errval=rsb_transpose(&m->A);
-	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_T,NULL,m->A,RSBOI_EXPF);
-	//errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_TRANS);
+	errval = rsb_mtx_clone(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_T,NULL,m->A,RSBOI_EXPF);
 	RSBOI_PERROR(errval);
 	return m;
 }
 
-DEFUNOP (htranspose, sparse_rsb_matrix)
+DEFUNOP (htranspose, sparse_rsb_mtx)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_UNOP_ARG (const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v);
+	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx * m = new octave_sparse_rsb_mtx(v);
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
 	if(!m)return m;
-	//errval=rsb_htranspose(&m->A);
-	errval = rsb_clone_transformed(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_C,NULL,m->A,RSBOI_EXPF);
-	//errval=rsb_matrix_elemental_unop(m->A,RSB_ELOPF_HTRANS);
+	errval = rsb_mtx_clone(&m->A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_C,NULL,m->A,RSBOI_EXPF);
 	RSBOI_PERROR(errval);
 	return m;
 }
 
 
-octave_value rsboi_spsv(const octave_sparse_rsb_matrix&v1, const octave_matrix&v2,rsb_trans_t transa)
+octave_value rsboi_spsv(const octave_sparse_rsb_mtx&v1, const octave_matrix&v2,rsb_trans_t transa)
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1088,27 +1083,27 @@ octave_value rsboi_spsv(const octave_sparse_rsb_matrix&v1, const octave_matrix&v
 	}
 }
 
-DEFBINOP(ldiv, sparse_rsb_matrix, matrix)
+DEFBINOP(ldiv, sparse_rsb_mtx, matrix)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	if(v1.is__triangular()) 
 		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_N);
 	else
 		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
-DEFBINOP(trans_ldiv, sparse_rsb_matrix, matrix)
+DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	if(v1.is__triangular()) 
 		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_T);
 	else
 		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
-DEFBINOP(el_div, sparse_rsb_matrix, matrix)
+DEFBINOP(el_div, sparse_rsb_mtx, matrix)
 {
 	Matrix retval;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1116,7 +1111,7 @@ DEFBINOP(el_div, sparse_rsb_matrix, matrix)
 	return retval;
 }
 
-DEFBINOP(el_ldiv, sparse_rsb_matrix, matrix)
+DEFBINOP(el_ldiv, sparse_rsb_mtx, matrix)
 {
 	Matrix retval;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1124,7 +1119,7 @@ DEFBINOP(el_ldiv, sparse_rsb_matrix, matrix)
 	return retval;
 }
 
-DEFBINOP(div, sparse_rsb_matrix, matrix)
+DEFBINOP(div, sparse_rsb_mtx, matrix)
 {
 	Matrix retval;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1132,43 +1127,43 @@ DEFBINOP(div, sparse_rsb_matrix, matrix)
 	return retval;
 }
 
-DEFBINOP(rsb_s_div, sparse_rsb_matrix, scalar)
+DEFBINOP(rsb_s_div, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy_inv(v2.scalar_value());
 }
 
-DEFBINOP(rsb_s_mul, sparse_rsb_matrix, scalar)
+DEFBINOP(rsb_s_mul, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy(v2.scalar_value());
 }
 
 #if 0
-DEFBINOP(rsb_s_pow, sparse_rsb_matrix, scalar)
+DEFBINOP(rsb_s_pow, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_power_copy(v2.scalar_value());
 }
 #endif
 
-DEFASSIGNOP (assign, sparse_rsb_matrix, sparse_rsb_matrix)
+DEFASSIGNOP (assign, sparse_rsb_mtx, sparse_rsb_mtx)
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_FIXME("I dunno how to trigger this!");
-	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_sparse_rsb_matrix&);
+	CAST_BINOP_ARGS (octave_sparse_rsb_mtx &, const octave_sparse_rsb_mtx&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	//rsb_assign(v1.A, v2.A);
-	errval = rsb_clone_transformed(&v1.A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,v2.A,RSBOI_EXPF);
+	errval = rsb_mtx_clone(&v1.A,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,v2.A,RSBOI_EXPF);
 	return octave_value();
 }
 
-DEFASSIGNOP (assignm, sparse_rsb_matrix, matrix)
+DEFASSIGNOP (assignm, sparse_rsb_mtx, matrix)
 {
-	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_matrix&);
+	CAST_BINOP_ARGS (octave_sparse_rsb_mtx &, const octave_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_DESTROY(v1.A);
 	octave_value retval;
@@ -1181,9 +1176,9 @@ DEFASSIGNOP (assignm, sparse_rsb_matrix, matrix)
 }
 
 #if 0
-DEFASSIGNOP(rsb_op_mul_eq_s, sparse_rsb_matrix, scalar)
+DEFASSIGNOP(rsb_op_mul_eq_s, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (octave_sparse_rsb_mtx &, const octave_scalar&);
 	octave_value retval;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_PERROR(v1.rsboi_scale(v2.scalar_value()));
@@ -1211,9 +1206,9 @@ DEFASSIGNOP(rsb_op_mul_eq_s, sparse_rsb_matrix, scalar)
 		return errval;
 	}
 
-DEFASSIGNOP(rsb_op_div_eq_s, sparse_rsb_matrix, scalar)
+DEFASSIGNOP(rsb_op_div_eq_s, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (octave_sparse_rsb_mtx &, const octave_scalar&);
 	octave_value retval;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_PERROR(v1.rsboi_scale_inv(v2.scalar_value()));
@@ -1242,37 +1237,37 @@ DEFASSIGNOP(rsb_op_div_eq_s, sparse_rsb_matrix, scalar)
 	}
 #endif
 
-DEFBINOP(rsb_el_mul_s, sparse_rsb_matrix, scalar)
+DEFBINOP(rsb_el_mul_s, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy(v2.scalar_value());
 }
 
-DEFBINOP(rsb_el_div_s, sparse_rsb_matrix, scalar)
+DEFBINOP(rsb_el_div_s, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy_inv(v2.scalar_value());
 }
 
-DEFBINOP(el_pow, sparse_rsb_matrix, scalar)
+DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	octave_sparse_rsb_matrix * m = new octave_sparse_rsb_matrix(v1);
+	octave_sparse_rsb_mtx * m = new octave_sparse_rsb_mtx(v1);
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_T alpha=v2.scalar_value();
 	if(!m)return m;
-	errval = rsb_matrix_elemental_binop(m->A,RSB_ELOPF_POW,&alpha);
+	errval = rsb_mtx_upd_values(m->A,RSB_ELOPF_POW,&alpha);
 	RSBOI_PERROR(errval);
 	return m;
 }
 
 #ifdef RSB_FULLY_IMPLEMENTED
-DEFASSIGNOP (assigns, sparse_rsb_matrix, scalar)
+DEFASSIGNOP (assigns, sparse_rsb_mtx, scalar)
 {
-	CAST_BINOP_ARGS (octave_sparse_rsb_matrix &, const octave_scalar&);
+	CAST_BINOP_ARGS (octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	v1.assign(idx, v2.matrix_value());
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
@@ -1280,10 +1275,10 @@ DEFASSIGNOP (assigns, sparse_rsb_matrix, scalar)
 }
 #endif
 
-DEFBINOP(op_sub, sparse_rsb_matrix, sparse_rsb_matrix)
+DEFBINOP(op_sub, sparse_rsb_mtx, sparse_rsb_mtx)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix*sm = new octave_sparse_rsb_matrix();
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx*sm = new octave_sparse_rsb_mtx();
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1291,34 +1286,34 @@ DEFBINOP(op_sub, sparse_rsb_matrix, sparse_rsb_matrix)
 #if RSBOI_WANT_SYMMETRY
 	/* FIXME: and now ? */
 #endif
-	sm->A=rsb_matrix_sum(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
+	sm->A = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_mone,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 
-DEFBINOP(op_add, sparse_rsb_matrix, sparse_rsb_matrix)
+DEFBINOP(op_add, sparse_rsb_mtx, sparse_rsb_mtx)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix*sm = new octave_sparse_rsb_matrix();
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx*sm = new octave_sparse_rsb_mtx();
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 #if RSBOI_WANT_SYMMETRY
 	/* FIXME: and now ? */
 #endif
-	sm->A=rsb_matrix_sum(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
+	sm->A = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 
-DEFBINOP(op_spmul, sparse_rsb_matrix, sparse_rsb_matrix)
+DEFBINOP(op_spmul, sparse_rsb_mtx, sparse_rsb_mtx)
 {
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_sparse_rsb_matrix&);
-	octave_sparse_rsb_matrix*sm = new octave_sparse_rsb_matrix();
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_sparse_rsb_mtx&);
+	octave_sparse_rsb_mtx*sm = new octave_sparse_rsb_mtx();
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1326,17 +1321,17 @@ DEFBINOP(op_spmul, sparse_rsb_matrix, sparse_rsb_matrix)
 	/* FIXME: and now ? */
 #endif
 	/* FIXME: what if they are not both of the same type ? it would be nice to have a conversion.. */
-	sm->A=rsb_matrix_mul(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
+	sm->A = rsb_spmsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_one,v1.A,RSB_TRANSPOSITION_N,&rsboi_one,v2.A,&errval);
 	RSBOI_PERROR(errval);
 	if(!sm->A)
 		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 	return retval;
 }
 
-DEFBINOP(op_mul, sparse_rsb_matrix, matrix)
+DEFBINOP(op_mul, sparse_rsb_mtx, matrix)
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	if(v1.is_real_type())
 	{
@@ -1368,12 +1363,12 @@ DEFBINOP(op_mul, sparse_rsb_matrix, matrix)
 	}
 }
 
-DEFBINOP(op_trans_mul, sparse_rsb_matrix, matrix)
+DEFBINOP(op_trans_mul, sparse_rsb_mtx, matrix)
 {
 	// ".'*"  operator
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	CAST_BINOP_ARGS (const octave_sparse_rsb_matrix&, const octave_matrix&);
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	if(v1.is_real_type())
 	{
 		const Matrix b = v2.matrix_value ();
@@ -1415,65 +1410,65 @@ static void install_sparsersb_ops (void)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	#ifdef RSB_FULLY_IMPLEMENTED
 	/* boolean pattern-based not */
-	INSTALL_UNOP (op_not, octave_sparse_rsb_matrix, op_not);
+	INSTALL_UNOP (op_not, octave_sparse_rsb_mtx, op_not);
 	/* to-dense operations */
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_matrix, octave_scalar, assigns);
+	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_mtx, octave_scalar, assigns);
 	/* ? */
-	INSTALL_UNOP (op_uplus, octave_sparse_rsb_matrix, uplus);
+	INSTALL_UNOP (op_uplus, octave_sparse_rsb_mtx, uplus);
 	/* elemental comparison, evaluate to sparse or dense boolean matrices */
-	INSTALL_BINOP (op_eq, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_le, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_lt, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_ge, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_gt, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_ne, octave_sparse_rsb_matrix, , );
+	INSTALL_BINOP (op_eq, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_le, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_lt, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_ge, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_gt, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_ne, octave_sparse_rsb_mtx, , );
 	/* pure elemental; scalar and sparse arguments ?! */
 								 // ?
-	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_el_and, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_el_or, octave_sparse_rsb_matrix, , );
+	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_el_and, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_el_or, octave_sparse_rsb_mtx, , );
 	/* shift operations: they may be left out from the implementation */
-	INSTALL_BINOP (op_lshift, octave_sparse_rsb_matrix, , );
-	INSTALL_BINOP (op_rshift, octave_sparse_rsb_matrix, , );
+	INSTALL_BINOP (op_lshift, octave_sparse_rsb_mtx, , );
+	INSTALL_BINOP (op_rshift, octave_sparse_rsb_mtx, , );
 	#endif
-	//INSTALL_WIDENOP (octave_sparse_rsb_matrix, octave_sparse_matrix,octave_sparse_rsb_to_octave_sparse_conv);/* a DEFCONV .. */
-	//INSTALL_ASSIGNCONV (octave_sparse_rsb_matrix, octave_sparse_matrix,octave_sparse_matrix);/* .. */
+	//INSTALL_WIDENOP (octave_sparse_rsb_mtx, octave_sparse_matrix,octave_sparse_rsb_to_octave_sparse_conv);/* a DEFCONV .. */
+	//INSTALL_ASSIGNCONV (octave_sparse_rsb_mtx, octave_sparse_matrix,octave_sparse_matrix);/* .. */
 	// no need for the following: need a good conversion function, though
-	//INSTALL_UNOP (op_incr, octave_sparse_rsb_matrix, op_incr);
-	//INSTALL_UNOP (op_decr, octave_sparse_rsb_matrix, op_decr);
-	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_matrix, octave_scalar, rsb_el_mul_s);
-//	INSTALL_ASSIGNOP (op_mul_eq, octave_sparse_rsb_matrix, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
-//	INSTALL_ASSIGNOP (op_div_eq, octave_sparse_rsb_matrix, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
-	INSTALL_BINOP (op_el_div, octave_sparse_rsb_matrix, octave_scalar, rsb_el_div_s);
-	INSTALL_BINOP (op_el_pow, octave_sparse_rsb_matrix, octave_scalar, el_pow);
-	INSTALL_UNOP (op_uminus, octave_sparse_rsb_matrix, uminus);
-	INSTALL_BINOP (op_ldiv, octave_sparse_rsb_matrix, octave_matrix, ldiv);
-	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_matrix, octave_matrix, el_ldiv);
-	INSTALL_BINOP (op_div, octave_sparse_rsb_matrix, octave_matrix, div);
-	INSTALL_BINOP (op_div, octave_sparse_rsb_matrix, octave_scalar, rsb_s_div);
-	INSTALL_BINOP (op_mul, octave_sparse_rsb_matrix, octave_scalar, rsb_s_mul);
-	//INSTALL_BINOP (op_pow, octave_sparse_rsb_matrix, octave_scalar, rsb_s_pow);
-	INSTALL_BINOP (op_el_div, octave_sparse_rsb_matrix, octave_matrix, el_div);
-	INSTALL_UNOP (op_transpose, octave_sparse_rsb_matrix, transpose);
-	INSTALL_UNOP (op_hermitian, octave_sparse_rsb_matrix, htranspose);
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_matrix, octave_sparse_matrix, assign);
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_matrix, octave_matrix, assignm);
-	INSTALL_BINOP (op_mul, octave_sparse_rsb_matrix, octave_matrix, op_mul);
-	//INSTALL_BINOP (op_pow, octave_sparse_rsb_matrix, octave_matrix, op_pow);
-	INSTALL_BINOP (op_sub, octave_sparse_rsb_matrix, octave_sparse_rsb_matrix, op_sub);
-	INSTALL_BINOP (op_add, octave_sparse_rsb_matrix, octave_sparse_rsb_matrix, op_add);
-	//INSTALL_BINOP (op_trans_add, octave_sparse_rsb_matrix, octave_sparse_rsb_matrix, op_trans_add);
-	INSTALL_BINOP (op_mul, octave_sparse_rsb_matrix, octave_sparse_rsb_matrix, op_spmul);
-	INSTALL_BINOP (op_trans_mul, octave_sparse_rsb_matrix, octave_matrix, op_trans_mul);
-	INSTALL_BINOP (op_trans_ldiv, octave_sparse_rsb_matrix, octave_matrix, trans_ldiv);
-	//INSTALL_BINOP (op_mul_trans, octave_sparse_rsb_matrix, octave_matrix, op_mul_trans);
-	//INSTALL_BINOP (op_mul_trans, octave_sparse_rsb_matrix, octave_matrix, op_mul_trans);
-	//INSTALL_BINOP (op_herm_mul, octave_sparse_rsb_matrix, octave_matrix, op_herm_mul);
-	//INSTALL_BINOP (op_mul_herm, octave_sparse_rsb_matrix, octave_matrix, op_mul_herm);
-	//INSTALL_BINOP (op_el_not_and, octave_sparse_rsb_matrix, octave_matrix, op_el_not_and);
-	//INSTALL_BINOP (op_el_not_or , octave_sparse_rsb_matrix, octave_matrix, op_el_not_or );
-	//INSTALL_BINOP (op_el_and_not, octave_sparse_rsb_matrix, octave_matrix, op_el_and_not);
-	//INSTALL_BINOP (op_el_or _not, octave_sparse_rsb_matrix, octave_matrix, op_el_or _not);
+	//INSTALL_UNOP (op_incr, octave_sparse_rsb_mtx, op_incr);
+	//INSTALL_UNOP (op_decr, octave_sparse_rsb_mtx, op_decr);
+	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_el_mul_s);
+//	INSTALL_ASSIGNOP (op_mul_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
+//	INSTALL_ASSIGNOP (op_div_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
+	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_scalar, rsb_el_div_s);
+	INSTALL_BINOP (op_el_pow, octave_sparse_rsb_mtx, octave_scalar, el_pow);
+	INSTALL_UNOP (op_uminus, octave_sparse_rsb_mtx, uminus);
+	INSTALL_BINOP (op_ldiv, octave_sparse_rsb_mtx, octave_matrix, ldiv);
+	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_mtx, octave_matrix, el_ldiv);
+	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_matrix, div);
+	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_scalar, rsb_s_div);
+	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_s_mul);
+	//INSTALL_BINOP (op_pow, octave_sparse_rsb_mtx, octave_scalar, rsb_s_pow);
+	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_matrix, el_div);
+	INSTALL_UNOP (op_transpose, octave_sparse_rsb_mtx, transpose);
+	INSTALL_UNOP (op_hermitian, octave_sparse_rsb_mtx, htranspose);
+	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_mtx, octave_sparse_matrix, assign);
+	INSTALL_ASSIGNOP (op_asn_eq, octave_sparse_rsb_mtx, octave_matrix, assignm);
+	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_matrix, op_mul);
+	//INSTALL_BINOP (op_pow, octave_sparse_rsb_mtx, octave_matrix, op_pow);
+	INSTALL_BINOP (op_sub, octave_sparse_rsb_mtx, octave_sparse_rsb_mtx, op_sub);
+	INSTALL_BINOP (op_add, octave_sparse_rsb_mtx, octave_sparse_rsb_mtx, op_add);
+	//INSTALL_BINOP (op_trans_add, octave_sparse_rsb_mtx, octave_sparse_rsb_mtx, op_trans_add);
+	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_sparse_rsb_mtx, op_spmul);
+	INSTALL_BINOP (op_trans_mul, octave_sparse_rsb_mtx, octave_matrix, op_trans_mul);
+	INSTALL_BINOP (op_trans_ldiv, octave_sparse_rsb_mtx, octave_matrix, trans_ldiv);
+	//INSTALL_BINOP (op_mul_trans, octave_sparse_rsb_mtx, octave_matrix, op_mul_trans);
+	//INSTALL_BINOP (op_mul_trans, octave_sparse_rsb_mtx, octave_matrix, op_mul_trans);
+	//INSTALL_BINOP (op_herm_mul, octave_sparse_rsb_mtx, octave_matrix, op_herm_mul);
+	//INSTALL_BINOP (op_mul_herm, octave_sparse_rsb_mtx, octave_matrix, op_mul_herm);
+	//INSTALL_BINOP (op_el_not_and, octave_sparse_rsb_mtx, octave_matrix, op_el_not_and);
+	//INSTALL_BINOP (op_el_not_or , octave_sparse_rsb_mtx, octave_matrix, op_el_not_or );
+	//INSTALL_BINOP (op_el_and_not, octave_sparse_rsb_mtx, octave_matrix, op_el_and_not);
+	//INSTALL_BINOP (op_el_or _not, octave_sparse_rsb_mtx, octave_matrix, op_el_or _not);
 }
 
 static void install_sparse_rsb (void)
@@ -1488,7 +1483,7 @@ static void install_sparse_rsb (void)
 			RSBOI_ERROR("");
 			goto err;
 		}
-		if(RSBOI_SOME_ERROR(errval=rsb_init(RSB_NULL_INIT_OPTIONS)))
+		if(RSBOI_SOME_ERROR(errval = rsb_lib_init(RSB_NULL_INIT_OPTIONS)))
 		{
 			RSBOI_FIXME("temporary style of error handling");
 			RSBOI_PERROR(errval); 
@@ -1502,7 +1497,7 @@ static void install_sparse_rsb (void)
 
 	if (!rsboi_sparse_rsb_loaded)
 	{
-		octave_sparse_rsb_matrix::register_type ();
+		octave_sparse_rsb_mtx::register_type ();
 		install_sparsersb_ops ();
 		rsboi_sparse_rsb_loaded=true;
 		mlock();
@@ -1559,7 +1554,7 @@ If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], []
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set to that value.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_get_matrix_info_from_string()), then the correspondent value will be returned for matrix @var{A}.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
@@ -1574,7 +1569,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 {
 	int nargin = args.length ();
 	octave_value_list retval;
-	octave_sparse_rsb_matrix*matrix=NULL;
+	octave_sparse_rsb_mtx*matrix=NULL;
 	bool ic0=nargin>0?(args(0).is_complex_type()):false;
 	bool ic3=nargin>2?(args(2).is_complex_type()):false;
 
@@ -1598,7 +1593,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		const char *os=args(1).string_value().c_str();
 		const char *ov=args(2).string_value().c_str();
-		errval=rsb_set_initopt_as_string(os,ov);
+		errval = rsb_lib_set_opt_str(os,ov);
 		/* FIXME: missing some diagnostic output */
 		goto ret;
 	}
@@ -1611,12 +1606,12 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		const char *mis=args(2).string_value().c_str();
 		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
-		const struct rsb_matrix_t*matrix=((octave_sparse_rsb_matrix*)(args(0).internal_rep()))->A;
+		const struct rsb_mtx_t*matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
 		if(!matrix)goto ret;/* FIXME: error handling missing here */
-		errval=rsb_get_matrix_info_from_string(matrix,mis,&miv);
+		errval = rsb_mtx_get_info_str(matrix,mis,&miv);
 		/* FIXME: serious error handling missing here */
 		if(RSBOI_SOME_ERROR(errval))
-			retval.append(std::string("Error returned from rsb_get_matrix_info_from_string()"));
+			retval.append(std::string("Error returned from rsb_mtx_get_info_from_string()"));
 		else
 			retval.append(octave_value(miv));
 		goto ret;
@@ -1635,8 +1630,8 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		if (nargin == 2 && args(0).type_name()==RSB_OI_TYPEINFO_STRING && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];
-			const struct rsb_matrix_t*matrix=NULL;//((octave_sparse_rsb_matrix)(args(0).get_rep())).A;
-			matrix=((octave_sparse_rsb_matrix*)(args(0).internal_rep()))->A;
+			const struct rsb_mtx_t*matrix=NULL;//((octave_sparse_rsb_mtx)(args(0).get_rep())).A;
+			matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
 			if(!matrix)goto ret;/* FIXME: error handling missing here */
 			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(matrix));
 			/* FIXME: to add interpretation */
@@ -1652,7 +1647,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			if(args(0).type_name()==RSB_OI_TYPEINFO_STRING)
 			{
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
-				retval.append(matrix=(octave_sparse_rsb_matrix*)(args(0).get_rep()).clone());
+				retval.append(matrix=(octave_sparse_rsb_mtx*)(args(0).get_rep()).clone());
 			}
 			else
 			{
@@ -1660,14 +1655,14 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 				{
 					const SparseMatrix m = args(0).sparse_matrix_value();
 					if (error_state) goto err;
-					retval.append(matrix=new octave_sparse_rsb_matrix(m,typecode));
+					retval.append(matrix=new octave_sparse_rsb_mtx(m,typecode));
 				}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 				else
 				{
 					const SparseComplexMatrix m = args(0).sparse_complex_matrix_value();
 					if (error_state) goto err;
-					retval.append(matrix=new octave_sparse_rsb_matrix(m,typecode));
+					retval.append(matrix=new octave_sparse_rsb_mtx(m,typecode));
 				}
 #endif
 			}
@@ -1686,7 +1681,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			{
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
 				RSBOI_WARN("shall set the type, here");
-				retval.append(matrix=new octave_sparse_rsb_matrix(m));
+				retval.append(matrix=new octave_sparse_rsb_mtx(m));
 			}
 		}
 		else
@@ -1695,14 +1690,14 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			{
 				Matrix m = args(0).matrix_value();
 				if (error_state) goto err;
-				retval.append(matrix=new octave_sparse_rsb_matrix(m));
+				retval.append(matrix=new octave_sparse_rsb_mtx(m));
 			}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 			else
 			{
 				ComplexMatrix m = args(0).complex_matrix_value();
 				if (error_state) goto err;
-				retval.append(matrix=new octave_sparse_rsb_matrix(m));
+				retval.append(matrix=new octave_sparse_rsb_mtx(m));
 			}
 #endif
 		}
@@ -1765,7 +1760,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		{
 			idx_vector iv=args(0).index_vector ();
 			idx_vector jv=args(1).index_vector ();
-			retval.append(matrix=new octave_sparse_rsb_matrix( iv, jv, args(2).matrix_value(),nr,nc,eflags ));
+			retval.append(matrix=new octave_sparse_rsb_mtx( iv, jv, args(2).matrix_value(),nr,nc,eflags ));
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
@@ -1773,7 +1768,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		{
 			idx_vector iv=args(0).index_vector ();
 			idx_vector jv=args(1).index_vector ();
-			retval.append(matrix=new octave_sparse_rsb_matrix( iv, jv, args(2).complex_matrix_value(),nr,nc,eflags ));
+			retval.append(matrix=new octave_sparse_rsb_mtx( iv, jv, args(2).complex_matrix_value(),nr,nc,eflags ));
 		}
 #endif
 	}

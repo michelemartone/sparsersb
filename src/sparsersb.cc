@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2012   Michele Martone   <michele.martone@ipp.mpg.de>
+ Copyright (C) 2011-2013   Michele Martone   <michele.martone@ipp.mpg.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@
 #define RSBOI_LIS	"?"
 
 #define RSBIO_DEFAULT_CORE_MATRIX  Matrix (0,0)
-/* FIXME : octave_idx_type vs rsb_coo_index_t */
+/* FIXME : octave_idx_type vs rsb_coo_idx_t */
 #define RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS {1;}
 #define RSBOI_OV_STRIDE 1
 #define RSBOI_ZERO 0.0
@@ -206,7 +206,7 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 
 static bool sparsersb_tester(void)
 {
-	if(sizeof(octave_idx_type)!=sizeof(rsb_coo_index_t))
+	if(sizeof(octave_idx_type)!=sizeof(rsb_coo_idx_t))
 	{
 		RSBOI_ERROR(RSBOI_0_INMISMMSG);
 		goto err;
@@ -257,13 +257,13 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 #else
 			rsb_type_t typecode=RSBOI_TYPECODE;
 #endif
-			const rsb_coo_index_t *IA=NULL,*JA=NULL;
+			const rsb_coo_idx_t *IA=NULL,*JA=NULL;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 #if RSBOI_WANT_SYMMETRY
 			/* shall verify if any symmetry is present */
 #endif
-			IA=(const rsb_coo_index_t*)IM.raw();
-		       	JA=(const rsb_coo_index_t*)JM.raw();
+			IA=(const rsb_coo_idx_t*)IM.raw();
+		       	JA=(const rsb_coo_idx_t*)JM.raw();
 			//RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
 			if(!(this->A = rsb_mtx_alloc_from_coo_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
@@ -292,9 +292,9 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		void allocate_rsb_mtx_from_csc_copy(const SparseMatrix &sm)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsb_nnz_index_t nnz=0;
-			Array<rsb_coo_index_t> IA( dim_vector(1,sm.nnz()) );
-			Array<rsb_coo_index_t> JA( dim_vector(1,sm.nnz()) );
+			rsb_nnz_idx_t nnz=0;
+			Array<rsb_coo_idx_t> IA( dim_vector(1,sm.nnz()) );
+			Array<rsb_coo_idx_t> JA( dim_vector(1,sm.nnz()) );
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
@@ -325,8 +325,8 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			octave_idx_type nr = sm.rows ();
 			octave_idx_type nc = sm.cols ();
 			octave_idx_type nnz=0;
-			Array<rsb_coo_index_t> IA( dim_vector(1,sm.nnz()) );
-			Array<rsb_coo_index_t> JA( dim_vector(1,sm.nnz()) );
+			Array<rsb_coo_idx_t> IA( dim_vector(1,sm.nnz()) );
+			Array<rsb_coo_idx_t> JA( dim_vector(1,sm.nnz()) );
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			bool islowtri=true,isupptri=true;
 			rsb_flags_t eflags=RSBOI_RF;
@@ -389,7 +389,7 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
-		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);size_t so=0;rsb_mtx_get_info(this->A,RSB_MIF_BYTE_SIZE__TO__SIZE_T,&so);return so; }
+		size_t byte_size (void) const { RSBOI_0_EMCHECK(this->A);size_t so=0;rsb_mtx_get_info(this->A,RSB_MIF_TOTAL_SIZE__TO__SIZE_T,&so);return so; }
 
 		virtual ~octave_sparse_rsb_mtx (void)
 		{
@@ -420,14 +420,14 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		{
 			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			rsb_nnz_index_t nnz,nzi;
+			rsb_nnz_idx_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			RSBOI_0_EMCHECK(this->A);
 			nnz=this->nnz();
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<RSBOI_T> VA( dim_vector(1,nnz) );
-			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			coo.IA=(rsb_coo_idx_t*)IA.data(),coo.JA=(rsb_coo_idx_t*)JA.data();
 			if(!this->is_real_type())
 			{
 				Array<Complex> VAC( dim_vector(1,nnz) );
@@ -483,7 +483,7 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		{
 			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			rsb_nnz_index_t nnz,nzi;
+			rsb_nnz_idx_t nnz,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			RSBOI_0_EMCHECK(this->A);
 			nnz=this->nnz();
@@ -491,7 +491,7 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<Complex> VA( dim_vector(1,nnz) );
 			RSBOI_T* VAp=((RSBOI_T*)VA.data());
-			coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			coo.IA=(rsb_coo_idx_t*)IA.data(),coo.JA=(rsb_coo_idx_t*)JA.data();
 			coo.VA=VAp;
 			errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 #if RSBOI_WANT_SYMMETRY
@@ -774,7 +774,7 @@ skipimpl:
 			RSBOI_FIXME("what to do with pr_as_read_syntax ?");
 			struct rsboi_coo_matrix_t coo;
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
-			rsb_nnz_index_t nnz=this->nnz(),nzi;
+			rsb_nnz_idx_t nnz=this->nnz(),nzi;
 			bool ic=this->is_real_type()?false:true;
 			Array<octave_idx_type> IA( dim_vector(1,nnz) );
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
@@ -783,7 +783,7 @@ skipimpl:
 			char ss[RSBOI_INFOBUF];
 			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->A));
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_index_t*)IA.data(),coo.JA=(rsb_coo_index_t*)JA.data();
+			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_idx_t*)IA.data(),coo.JA=(rsb_coo_idx_t*)JA.data();
 #if RSBOI_WANT_SYMMETRY
 			/* FIXME: and now ? */
 #endif
@@ -976,7 +976,7 @@ DEFUNOP (op_incr, sparse_rsb_mtx)
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	errval|=rsb_mtx_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
+	errval|=rsb_mtx_add_to_dense(&rsboi_one,v.A,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
 	//v=octave_ma(idx, v2.matrix_value());
 	return v2;
 }
@@ -990,7 +990,7 @@ DEFUNOP (op_decr, sparse_rsb_mtx)
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	errval|=rsb_mtx_add_to_dense(v.A,&rsboi_one,RSB_DEFAULT_TRANSPOSITION,(RSBOI_T*)v2.data(),rn,rn,cn,RSB_BOOL_TRUE);
+	errval|=rsb_mtx_add_to_dense(&rsboi_one,v.A,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
 	//v=octave_ma(idx, v2.matrix_value());
 	return v2;
 }

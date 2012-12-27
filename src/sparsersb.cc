@@ -384,8 +384,8 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		dim_vector dims (void) const { return (dim_vector(this->rows(),this->cols())); }
 		octave_idx_type dim1 (void) const { return this->rows(); }
 		octave_idx_type dim2 (void) const { return this->cols(); }
-		octave_idx_type rows (void) const { RSBOI_0_EMCHECK(this->A);return this->A->m; }
-		octave_idx_type cols (void) const { RSBOI_0_EMCHECK(this->A);return this->A->k; }
+		octave_idx_type rows (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nr; }
+		octave_idx_type cols (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nc; }
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
@@ -972,7 +972,7 @@ DEFUNOP (op_incr, sparse_rsb_mtx)
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
-	const octave_idx_type rn=v.A->m,cn=v.A->k;
+	const octave_idx_type rn=v.A->nr,cn=v.A->nc;
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -986,7 +986,7 @@ DEFUNOP (op_decr, sparse_rsb_mtx)
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparse_rsb_mtx&);
-	const octave_idx_type rn=v.A->m,cn=v.A->k;
+	const octave_idx_type rn=v.A->nr,cn=v.A->nc;
 	Matrix v2(rn,cn);
 	octave_value retval=v2;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;

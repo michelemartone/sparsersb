@@ -380,12 +380,16 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		octave_idx_type length (void) const { return this->nnz(); }
 		octave_idx_type nelem (void) const { return this->nnz(); }
 		octave_idx_type numel (void) const { return this->nnz(); }
-		octave_idx_type nnz (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nnz; }
+		octave_idx_type nnz (void) const { rsb_nnz_idx_t Annz=0; RSBOI_0_EMCHECK(this->A); rsb_mtx_get_info(this->A,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&Annz);  return Annz;}
 		dim_vector dims (void) const { return (dim_vector(this->rows(),this->cols())); }
 		octave_idx_type dim1 (void) const { return this->rows(); }
 		octave_idx_type dim2 (void) const { return this->cols(); }
-		octave_idx_type rows (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nr; }
-		octave_idx_type cols (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nc; }
+		octave_idx_type rows (void) const { rsb_coo_idx_t Anr=0; RSBOI_0_EMCHECK(this->A); rsb_mtx_get_info(this->A,RSB_MIF_MATRIX_ROWS__TO__RSB_COO_INDEX_T,&Anr);  return Anr;}
+		octave_idx_type cols (void) const { rsb_coo_idx_t Anc=0; RSBOI_0_EMCHECK(this->A); rsb_mtx_get_info(this->A,RSB_MIF_MATRIX_COLS__TO__RSB_COO_INDEX_T,&Anc);  return Anc;}
+		rsb_flags_t rsbflags(void) const { rsb_flags_t Aflags=0; RSBOI_0_EMCHECK(this->A); rsb_mtx_get_info(this->A,RSB_MIF_MATRIX_FLAGS__TO__RSB_FLAGS_T,&Aflags);  return Aflags;}
+		rsb_type_t rsbtype(void) const { rsb_type_t Atype=0; RSBOI_0_EMCHECK(this->A); rsb_mtx_get_info(this->A,RSB_MIF_MATRIX_TYPECODE__TO__RSB_TYPE_T,&Atype);  return Atype;}
+		//octave_idx_type rows (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nr; }
+		//octave_idx_type cols (void) const { RSBOI_0_EMCHECK(this->A);return this->A->nc; }
 		octave_idx_type columns (void) const { return this->cols(); }
 		octave_idx_type nzmax (void) const { return this->nnz(); }
 		octave_idx_type capacity (void) const { return this->nnz(); }
@@ -599,10 +603,10 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 
 		bool is_map (void) const { return true; }
 		bool is_sparse_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return true; }
-		bool is_real_type (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return this->A->typecode==RSB_NUMERICAL_TYPE_DOUBLE?true:false; }
-		bool is_diagonal (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_DIAGONAL)?true:false; }/* FIXME: new: not sure whether this is ever called */
-		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
-		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
+		bool is_real_type (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return this->rsbtype()==RSB_NUMERICAL_TYPE_DOUBLE?true:false; }
+		bool is_diagonal (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL)?true:false; }/* FIXME: new: not sure whether this is ever called */
+		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
+		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->A); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_complex_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
 		bool is_bool_type (void) const { return false; }
 		bool is_integer_type (void) const { return false; }
@@ -613,11 +617,11 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		       	if(this->A 
 #if RSBOI_WANT_SYMMETRY
-				&& ((!RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_DIAGONAL))
+				&& ((!RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL))
 #endif
 			  )
 			{
-				return RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
+				return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
 			}
 			else
 			       	return RSB_BOOL_FALSE;
@@ -781,7 +785,8 @@ skipimpl:
 			Array<RSBOI_T> VA( dim_vector(1,(ic?2:1)*nnz) );
 			std::string c=ic?"complex":"real";
 			char ss[RSBOI_INFOBUF];
-			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->A));
+			//snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->A));
+			rsb_mtx_get_info_str(this->A,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_idx_t*)IA.data(),coo.JA=(rsb_coo_idx_t*)JA.data();
 #if RSBOI_WANT_SYMMETRY
@@ -798,8 +803,8 @@ skipimpl:
 				", nnz = "<<nnz<<
 #if RSBOI_WANT_SYMMETRY
 				", symm = "<<
-				(RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)?"S":
-				(RSB_DO_FLAG_HAS(this->A->flags,RSB_FLAG_SYMMETRIC)?"H":"U"))
+				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S":
+				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"H":"U"))
 				<< // FIXME: need a mechanism to print out these flags from rsb itself
 #endif
 				" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<
@@ -1608,7 +1613,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
 		const struct rsb_mtx_t*matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
 		if(!matrix)goto ret;/* FIXME: error handling missing here */
-		errval = rsb_mtx_get_info_str(matrix,mis,&miv);
+		errval = rsb_mtx_get_info_str(matrix,mis,&miv,0);
 		/* FIXME: serious error handling missing here */
 		if(RSBOI_SOME_ERROR(errval))
 			retval.append(std::string("Error returned from rsb_mtx_get_info_from_string()"));
@@ -1633,7 +1638,8 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			const struct rsb_mtx_t*matrix=NULL;//((octave_sparse_rsb_mtx)(args(0).get_rep())).A;
 			matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
 			if(!matrix)goto ret;/* FIXME: error handling missing here */
-			snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(matrix));
+			//snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(matrix));
+			rsb_mtx_get_info_str(matrix,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			/* FIXME: to add interpretation */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
 			octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";

@@ -53,12 +53,17 @@
  http://octave.sourceforge.net/developers.html
  * */
 
+#define RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE 1
+
 #include <octave/oct.h>
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
 #include <octave/ov-scalar.h>
 #include <octave/ops.h>
 #include <octave/ov-typeinfo.h>
+#if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
+#include <iomanip>	// std::setprecision
+#endif
 #include <rsb.h>
 
 #ifdef RSBOI_VERBOSE_CONFIG
@@ -157,6 +162,8 @@
 
 #define RSBOI_INFOBUF	256
 #define RSBOI_WANT_SYMMETRY 0
+#define RSBOI_WANT_PRINT_DETAIL 0
+#define RSBOI_WANT_PRINT_COMPLEX_OR_REAL 0
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 //#define RSBOI_PERROR(E) rsb_perror(E)
@@ -784,9 +791,11 @@ skipimpl:
 			Array<octave_idx_type> JA( dim_vector(1,nnz) );
 			Array<RSBOI_T> VA( dim_vector(1,(ic?2:1)*nnz) );
 			std::string c=ic?"complex":"real";
+#if RSBOI_WANT_PRINT_DETAIL
 			char ss[RSBOI_INFOBUF];
 			//snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->A));
 			rsb_mtx_get_info_str(this->A,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
+#endif
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			coo.VA=(RSBOI_T*)VA.data(),coo.IA=(rsb_coo_idx_t*)IA.data(),coo.JA=(rsb_coo_idx_t*)JA.data();
 #if RSBOI_WANT_SYMMETRY
@@ -798,18 +807,39 @@ skipimpl:
 				errval = rsb_mtx_get_coo(this->A,coo.VA,coo.IA,coo.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			coo.m=this->rows();
 			coo.k=this->cols();
+			double pct = 100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k;
 			octave_stdout<<RSBOI_FSTR<< "  (rows = "<<coo.m<<
 				", cols = "<<coo.k<<
-				", nnz = "<<nnz<<
+				", nnz = "<<nnz
 #if RSBOI_WANT_SYMMETRY
-				", symm = "<<
+				<< ", symm = "<<
 				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S":
 				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"H":"U"))
 				<< // FIXME: need a mechanism to print out these flags from rsb itself
 #endif
-				" ["<<100.0*(((RSBOI_T)nnz)/((RSBOI_T)coo.m))/coo.k<<
-				"%], "<<c<< ")\n";
-			octave_stdout<< "{{"<< ss <<"}}\n"; /* FIXME: this is temporary */
+			;
+#if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
+			/* straight from Octave's src/ov-base-sparse.cc */
+			if (nnz > 0)
+    			{
+      				int prec = 2;
+      				if (pct == 100) prec = 3; else { if (pct > 99.9) prec = 4; else if (pct > 99) prec = 3; if (pct > 99.99) pct = 99.99; }
+      				octave_stdout << " [" << std::setprecision (prec) << pct << "%]";
+    			}
+#else
+			octave_stdout << " ["<<pct<< "%]";
+#endif
+
+			octave_stdout << 
+#if RSBOI_WANT_PRINT_COMPLEX_OR_REAL
+				", "<<c<< 
+#endif
+				")\n";
+#if RSBOI_WANT_PRINT_DETAIL
+			octave_stdout<< "{{"<< ss <<"}}\n";
+#else
+			octave_stdout<< "\n";
+#endif
 			if(ic)
 			for(nzi=0;nzi<nnz;++nzi)
 				octave_stdout<<"  ("<<1+IA(nzi)<<", "<<1+JA(nzi)<<") -> "<<((RSBOI_T*)coo.VA)[2*nzi+0]<<" + " <<((RSBOI_T*)coo.VA)[2*nzi+1]<<"i\n";
@@ -1559,7 +1589,7 @@ If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], []
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set to that value.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
@@ -1613,6 +1643,13 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
 		const struct rsb_mtx_t*matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
 		if(!matrix)goto ret;/* FIXME: error handling missing here */
+		if(strlen(mis)==0)
+		{
+			char ss[RSBOI_INFOBUF];
+			rsb_mtx_get_info_str(matrix,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
+			retval.append(octave_value(ss));
+			goto ret;
+		}
 		errval = rsb_mtx_get_info_str(matrix,mis,&miv,0);
 		/* FIXME: serious error handling missing here */
 		if(RSBOI_SOME_ERROR(errval))

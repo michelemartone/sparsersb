@@ -1542,7 +1542,6 @@ static void install_sparse_rsb (void)
 	RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 }
 
-// PKG_ADD: autoload (RSBOI_FNS, RSBOI_FNS".oct");
 DEFUN_DLD (RSB_SPARSERSB_LABEL, args, ,
 "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{a})\n\

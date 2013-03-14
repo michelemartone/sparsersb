@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2013   Michele Martone   <michele.martone@ipp.mpg.de>
+ Copyright (C) 2011-2013   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,42 +16,36 @@
 */
 
 /*
- * TODO:
- * behaviour with complex data is often undefined. shall fix this: need complex support.
- * should implement compound_binary_op
- * for future versions, see http://www.gnu.org/software/octave/doc/interpreter/index.html#Top
+ * TODO wishlist:
+ * hints about how to influence caching blocking policy
+ * compound_binary_op
  * for thorough testing, see Octave's test/build_sparse_tests.sh
- * need introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
+ * introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
+ * sparsersb(rsbmat,"autotune")
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
- * need properly working all scaling operations for complex
- * shall merge index/format/type conversions into librsb functionality:
- *  - conversion with indices adjustments and triangle computation:
- *    - from csc 
- *    - from coo 
- *    - from double to complex and viceversa, when calling rsb_mtx_get_coo
- *  - minimize copies around
+ * minimize data copies
  * subsref, dotref, subsasgn are incomplete: need error messages there
  * in full_value(), bool arg is ignored
- * missing symmetry support (although librsb has it)!
- * shall document the semantics of the update and access operators
- * r=0;r=sparsersb([1+1i]),r*=(2+i) changes the format of r
- * shall create a single standard error macro for constructors
- * shall test sistematically all constructors
+ * symmetry support is incomplete
+ * document the semantics of the update and access operators
+ * define more operators (e.g.: scaling) for 'complex'
+ * create a single standard error macro for constructors
+ * test sistematically all constructors
  * often missing array lenghts/type checks
  * may define as map (see is_map) so that "a.type = ..." can work
  * is_struct, find_nonzero_elem_idx  are undefined
  * are octave_triangular_conv, default_numeric_conversion_function ok ? 
  * error reporting is insufficient
- * elemental division support for complex matrices is incomplete
- * shall update to symmetric be forbidden or rather trigger a conversion ?
- * after file read, shall return various structural info
+ * update to symmetric be forbidden or rather trigger a conversion ?
+ * after file read, return various structural info
  * norm computation
- *
+
  * Developer notes:
- /usr/share/doc/octave3.2-htmldoc//interpreter/Getting-Started-with-Oct_002dFiles.html#Getting-Started-with-Oct_002dFiles
+ http://www.gnu.org/software/octave/doc/interpreter/index.html
+ http://www.gnu.org/software/octave/doc/interpreter/Oct_002dFiles.html#Oct_002dFiles
  http://octave.sourceforge.net/developers.html
- * */
+ */
 
 #define RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE 1
 
@@ -59,6 +53,7 @@
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
 #include <octave/ov-scalar.h>
+#include <octave/ov-complex.h>
 #include <octave/ops.h>
 #include <octave/ov-typeinfo.h>
 #if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
@@ -111,7 +106,7 @@
 //#define RSBOI_EXPF RSB_FLAG_NOFLAGS
 #define RSBOI_EXPF RSB_FLAG_IDENTICAL_FLAGS
 #define RSBOI_T double
-#define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
+//#define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
 #define RSBOI_DESTROY(OM) {rsb_mtx_free(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
@@ -274,7 +269,7 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			//RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnz));
 			if(!(this->A = rsb_mtx_alloc_from_coo_const(SMp,IA,JA,nnz,typecode,nr,nc,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
-			RSBOI_MP(this->A);
+			//RSBOI_MP(this->A);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -1162,6 +1157,15 @@ DEFBINOP(div, sparse_rsb_mtx, matrix)
 	return retval;
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(rsb_c_div, sparse_rsb_mtx, complex)
+{
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_complex&);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v1.rsboi_get_scaled_copy_inv(v2.complex_value());
+}
+#endif
+
 DEFBINOP(rsb_s_div, sparse_rsb_mtx, scalar)
 {
 	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
@@ -1175,6 +1179,15 @@ DEFBINOP(rsb_s_mul, sparse_rsb_mtx, scalar)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy(v2.scalar_value());
 }
+
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(rsb_c_mul, sparse_rsb_mtx, complex)
+{
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_complex&);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v1.rsboi_get_scaled_copy(v2.complex_value());
+}
+#endif
 
 #if 0
 DEFBINOP(rsb_s_pow, sparse_rsb_mtx, scalar)
@@ -1279,12 +1292,30 @@ DEFBINOP(rsb_el_mul_s, sparse_rsb_mtx, scalar)
 	return v1.rsboi_get_scaled_copy(v2.scalar_value());
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(rsb_el_mul_c, sparse_rsb_mtx, complex)
+{
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_complex&);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v1.rsboi_get_scaled_copy(v2.complex_value());
+}
+#endif
+
 DEFBINOP(rsb_el_div_s, sparse_rsb_mtx, scalar)
 {
 	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy_inv(v2.scalar_value());
 }
+
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(rsb_el_div_c, sparse_rsb_mtx, complex)
+{
+	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx &, const octave_complex&);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v1.rsboi_get_scaled_copy_inv(v2.complex_value());
+}
+#endif
 
 DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 {
@@ -1472,16 +1503,20 @@ static void install_sparsersb_ops (void)
 	//INSTALL_UNOP (op_incr, octave_sparse_rsb_mtx, op_incr);
 	//INSTALL_UNOP (op_decr, octave_sparse_rsb_mtx, op_decr);
 	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_el_mul_s);
+	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_mtx, octave_complex, rsb_el_mul_c);
 //	INSTALL_ASSIGNOP (op_mul_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
 //	INSTALL_ASSIGNOP (op_div_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
 	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_scalar, rsb_el_div_s);
+	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_complex, rsb_el_div_c);
 	INSTALL_BINOP (op_el_pow, octave_sparse_rsb_mtx, octave_scalar, el_pow);
 	INSTALL_UNOP (op_uminus, octave_sparse_rsb_mtx, uminus);
 	INSTALL_BINOP (op_ldiv, octave_sparse_rsb_mtx, octave_matrix, ldiv);
 	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_mtx, octave_matrix, el_ldiv);
 	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_matrix, div);
 	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_scalar, rsb_s_div);
+	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_complex, rsb_c_div);
 	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_s_mul);
+	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_complex, rsb_c_mul);
 	//INSTALL_BINOP (op_pow, octave_sparse_rsb_mtx, octave_scalar, rsb_s_pow);
 	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_matrix, el_div);
 	INSTALL_UNOP (op_transpose, octave_sparse_rsb_mtx, transpose);
@@ -1588,7 +1623,7 @@ If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], []
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set to that value.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\

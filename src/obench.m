@@ -1,7 +1,8 @@
 # once complete, this program will benchmark our matrix implementation against octave's
-
+cmt="#";
 #for n_=1:6*0+1
 for n_=1:6
+for ro=0:1
 	n=n_*1000;
 	m=k=n;
 	# making vectors
@@ -11,13 +12,26 @@ for n_=1:6
 	# making matrices
 	r=(rand(n)>.6);
 	om=sparse(r);
+	nz=nnz(om);
+	M=10^6;
+	if ro==1 
+		printf("%s%s\n",cmt,"reordering with colamd");
+		pct=-time; 
+		p=colamd(om);
+		pct+=time;
+		pat=-time; 
+		om=om(:,p);
+		pat+=time;
+		# TODO: use an array to select/specify the different reordering algorithms
+		printf("%g\t%g\t(%s)\n",(nz/M)/pct,(nz/M)/pat,"mflops for pct/pat");
+	else
+		printf("%s%s\n",cmt,"no reordering");
+	end
 	#bm=sparsevbr(om);
 	bm=sparsersb(sparse(om));
 	#bm=sparsersb3(sparse(om));
 	# stats
-	nz=nnz(om);
 	flops=2*nz;
-	M=10^6;
 	## spmv
 	ot=-time; ox=om*b; ot+=time;
 	#
@@ -44,4 +58,5 @@ for n_=1:6
 	printf("%s\t%d\t%d\t%d\t%g\t%s\n","OCT_SPGEMM",m,k,nz,mflops, p);
 	t=bt; p=["RSB"]; mflops=n*(flops/M)/t;
 	printf("%s\t%d\t%d\t%d\t%g\t%s\n","RSB_SPGEMM",m,k,nz,mflops, p);
+endfor
 endfor

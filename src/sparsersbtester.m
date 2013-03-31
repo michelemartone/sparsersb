@@ -280,7 +280,9 @@ end
 
 function match=testnorm(OM,XM)
 	match=1;
-	match&=isequal(normest(OM),normest(XM));
+	if(isreal(OM))
+		match&=isequal(full(normest(OM)),full(normest(XM)));
+	end
 	testmsg(match,"norms");
 end
 

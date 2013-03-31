@@ -17,6 +17,8 @@
 
 /*
  * TODO wishlist:
+ * (.) is incomplete. it is needed by trace()
+ * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
  * hints about how to influence caching blocking policy
  * compound_binary_op
  * for thorough testing, see Octave's test/build_sparse_tests.sh
@@ -175,6 +177,11 @@
 #if RSBOI_WANT_HEAVY_DEBUG
 extern "C" {
 	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_mtx_t *matrix); // forward declaration
+}
+#endif
+#if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
+extern "C" {
+	int rsb_do_get_nnz_element(struct rsb_mtx_t*,void*,void*,void*,int);
 }
 #endif
 #if RSBOI_WANT_DOUBLE_COMPLEX
@@ -520,6 +527,7 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			octave_value retval;
 			int skip = 1;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			rsb_err_t errval=RSB_ERR_NO_ERROR;
 
 			switch (type[0])
 			{
@@ -527,6 +535,37 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 				if (type.length () == 1)
 				{
   					octave_idx_type n_idx = idx.front().length ();
+					if (n_idx == 1 )
+					{
+						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	    					idx_vector i = idx.front() (0).index_vector ();
+						octave_idx_type ii=i(0);
+#if   defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER< 10100)
+						RSBOI_ERROR("");
+#elif defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
+						RSBOI_DEBUG_NOTICE("get_element (%d)\n",ii);
+						if(is_real_type())
+						{
+							RSBOI_T rv;
+							errval = rsb_do_get_nnz_element(this->A,&rv,NULL,NULL,ii);
+							retval=rv;
+						}
+						else
+						{
+							Complex rv;
+							errval = rsb_do_get_nnz_element(this->A,&rv,NULL,NULL,ii);
+							retval=rv;
+						}
+						if(RSBOI_SOME_ERROR(errval))
+						{
+							if(ii>=this->nnz() || ii<0)
+								error ("trying accessing element %d: index out of bounds !",ii+1);
+							else
+								error ("trying accessing element %d: this seems bug!",ii+1);
+						}
+#endif
+					}
+					else
 					if (n_idx == 2 )
 	  				{
 	    					idx_vector i = idx.front() (0).index_vector ();
@@ -540,7 +579,6 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 								idx_vector j = idx.front() (1).index_vector ();
 								RSBOI_T rv;
 						  		octave_idx_type ii=-1,jj=-1;
-								rsb_err_t errval=RSB_ERR_NO_ERROR;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
        								errval = rsb_mtx_get_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
@@ -553,7 +591,6 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 								idx_vector j = idx.front() (1).index_vector ();
 								Complex rv;
 						  		octave_idx_type ii=-1,jj=-1;
-								rsb_err_t errval=RSB_ERR_NO_ERROR;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d) complex\n",ii,jj);
        								errval = rsb_mtx_get_values(this->A,&rv,&ii,&jj,1,RSBOI_NF);
@@ -1503,20 +1540,28 @@ static void install_sparsersb_ops (void)
 	//INSTALL_UNOP (op_incr, octave_sparse_rsb_mtx, op_incr);
 	//INSTALL_UNOP (op_decr, octave_sparse_rsb_mtx, op_decr);
 	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_el_mul_s);
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_el_mul, octave_sparse_rsb_mtx, octave_complex, rsb_el_mul_c);
+#endif
 //	INSTALL_ASSIGNOP (op_mul_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
 //	INSTALL_ASSIGNOP (op_div_eq, octave_sparse_rsb_mtx, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
 	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_scalar, rsb_el_div_s);
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_complex, rsb_el_div_c);
+#endif
 	INSTALL_BINOP (op_el_pow, octave_sparse_rsb_mtx, octave_scalar, el_pow);
 	INSTALL_UNOP (op_uminus, octave_sparse_rsb_mtx, uminus);
 	INSTALL_BINOP (op_ldiv, octave_sparse_rsb_mtx, octave_matrix, ldiv);
 	INSTALL_BINOP (op_el_ldiv, octave_sparse_rsb_mtx, octave_matrix, el_ldiv);
 	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_matrix, div);
 	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_scalar, rsb_s_div);
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_div, octave_sparse_rsb_mtx, octave_complex, rsb_c_div);
+#endif
 	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_scalar, rsb_s_mul);
+#if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_mul, octave_sparse_rsb_mtx, octave_complex, rsb_c_mul);
+#endif
 	//INSTALL_BINOP (op_pow, octave_sparse_rsb_mtx, octave_scalar, rsb_s_pow);
 	INSTALL_BINOP (op_el_div, octave_sparse_rsb_mtx, octave_matrix, el_div);
 	INSTALL_UNOP (op_transpose, octave_sparse_rsb_mtx, transpose);

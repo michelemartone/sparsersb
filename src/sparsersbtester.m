@@ -162,7 +162,7 @@ function match=testdiag(OM,XM)
 	#OM,XM
 	#diag(OM)
 	#diag(XM)
-	match=1
+	match=1;
 	if(diag(OM)==diag(XM));match=1;else match=0;end
 	#match=(diag(OM)==diag(XM)); # TODO: understand why the following syntax is problematic !
 	#match=(spdiag(OM)==spdiag(XM));

@@ -28,11 +28,13 @@ quit
 endif
 
 # if nargin > 0, we continue
+want_sparsersb_io=1;
 
-
-source("ext/mminfo.m");
-source("ext/mmread.m");
-source("ext/mmwrite.m");
+if want_sparsersb_io != 1
+	source("ext/mminfo.m");
+	source("ext/mmread.m");
+	source("ext/mmwrite.m");
+end
 
 #matrices=ls("*.mtx")';
 f=1;
@@ -43,13 +45,21 @@ while f<=nargin
 	mn=strtrim(mmn');
 	tic();
 	#nm=mmread(mn);
-	[nm,nrows,ncols,entries,rep,field,symm]=mmread(mn);
-	#if(symm=="symmetric")uc+=2;endif
-	if(strcmp(symm,"symmetric"))uc+=1;endif
+	if want_sparsersb_io == 1
+		[nm,nrows,ncols,entries,rep,field,symm]=sparsersb(mn);
+		nm=sparse(nm);
+		if (symm=='S')
+			uc+=1;
+		end
+	else
+		[nm,nrows,ncols,entries,rep,field,symm]=mmread(mn);
+		#if(symm=="symmetric")uc+=2;endif
+		if(strcmp(symm,"symmetric"))uc+=1;endif
+	end
 	fsz=stat(mn).size;
 	rt=toc();
 	[ia,ja,va]=find(nm);
-	printf("%s: %.2f MBytes read by mmread in  %.4f s (%10.2f MB/s)\n",mn',fsz/MB,rt,fsz/(rt*MB));
+	printf("%s: %.2f MBytes read in  %.4f s (%10.2f MB/s)\n",mn',fsz/MB,rt,fsz/(rt*MB));
 	#ia=ia'; ja=ja'; va=va';
 for ski=1:uc
 	oppnz=1;

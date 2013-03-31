@@ -651,6 +651,9 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
+		bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; } /* new */
+		bool is__hermitian (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN))return true; return false; } /* new */
+		std::string get_symmetry (void) const { return (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S": (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN)?"H":"U")); }
 		bool is__triangular (void) const
 	       	{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -810,6 +813,13 @@ skipimpl:
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			return default_numeric_conversion_function;
+		}
+
+		std::string get_info_string()
+		{
+			char ss[RSBOI_INFOBUF];
+			rsb_mtx_get_info_str(this->A,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
+			return ss;
 		}
 
 		void print (std::ostream& os, bool pr_as_read_syntax = false) const
@@ -1622,13 +1632,13 @@ static void install_sparse_rsb (void)
 	RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
 }
 
-DEFUN_DLD (RSB_SPARSERSB_LABEL, args, ,
+DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{a})\n\
 Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 /*is forced back to a full matrix if resulting matrix is sparse\n*/\
 "\n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{filename})\n\
+@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{filename})\n\
 Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{filename}.\n"\
 "In the case @var{filename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned.\n"\
 "\n\
@@ -1792,9 +1802,9 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		else
 		if(args(0).is_string())
 		{
-			const std::string m = args(0).string_value();
+			const std::string mfn = args(0).string_value();
 			if (error_state) goto err;
-			if(m==RSBOI_LIS)
+			if(mfn==RSBOI_LIS)
 			{
 				retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
 				goto ret;
@@ -1803,7 +1813,14 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			{
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
 				RSBOI_WARN("shall set the type, here");
-				retval.append(matrix=new octave_sparse_rsb_mtx(m));
+				retval.append(matrix=new octave_sparse_rsb_mtx(mfn));
+				if(nargout) nargout--;
+				if(nargout) retval.append(matrix->rows()),--nargout;
+				if(nargout) retval.append(matrix->cols()),--nargout;
+				if(nargout) retval.append(matrix->nnz()),--nargout;
+				if(nargout) retval.append(matrix->get_info_string()),--nargout;
+				if(nargout) retval.append((!matrix->is_complex_type())?"real":"complex"),--nargout;
+				if(nargout) retval.append(matrix->get_symmetry()),--nargout;
 			}
 		}
 		else

@@ -17,6 +17,7 @@
 
 /*
  * TODO wishlist:
+ * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
  * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
  * hints about how to influence caching blocking policy
@@ -1696,6 +1697,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	octave_sparse_rsb_mtx*matrix=NULL;
 	bool ic0=nargin>0?(args(0).is_complex_type()):false;
 	bool ic3=nargin>2?(args(2).is_complex_type()):false;
+	bool isr=(args(0).type_name()==RSB_OI_TYPEINFO_STRING);
 
 	RSBOI_DEBUG_NOTICE("in sparsersb()\n");
 
@@ -1717,12 +1719,30 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		const char *os=args(1).string_value().c_str();
 		const char *ov=args(2).string_value().c_str();
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		errval = rsb_lib_set_opt_str(os,ov);
-		/* FIXME: missing some diagnostic output */
+		if(RSBOI_SOME_ERROR(errval))
+		{
+			error("failed setting option %s to %s (error %d)!",os,ov,errval);
+			goto err;
+		}
 		goto ret;
 	}
 
-	if (nargin == 3 && args(0).type_name()==RSB_OI_TYPEINFO_STRING
+	if( nargin >= 2 && args(0).is_string() && args(0).string_value()=="set" /* && args(1).is_string() */ )
+	{
+		error("did you intend to set librsb options ? use the correct syntax then !"); goto errp;
+	}
+
+	if( nargin == 2 && args(0).is_string() && args(0).string_value()=="get" && args(1).is_string() )
+	{
+		/* FIXME: unfinished feature ! */
+		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+		error("getting library options still unimplemented!");
+		goto errp;
+	}
+
+	if (nargin == 3 && isr 
  		&& args(1).is_string() && args(1).string_value()=="get"
 		&& args(2).is_string())
 	{
@@ -1731,21 +1751,30 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		const char *mis=args(2).string_value().c_str();
 		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
 		const struct rsb_mtx_t*matrix=((octave_sparse_rsb_mtx*)(args(0).internal_rep()))->A;
+		char ss[RSBOI_INFOBUF];
 		if(!matrix)goto ret;/* FIXME: error handling missing here */
 		if(strlen(mis)==0)
 		{
-			char ss[RSBOI_INFOBUF];
-			rsb_mtx_get_info_str(matrix,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
-			retval.append(octave_value(ss));
+			mis="RSB_MIF_MATRIX_INFO__TO__CHAR_P";
+		}
+		errval = rsb_mtx_get_info_str(matrix,mis,ss,RSBOI_INFOBUF);
+
+		if(!RSBOI_SOME_ERROR(errval))
+		{
+			retval.append(octave_value(ss)); 
 			goto ret;
 		}
-		errval = rsb_mtx_get_info_str(matrix,mis,&miv,0);
 		/* FIXME: serious error handling missing here */
 		if(RSBOI_SOME_ERROR(errval))
 			retval.append(std::string("Error returned from rsb_mtx_get_info_from_string()"));
-		else
-			retval.append(octave_value(miv));
+	/*	else
+			retval.append(octave_value(miv));*/
 		goto ret;
+	}
+
+	if ( nargin >= 3 && isr && args(1).is_string() && args(1).string_value()=="get" /* && args(1).is_string() */ )
+	{
+		error("did you intend to get matrices information ? use the correct syntax then !"); goto errp;
 	}
 
 	if ( nargin == 1 || nargin == 2 )
@@ -1758,7 +1787,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
 
-		if (nargin == 2 && args(0).type_name()==RSB_OI_TYPEINFO_STRING && args(1).is_string())
+		if (nargin == 2 && isr && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];
 			const struct rsb_mtx_t*matrix=NULL;//((octave_sparse_rsb_mtx)(args(0).get_rep())).A;
@@ -1776,7 +1805,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		else
 		if(args(0).is_sparse_type())
 		{
-			if(args(0).type_name()==RSB_OI_TYPEINFO_STRING)
+			if( isr )
 			{
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
 				retval.append(matrix=(octave_sparse_rsb_mtx*)(args(0).get_rep()).clone());
@@ -1842,7 +1871,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		}
 	}
 	else
-	if (nargin >= 3 && nargin <= 6)
+	if (nargin >= 3 && nargin <= 6 && !(args(0).is_string() || args(1).is_string() || args(2).is_string() ) )
 	{
 		rsb_flags_t eflags=RSBOI_DCF;
 		octave_idx_type nr=0,nc=0;
@@ -1897,6 +1926,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 
 		if(!ic3)
 		{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			idx_vector iv=args(0).index_vector ();
 			idx_vector jv=args(1).index_vector ();
 			retval.append(matrix=new octave_sparse_rsb_mtx( iv, jv, args(2).matrix_value(),nr,nc,eflags ));
@@ -1905,6 +1935,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		else
 		{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			idx_vector iv=args(0).index_vector ();
 			idx_vector jv=args(1).index_vector ();
 			retval.append(matrix=new octave_sparse_rsb_mtx( iv, jv, args(2).complex_matrix_value(),nr,nc,eflags ));

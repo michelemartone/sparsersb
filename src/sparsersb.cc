@@ -17,7 +17,6 @@
 
 /*
  * TODO wishlist:
- * on complex, the backslash operator will convert and solve; on real will attempt triangular solution...
  * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
  * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
@@ -1173,8 +1172,12 @@ DEFBINOP(ldiv, sparse_rsb_mtx, matrix)
 	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	if(v1.is__triangular()) 
 		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_N);
+
+	if(v1.is_complex_type() || v2.is_complex_type())
+		return (v1.sparse_complex_matrix_value()).solve(v2.sparse_complex_matrix_value());
 	else
-		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
+		return (v1.sparse_matrix_value()).solve(v2.matrix_value());
+	//RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
 DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
@@ -1183,8 +1186,12 @@ DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
 	CAST_BINOP_ARGS (const octave_sparse_rsb_mtx&, const octave_matrix&);
 	if(v1.is__triangular()) 
 		return rsboi_spsv(v1,v2,RSB_TRANSPOSITION_T);
+
+	if(v1.is_complex_type() || v2.is_complex_type())
+		return (v1.sparse_complex_matrix_value().transpose()).solve(v2.sparse_complex_matrix_value());
 	else
-		RSBOI_RSB_MATRIX_SOLVE(v1,v2);
+		return (v1.sparse_matrix_value().transpose()).solve(v2.matrix_value());
+	//RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
 
 DEFBINOP(el_div, sparse_rsb_mtx, matrix)

@@ -1722,6 +1722,9 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	}
 
+	if(isr)
+		osmp=((octave_sparsersb_mtx*)(args(0).internal_rep()));
+
 	if(ic3 || ic0)
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		RSBOI_WARN(RSBOI_0_UNCFEMSG);
@@ -1765,14 +1768,13 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		const char *mis=args(2).string_value().c_str();
 		rsb_real_t miv=RSBOI_ZERO;/* FIXME: this is extreme danger! */
-		const struct rsb_mtx_t*osmp=((octave_sparsersb_mtx*)(args(0).internal_rep()))->mtxAp;
 		char ss[RSBOI_INFOBUF];
-		if(!osmp)goto ret;/* FIXME: error handling missing here */
+		if(!osmp || !osmp->mtxAp)goto ret;/* FIXME: error handling missing here */
 		if(strlen(mis)==0)
 		{
 			mis="RSB_MIF_MATRIX_INFO__TO__CHAR_P";
 		}
-		errval = rsb_mtx_get_info_str(osmp,mis,ss,RSBOI_INFOBUF);
+		errval = rsb_mtx_get_info_str(osmp->mtxAp,mis,ss,RSBOI_INFOBUF);
 
 		if(!RSBOI_SOME_ERROR(errval))
 		{
@@ -1805,10 +1807,8 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		if (nargin == 2 && isr && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];
-			const struct rsb_mtx_t*osmp=NULL;
-			osmp=((octave_sparsersb_mtx*)(args(0).internal_rep()))->mtxAp;
-			if(!osmp)goto ret;/* FIXME: error handling missing here */
-			rsb_mtx_get_info_str(osmp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
+			if(!osmp || !osmp->mtxAp)goto ret;/* FIXME: error handling missing here */
+			rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			/* FIXME: to add interpretation */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
 			octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
@@ -2016,7 +2016,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		RSBOI_DEBUG_NOTICE(RSBOI_0_FATALNBMSG);
 	}
 #if RSBOI_WANT_HEAVY_DEBUG
-	if(!rsb_is_correctly_built_rcsr_matrix(osmp->mtxAp)) // non-declared function
+	if(!rsb_is_correctly_built_rcsr_matrix(osmp->mtxAp)) // function non in rsb.h's API
 	{
 		RSBOI_WARN(RSBOI_0_NEEDERR);
 		RSBOI_DEBUG_NOTICE(RSBOI_0_UNCBERR);

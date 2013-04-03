@@ -109,7 +109,6 @@
 //#define RSBOI_EXPF RSB_FLAG_NOFLAGS
 #define RSBOI_EXPF RSB_FLAG_IDENTICAL_FLAGS
 #define RSBOI_T double
-//#define RSBOI_MP(M) RSBOI_DUMP(RSB_PRINTF_MATRIX_SUMMARY_ARGS(M))
 #undef RSB_FULLY_IMPLEMENTED
 #define RSBOI_DESTROY(OM) {rsb_mtx_free(OM);(OM)=NULL;}
 #define RSBOI_SOME_ERROR(ERRVAL) (ERRVAL)!=RSB_ERR_NO_ERROR
@@ -388,7 +387,6 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			struct rsb_mtx_t*mtxBp=NULL;
 		       	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			//this->mtxAp=rsb_clone(T.mtxAp);
 			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,T.mtxAp,RSBOI_EXPF);
 			this->mtxAp=mtxBp;
 		};
@@ -453,7 +451,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 				RSBOI_T* VAp=((RSBOI_T*)VA.data());
 				rcm.VA=(RSBOI_T*)VAC.data();
 #if RSBOI_WANT_SYMMETRY
-				/* FIXME: and now ? */
+				/* FIXME: and now ? shall we expand symmetry or not ? */
 #endif
 				/* FIXME: shall use some librsb's dedicated call for this */
 				errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
@@ -514,7 +512,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			rcm.VA=VAp;
 			errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 #if RSBOI_WANT_SYMMETRY
-			/* FIXME: and now ? */
+			/* FIXME: and now ? shall we expand symmetry or not ? */
 #endif
 			/* FIXME: shall use some librsb's dedicated call for this */
 			if(this->is_real_type())
@@ -657,8 +655,8 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
-		bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; } /* new */
-		bool is__hermitian (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN))return true; return false; } /* new */
+		/* bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; }*/ /* new */
+		/* bool is__hermitian (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN))return true; return false; }*/ /* new */
 		std::string get_symmetry (void) const { return (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S": (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN)?"H":"U")); }
 		bool is__triangular (void) const
 	       	{
@@ -814,7 +812,12 @@ skipimpl:
 			return retval;
 		}
 
-		//type_conv_fcn numeric_conversion_function (void) const
+		/*
+		type_conv_fcn numeric_conversion_function (void) const
+		{
+		}
+		*/
+
 		type_conv_info numeric_conversion_function (void) const
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -841,7 +844,6 @@ skipimpl:
 			std::string c=ic?"complex":"real";
 #if RSBOI_WANT_PRINT_DETAIL
 			char ss[RSBOI_INFOBUF];
-			//snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(this->mtxAp));
 			rsb_mtx_get_info_str(this->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 #endif
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1803,10 +1805,9 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		if (nargin == 2 && isr && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];
-			const struct rsb_mtx_t*osmp=NULL;//((octave_sparsersb_mtx)(args(0).get_rep())).mtxAp;
+			const struct rsb_mtx_t*osmp=NULL;
 			osmp=((octave_sparsersb_mtx*)(args(0).internal_rep()))->mtxAp;
 			if(!osmp)goto ret;/* FIXME: error handling missing here */
-			//snprintf(ss,sizeof(ss),RSB_PRINTF_MATRIX_SUMMARY_ARGS(osmp));
 			rsb_mtx_get_info_str(osmp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			/* FIXME: to add interpretation */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */

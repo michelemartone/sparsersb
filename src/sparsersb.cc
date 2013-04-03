@@ -17,6 +17,7 @@
 
 /*
  * TODO wishlist:
+ * on complex, the backslash operator will convert and solve; on real will attempt triangular solution...
  * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
  * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
@@ -164,6 +165,7 @@
 #define RSBOI_WANT_PRINT_COMPLEX_OR_REAL 0
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
+#define RSBOI_WANT_VECLOAD_INSTEAD_MTX 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -251,10 +253,14 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			if(!(this->A = rsb_file_mtx_load(mtxfilename.c_str(),RSBOI_RF,typecode,&errval)))
+#if RSBOI_WANT_VECLOAD_INSTEAD_MTX
+				/* no problem */;
+#else
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->A)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
+#endif
 		}
 
 		//void allocate_rsb_mtx_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nr, octave_idx_type nc, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
@@ -1641,7 +1647,7 @@ Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 "\n\
 @deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
 Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mtxfilename}. The optional argument {@var{mtxtypestring}} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
-"In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned.\n"\
+"In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned. If the file turns out to contain a Matrix Market vector, this will be loaded as such.\n"\
 "\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
 Create a sparse RSB matrix given integer index vectors @var{i} and @var{j},\n\
@@ -1854,13 +1860,47 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 					if(mtxtypestring=="complex" || mtxtypestring=="Z")
 #if RSBOI_WANT_DOUBLE_COMPLEX
 						typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
+
 #else
-						error("complex type is not supported !");
+						RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
 #endif
 					if(mtxtypestring=="real" || mtxtypestring=="D")
 						typecode=RSB_NUMERICAL_TYPE_DOUBLE;
 				}
-				retval.append(matrix=new octave_sparse_rsb_mtx(mtxfilename,typecode));
+				matrix=new octave_sparse_rsb_mtx(mtxfilename,typecode);
+				if(matrix->A)
+					retval.append(matrix);
+				else
+					delete matrix;
+#if RSBOI_WANT_VECLOAD_INSTEAD_MTX
+				if(!matrix->A)
+                		{
+					rsb_nnz_idx_t n=0;
+					rsb_file_vec_load(mtxfilename.c_str(),typecode,NULL,&n);
+					if(n<1)
+					{
+						/* FIXME: message needed here */
+						goto err;
+					}
+
+					if(typecode==RSB_NUMERICAL_TYPE_DOUBLE)
+					{
+						Matrix retvec(n,1,RSBOI_ZERO);
+						rsb_file_vec_load(mtxfilename.c_str(),typecode,(RSBOI_T*)retvec.data(),&n);
+						retval.append(retvec);
+					}
+#if RSBOI_WANT_DOUBLE_COMPLEX
+					else
+					if(typecode==RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX)
+					{
+						ComplexMatrix retvec(n,1,RSBOI_ZERO);
+						rsb_file_vec_load(mtxfilename.c_str(),typecode,(RSBOI_T*)retvec.data(),&n);
+						retval.append(retvec);
+					}
+#endif
+					goto ret;
+				}
+#endif
 				if(nargout) nargout--;
 				if(nargout) retval.append(matrix->rows()),--nargout;
 				if(nargout) retval.append(matrix->cols()),--nargout;

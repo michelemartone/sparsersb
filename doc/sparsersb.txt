@@ -3,11 +3,12 @@
      Create a sparse RSB matrix from the full matrix A.
 
  -- Loadable Function: [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY]
-= sparsersb (FILENAME)
+= sparsersb (MFN, MTS)
      Create a sparse RSB matrix by loading the Matrix Market matrix
-     file named FILENAME.  In the case FILENAME is "?", a string
-     listing the available numerical types with BLAS-style characters
-     will be returned.
+     file named MFN. The optional argument MTS can specify either real
+     ("D") or complex ("Z") type. Default is real.  In the case MFN is
+     "?", a string listing the available numerical types with
+     BLAS-style characters will be returned.
 
  -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
      Create a sparse RSB matrix given integer index vectors I and J, a

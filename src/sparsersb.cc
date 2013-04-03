@@ -246,11 +246,11 @@ class octave_sparse_rsb_mtx : public octave_sparse_matrix
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		}
 
-		octave_sparse_rsb_mtx (const std::string &fn, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
+		octave_sparse_rsb_mtx (const std::string &mfn, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			if(!(this->A = rsb_file_mtx_load(fn.c_str(),RSBOI_RF,typecode,&errval)))
+			if(!(this->A = rsb_file_mtx_load(mfn.c_str(),RSBOI_RF,typecode,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->A)
@@ -1639,9 +1639,9 @@ DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 /*is forced back to a full matrix if resulting matrix is sparse\n*/\
 "\n\
-@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{filename})\n\
-Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{filename}.\n"\
-"In the case @var{filename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned.\n"\
+@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mfn}, @var{mts})\n\
+Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mfn}. The optional argument {@var{mts}} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
+"In the case @var{mfn} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned.\n"\
 "\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
 Create a sparse RSB matrix given integer index vectors @var{i} and @var{j},\n\
@@ -1835,14 +1835,32 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			if (error_state) goto err;
 			if(mfn==RSBOI_LIS)
 			{
-				retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
+				//retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
+#if RSBOI_WANT_DOUBLE_COMPLEX
+				retval.append("D Z");
+#else
+				retval.append("D");
+#endif
 				goto ret;
 			}
 			else
 			{
+				rsb_type_t typecode=RSBOI_TYPECODE;
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
 				RSBOI_WARN("shall set the type, here");
-				retval.append(matrix=new octave_sparse_rsb_mtx(mfn));
+				if(nargin>1 && args(1).is_string())
+				{
+					const std::string mts = args(1).string_value();
+					if(mts=="complex" || mts=="Z")
+#if RSBOI_WANT_DOUBLE_COMPLEX
+						typecode=RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
+#else
+						error("complex type is not supported !");
+#endif
+					if(mts=="real" || mts=="D")
+						typecode=RSB_NUMERICAL_TYPE_DOUBLE;
+				}
+				retval.append(matrix=new octave_sparse_rsb_mtx(mfn,typecode));
 				if(nargout) nargout--;
 				if(nargout) retval.append(matrix->rows()),--nargout;
 				if(nargout) retval.append(matrix->cols()),--nargout;

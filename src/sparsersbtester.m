@@ -200,6 +200,37 @@ function match=testpcgm(OM,XM)
 	testmsg(match,"pcg");
 end
 
+function match=testpcrm(OM,XM)
+	# FIXME! This test ignores OM and XM !
+	match=1;
+	A=sparse   ([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
+	[OX, OFLAG, ORELRES, OITER, ORESVEC]=pcr(A,B);
+	A=sparsersb([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
+	[XX, XFLAG, XRELRES, XITER, XRESVEC]=pcr(A,B);
+	match&=(OFLAG==XFLAG);# FIXME: a very loose check!
+	match&=(OITER==XITER);# FIXME: a very loose check!
+	#
+	# http://www.gnu.org/software/octave/doc/interpreter/Iterative-Techniques.html#Iterative-Techniques
+	#n = 10;
+	n = 10+size(XM)(1,1)
+	clear A OX XX;
+	A = diag (sparse (1:n));
+	A = A + A'; # we want symmetric matrices
+	b = rand (n, 1);
+	[l, u, p, q] = luinc (A, 1.e-3);
+	[OX, OFLAG, ORELRES, OITER, ORESVEC]= pcr (          A ,b);
+	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b);
+	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	#
+	#function y = apply_a (x)
+	#	y = [1:N]' .* x;
+	#endfunction
+	[OX, OFLAG, ORELRES, OITER, ORESVEC]= pcr (          A ,b, 1.e-6, 500, l);
+	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b, 1.e-6, 500, l);
+	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	testmsg(match,"pcr");
+end
+
 function match=testmult(OM,XM)
 	match=1;
 	B=ones(rows(OM),1);
@@ -333,6 +364,7 @@ function match=tests(OM,XM,M)
 	match&=testasgn(OM,XM);
 	if nnz(OM)>1
 		match&=testpcgm(OM,XM);
+		match&=testpcrm(OM,XM);
 		match&=testmult(OM,XM);
 		match&=testspsv(OM,XM);
 		match&=testnorm(OM,XM);

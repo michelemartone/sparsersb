@@ -1040,10 +1040,11 @@ octave_value scale_rows(const octave_matrix&v2, bool want_div=false)
 	}
 }
 
-octave_value spmv(const octave_matrix&v2)const
+octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	rsb_trans_t transa = do_trans ? RSB_TRANSPOSITION_T : RSB_TRANSPOSITION_N;
 
 	if(this->is_real_type())
 	{
@@ -1051,10 +1052,12 @@ octave_value spmv(const octave_matrix&v2)const
 		octave_idx_type b_nc = b.cols ();
 		octave_idx_type b_nr = b.rows ();
 		octave_idx_type ldb=b_nr;
-		octave_idx_type ldc=this->rows();
+		octave_idx_type ldc=do_trans?this->columns():this->rows();
 		octave_idx_type nrhs=b_nc;
 		Matrix retval(ldc,nrhs,RSBOI_ZERO);
 		if(this->columns()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		if(( do_trans) &&(this->rows() !=b_nr)) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrices dimensions do not match!\n"); return Matrix(); }
 		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
 		RSBOI_PERROR(errval);
 		return retval;
@@ -1065,10 +1068,11 @@ octave_value spmv(const octave_matrix&v2)const
 		octave_idx_type b_nc = b.cols ();
 		octave_idx_type b_nr = b.rows ();
 		octave_idx_type ldb=b_nr;
-		octave_idx_type ldc=this->rows();
+		octave_idx_type ldc=do_trans?this->columns():this->rows();
 		octave_idx_type nrhs=b_nc;
 		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
-		if(this->columns()!=b_nr) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
+		if(( do_trans) &&(this->rows() !=b_nr)) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
+		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
 		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
 		RSBOI_PERROR(errval);
 		return retval;
@@ -1579,7 +1583,7 @@ DEFBINOP(op_mul, sparse_rsb_mtx, matrix)
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	return v1.spmv(v2);
+	return v1.spmm(v2, false);
 }
 
 DEFBINOP(op_trans_mul, sparse_rsb_mtx, matrix)
@@ -1588,39 +1592,7 @@ DEFBINOP(op_trans_mul, sparse_rsb_mtx, matrix)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
-
-	if(v1.is_real_type())
-	{
-		const Matrix b = v2.matrix_value ();
-		octave_idx_type b_nc = b.cols ();
-		octave_idx_type b_nr = b.rows ();
-		octave_idx_type ldb=b_nr;
-		octave_idx_type ldc=v1.columns();
-		octave_idx_type nrhs=b_nc;
-		Matrix retval(ldc,nrhs,RSBOI_ZERO);
-		if(v1.rows()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
-		//octave_stdout << "have: ldc=" <<ldc << " bc=" << b_nc<< " nrhs=" << nrhs << " retval="<< retval<< "\n";
-
-		errval=rsb_spmm(RSB_TRANSPOSITION_T,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
-		RSBOI_PERROR(errval);
-		return retval;
-	}
-	else
-	{
-		const ComplexMatrix b = v2.complex_matrix_value ();
-		octave_idx_type b_nc = b.cols ();
-		octave_idx_type b_nr = b.rows ();
-		octave_idx_type ldb=b_nr;
-		octave_idx_type ldc=v1.columns();
-		octave_idx_type nrhs=b_nc;
-		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
-		if(v1.rows()!=b_nr) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
-		//octave_stdout << "have: ldc=" <<ldc << " bc=" << b_nc<< " nrhs=" << nrhs << " retval="<< retval<< "\n";
-
-		errval=rsb_spmm(RSB_TRANSPOSITION_T,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
-		RSBOI_PERROR(errval);
-		return retval;
-	}
+	return v1.spmm(v2, true);
 }
 
 static void install_sparsersb_ops (void)

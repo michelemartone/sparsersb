@@ -46,10 +46,12 @@ function ase=are_spm_equal(OM,XM)
 end
 
 function testmsg(match,tname,erreason)
-	if(match)
+	if(match>0)
 		printf(" [*] %s test passed",tname)
-	else
+	elseif(match==0)
 		printf(" [!] %s test failed",tname)
+	else
+		printf(" [~] %s ",tname)
 	end
 	if(nargin<3)
 		printf(".\n")
@@ -198,6 +200,15 @@ function match=testpcgm(OM,XM)
 	[XX, XFLAG, XRELRES, XITER, XRESVEC, XEIGEST]= pcg (sparsersb(A),b, 1.e-6, 500, l,u);
 	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
 	testmsg(match,"pcg");
+end
+
+function hwl=have_working_luinc()
+	try
+	a=luinc (sparse([1,1;1,1]),1);
+	hwl=1;
+	catch 
+	hwl=0;
+	end_try_catch
 end
 
 function match=testpcrm(OM,XM)
@@ -363,8 +374,12 @@ function match=tests(OM,XM,M)
 	match&=testelms(OM,XM);
 	match&=testasgn(OM,XM);
 	if nnz(OM)>1
-		match&=testpcgm(OM,XM);
-		match&=testpcrm(OM,XM);
+		if have_working_luinc()
+			match&=testpcgm(OM,XM);
+			match&=testpcrm(OM,XM);
+		else
+			testmsg(-1,"luinc does not work; probably UMFPACK is not installed: skipping some tests.")
+		endif
 		match&=testmult(OM,XM);
 		match&=testspsv(OM,XM);
 		match&=testnorm(OM,XM);

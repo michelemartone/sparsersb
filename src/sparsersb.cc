@@ -525,6 +525,10 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 		}
 #endif
 
+		//octave_value::assign_op, int, int, octave_value (&)(const octave_base_value&, const octave_base_value&)
+		//octave_value::assign_op, int, int, octave_value (&)
+		//octave_value  assign_op (const octave_base_value&, const octave_base_value&) {}
+		// octave_value::assign_op octave_value::binary_op_to_assign_op (binary_op op) { assign_op retval; return retval; }
 #if RSBOI_WANT_SUBSREF
 		octave_value subsref (const std::string &type, const std::list<octave_value_list>& idx)
 		{
@@ -678,6 +682,8 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 		octave_value subsasgn (const std::string& type, const std::list<octave_value_list>& idx, const octave_value& rhs)
 		{
 			octave_value retval;
+			rsb_err_t errval=RSB_ERR_NO_ERROR;
+
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			switch (type[0])
 			{
@@ -707,12 +713,30 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 							if (n_idx == 2 )
 							{
 								idx_vector i = idx.front() (0).index_vector ();
+								idx_vector j = idx.front() (1).index_vector ();
+#if 0
+								// for op_el_div_eq and op_el_mul_eq
+								std :: cout << "ic2 " << i.is_colon() << "\n" ;
+								if( i.is_colon() && !j.is_colon() )
+								{
+									ComplexMatrix cm=rhs.complex_matrix_value();
+									std :: cout << " : , .\n";
+									errval=rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
+								}
+								if(!i.is_colon() &&  j.is_colon() )
+								{
+									std :: cout << " . , :\n";
+								}
+								if( i.is_colon() && j.is_colon() )
+								{
+									std :: cout << " : , :\n";
+								}
+#endif
 								if (! error_state)
 								{
 									if(is_real_type())
 									{
 										rsb_err_t errval=RSB_ERR_NO_ERROR;
-										idx_vector j = idx.front() (1).index_vector ();
 										octave_idx_type ii=-1,jj=-1;
 										RSBOI_T rv=rhs.double_value();
 										ii=i(0); jj=j(0);
@@ -732,7 +756,6 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 									else
 									{
 										rsb_err_t errval=RSB_ERR_NO_ERROR;
-										idx_vector j = idx.front() (1).index_vector ();
 										octave_idx_type ii=-1,jj=-1;
 										Complex rv=rhs.complex_value();
 										ii=i(0); jj=j(0);
@@ -982,6 +1005,40 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 		return m;
 	}
 #endif
+
+octave_value scale_rows(const octave_matrix&v2, bool want_div=false)
+{
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	if(this->is_real_type())
+	{
+		const Matrix rm = want_div?1.0/v2.matrix_value ():v2.matrix_value ();
+		octave_idx_type b_nc = rm.cols ();
+		octave_idx_type b_nr = rm.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=this->columns();
+		octave_idx_type nrhs=b_nc;
+		Matrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(this->rows()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		errval=rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,rm.data());
+		RSBOI_PERROR(errval);
+		return retval;
+	}
+	else
+	{
+		const ComplexMatrix cm = want_div?1.0/v2.complex_matrix_value ():v2.complex_matrix_value ();
+		octave_idx_type b_nc = cm.cols ();
+		octave_idx_type b_nr = cm.rows ();
+		octave_idx_type ldb=b_nr;
+		octave_idx_type ldc=this->columns();
+		octave_idx_type nrhs=b_nc;
+		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
+		if(this->rows()!=b_nr) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
+		errval=rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
+		RSBOI_PERROR(errval);
+		return retval;
+	}
+}
 
 	private:
 
@@ -1379,6 +1436,32 @@ DEFBINOP(rsb_el_div_c, sparse_rsb_mtx, complex)
 }
 #endif
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+#if 0
+DEFASSIGNOP(rsb_op_el_div_eq, sparse_rsb_mtx, scalar)
+{
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_scalar&);
+	std::cout << "rsb_op_el_div_eq!\n";
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v1.rsboi_get_scaled_copy_inv(v2.complex_value());
+}
+#endif
+
+DEFASSIGNOP(rsb_op_el_mul_eq_sc, sparse_rsb_mtx, matrix)
+{
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	CAST_BINOP_ARGS (octave_sparsersb_mtx &, const octave_matrix&);
+	return v1.scale_rows(v2,false);
+}
+
+DEFASSIGNOP(rsb_op_el_div_eq_sc, sparse_rsb_mtx, matrix)
+{
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	CAST_BINOP_ARGS (octave_sparsersb_mtx &, const octave_matrix&);
+	return v1.scale_rows(v2,true);
+}
+#endif
+
 DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 {
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_scalar&);
@@ -1553,12 +1636,16 @@ static void install_sparsersb_ops (void)
 	/* pure elemental; scalar and sparse arguments ?! */
 								 // ?
 	INSTALL_BINOP (op_el_ldiv, octave_sparsersb_mtx, , );
+	INSTALL_BINOP (op_el_ldiv_eq, octave_sparsersb_mtx, , ); // errval=rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
+	INSTALL_BINOP (op_el_mul_eq, octave_sparsersb_mtx, , ); // diagonal subst ??
 	INSTALL_BINOP (op_el_and, octave_sparsersb_mtx, , );
 	INSTALL_BINOP (op_el_or, octave_sparsersb_mtx, , );
 	/* shift operations: they may be left out from the implementation */
 	INSTALL_BINOP (op_lshift, octave_sparsersb_mtx, , );
 	INSTALL_BINOP (op_rshift, octave_sparsersb_mtx, , );
 	#endif
+	// INSTALL_ASSIGNOP (op_el_div_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_div_eq_sc); // errval=rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
+	// INSTALL_ASSIGNOP (op_el_mul_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_mul_eq_sc);
 	//INSTALL_WIDENOP (octave_sparsersb_mtx, octave_sparse_matrix,octave_sparse_rsb_to_octave_sparse_conv);/* a DEFCONV .. */
 	//INSTALL_ASSIGNCONV (octave_sparsersb_mtx, octave_sparse_matrix,octave_sparse_matrix);/* .. */
 	// no need for the following: need a good conversion function, though

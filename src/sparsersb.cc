@@ -972,20 +972,20 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 	}
 #endif
 
-	octave_value rsboi_get_scaled_copy(const RSBOI_T alpha)const
+	octave_value rsboi_get_scaled_copy(const RSBOI_T alpha, rsb_trans_t transa=RSB_TRANSPOSITION_N)const
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		struct rsb_mtx_t*mtxBp=NULL;
 		if(is_real_type())
 		{
-			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N        , &alpha,this->mtxAp,RSBOI_EXPF);
+			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,transa, &alpha,this->mtxAp,RSBOI_EXPF);
 		}
 		else
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		{
 			Complex calpha;calpha+=alpha;
-			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&calpha,this->mtxAp,RSBOI_EXPF);
+			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,transa,&calpha,this->mtxAp,RSBOI_EXPF);
 		}
 #else
 		{RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);}
@@ -1113,6 +1113,17 @@ octave_value sppsp(const RSBOI_T*betap, const octave_sparsersb_mtx&v2)const
 	return retval;
 }
 
+octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=NULL)const
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(*this);
+	if(!m)return m;
+	errval = rsb_mtx_upd_values(m->mtxAp,opf,alphap);
+	RSBOI_PERROR(errval);
+	return m;
+}
+
 	private:
 
 		DECLARE_OCTAVE_ALLOCATOR
@@ -1206,38 +1217,22 @@ DEFUNOP (uminus, sparse_rsb_mtx)
 {
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	CAST_UNOP_ARG (const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(v);
-	if(!m)return m;
-	errval = rsb_mtx_upd_values(m->mtxAp,RSB_ELOPF_NEG,NULL);
-	return m;
+	return v.cp_ubop(RSB_ELOPF_NEG);
 }
 
 DEFUNOP (transpose, sparse_rsb_mtx)
 {
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(v);
-	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
-	if(!m)return m;
-	errval = rsb_mtx_clone(&m->mtxAp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_T,NULL,m->mtxAp,RSBOI_EXPF);
-	RSBOI_PERROR(errval);
-	return m;
+	return v.rsboi_get_scaled_copy(rsboi_pone[0],RSB_TRANSPOSITION_T);
 }
 
 DEFUNOP (htranspose, sparse_rsb_mtx)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_UNOP_ARG (const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(v);
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	RSBOI_TODO("here, the best solution would be to use some get_transposed() function");
-	if(!m)return m;
-	errval = rsb_mtx_clone(&m->mtxAp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_C,NULL,m->mtxAp,RSBOI_EXPF);
-	RSBOI_PERROR(errval);
-	return m;
+	return v.rsboi_get_scaled_copy(rsboi_pone[0],RSB_TRANSPOSITION_C);
 }
 
 octave_value rsboi_spsv(const octave_sparsersb_mtx&v1, const octave_matrix&v2,rsb_trans_t transa)
@@ -1538,13 +1533,8 @@ DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 {
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(v1);
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_T alpha=v2.scalar_value();
-	if(!m)return m;
-	errval = rsb_mtx_upd_values(m->mtxAp,RSB_ELOPF_POW,&alpha);
-	RSBOI_PERROR(errval);
-	return m;
+	return v1.cp_ubop(RSB_ELOPF_POW,&alpha);
 }
 
 #ifdef RSB_FULLY_IMPLEMENTED

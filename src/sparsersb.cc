@@ -1079,6 +1079,23 @@ octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 	}
 }
 
+octave_value spmsp(const octave_sparsersb_mtx&v2)const
+{
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
+	octave_value retval = sm;
+#if RSBOI_WANT_SYMMETRY
+	/* FIXME: and now ? */
+#endif
+	/* FIXME: what if they are not both of the same type ? it would be nice to have a conversion.. */
+	sm->mtxAp = rsb_spmsp(RSBOI_BINOP_PREVAILING_TYPE(*this,v2),RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,RSB_TRANSPOSITION_N,&rsboi_pone,v2.mtxAp,&errval);
+	RSBOI_PERROR(errval);
+	if(!sm->mtxAp)
+		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
+	return retval;
+}
+
 	private:
 
 		DECLARE_OCTAVE_ALLOCATOR
@@ -1205,7 +1222,6 @@ DEFUNOP (htranspose, sparse_rsb_mtx)
 	RSBOI_PERROR(errval);
 	return m;
 }
-
 
 octave_value rsboi_spsv(const octave_sparsersb_mtx&v1, const octave_matrix&v2,rsb_trans_t transa)
 {
@@ -1545,13 +1561,13 @@ DEFBINOP(op_sub, sparse_rsb_mtx, sparse_rsb_mtx)
 
 DEFBINOP(op_add, sparse_rsb_mtx, sparse_rsb_mtx)
 {
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
 	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
 	octave_value retval = sm;
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 #if RSBOI_WANT_SYMMETRY
-	/* FIXME: and now ? */
+	/* FIXME: And now ? Is symmetry handled or ignored ? */
 #endif
 	sm->mtxAp = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_pone,v1.mtxAp,RSB_TRANSPOSITION_N,&rsboi_pone,v2.mtxAp,&errval);
 	RSBOI_PERROR(errval);
@@ -1562,27 +1578,15 @@ DEFBINOP(op_add, sparse_rsb_mtx, sparse_rsb_mtx)
 
 DEFBINOP(op_spmul, sparse_rsb_mtx, sparse_rsb_mtx)
 {
-	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
-	octave_value retval = sm;
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-#if RSBOI_WANT_SYMMETRY
-	/* FIXME: and now ? */
-#endif
-	/* FIXME: what if they are not both of the same type ? it would be nice to have a conversion.. */
-	sm->mtxAp = rsb_spmsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_pone,v1.mtxAp,RSB_TRANSPOSITION_N,&rsboi_pone,v2.mtxAp,&errval);
-	RSBOI_PERROR(errval);
-	if(!sm->mtxAp)
-		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
-	return retval;
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
+	return v1.spmsp(v2);
 }
 
 DEFBINOP(op_mul, sparse_rsb_mtx, matrix)
 {
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
-	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 	return v1.spmm(v2, false);
 }
 
@@ -1590,7 +1594,6 @@ DEFBINOP(op_trans_mul, sparse_rsb_mtx, matrix)
 {
 	// ".'*"  operator
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 	return v1.spmm(v2, true);
 }

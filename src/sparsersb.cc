@@ -1096,6 +1096,23 @@ octave_value spmsp(const octave_sparsersb_mtx&v2)const
 	return retval;
 }
 
+octave_value sppsp(const RSBOI_T*betap, const octave_sparsersb_mtx&v2)const
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
+	octave_value retval = sm;
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	RSBOI_FIXME("");
+#if RSBOI_WANT_SYMMETRY
+	/* FIXME: and now ? */
+#endif
+	sm->mtxAp = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(*this,v2),RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,RSB_TRANSPOSITION_N,betap,v2.mtxAp,&errval);
+	RSBOI_PERROR(errval);
+	if(!sm->mtxAp)
+		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
+	return retval;
+}
+
 	private:
 
 		DECLARE_OCTAVE_ALLOCATOR
@@ -1543,37 +1560,16 @@ DEFASSIGNOP (assigns, sparse_rsb_mtx, scalar)
 
 DEFBINOP(op_sub, sparse_rsb_mtx, sparse_rsb_mtx)
 {
-	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
-	octave_value retval = sm;
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	RSBOI_FIXME("");
-#if RSBOI_WANT_SYMMETRY
-	/* FIXME: and now ? */
-#endif
-	sm->mtxAp = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_pone,v1.mtxAp,RSB_TRANSPOSITION_N,&rsboi_mone,v2.mtxAp,&errval);
-	RSBOI_PERROR(errval);
-	if(!sm->mtxAp)
-		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
-	return retval;
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
+	return v1.sppsp(&rsboi_mone[0],v2);
 }
 
 DEFBINOP(op_add, sparse_rsb_mtx, sparse_rsb_mtx)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_sparsersb_mtx&);
-	octave_sparsersb_mtx*sm = new octave_sparsersb_mtx();
-	octave_value retval = sm;
-	rsb_err_t errval=RSB_ERR_NO_ERROR;
-#if RSBOI_WANT_SYMMETRY
-	/* FIXME: And now ? Is symmetry handled or ignored ? */
-#endif
-	sm->mtxAp = rsb_sppsp(RSBOI_BINOP_PREVAILING_TYPE(v1,v2),RSB_TRANSPOSITION_N,&rsboi_pone,v1.mtxAp,RSB_TRANSPOSITION_N,&rsboi_pone,v2.mtxAp,&errval);
-	RSBOI_PERROR(errval);
-	if(!sm->mtxAp)
-		RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
-	return retval;
+	return v1.sppsp(&rsboi_pone[0],v2);
 }
 
 DEFBINOP(op_spmul, sparse_rsb_mtx, sparse_rsb_mtx)

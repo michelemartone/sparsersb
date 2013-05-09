@@ -24,7 +24,6 @@
  * compound_binary_op
  * for thorough testing, see Octave's test/build_sparse_tests.sh
  * introspection functionality (bytes/nnz, or  sparsersb(rsbmat,"inquire: subm") )
- * sparsersb(rsbmat,"autotune")
  * sparsersb(rsbmat,"benchmark")
  * sparsersb(rsbmat,"test")
  * minimize data copies
@@ -173,6 +172,12 @@
 
 #ifndef RSBOI_RSB_MATRIX_SOLVE
 #define RSBOI_RSB_MATRIX_SOLVE(V1,V2) RSBOI_0_ERROR(RSBOI_0_NOTERRMSG)  /* any solution routine shall attached here */
+#endif
+
+#if 1
+extern "C" { rsb_err_t rsb_dump_postscript_from_mtx_t(const struct rsb_mtx_t*mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_bool_t all_nnz); }
+extern "C" {
+rsb_err_t rsb_dump_postscript_recursion_from_mtx_t(const struct rsb_mtx_t*mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_flags_t flags, rsb_bool_t want_blocks, rsb_bool_t z_dump , rsb_bool_t want_nonzeros ); }
 #endif
 
 #if RSBOI_WANT_HEAVY_DEBUG
@@ -1813,6 +1818,27 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		error("getting library options still unimplemented!");
 		goto errp;
 	}
+
+#if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
+	if (nargin == 3 && isr 
+ 		&& args(1).is_string() && args(1).string_value()=="render"
+		&& args(2).is_string())
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		const char *rmf=args(2).string_value().c_str();
+		rsb_coo_idx_t pmWidth=512, pmHeight=512;
+
+		if(!osmp || !osmp->mtxAp)
+			goto ret;/* FIXME: error handling missing here */
+
+		errval = rsb_mtx_render(rmf,osmp->mtxAp,pmWidth,pmHeight,RSB_MARF_EPS);
+
+		/* FIXME: serious error handling missing here */
+		if(RSBOI_SOME_ERROR(errval))
+			retval.append(std::string("Error returned from rsb_file_mtx_render()"));
+		goto ret;
+	}
+#endif
 
 	if (nargin == 3 && isr 
  		&& args(1).is_string() && args(1).string_value()=="get"

@@ -1820,6 +1820,43 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	}
 
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
+	if (nargin >= 2 && isr && args(1).is_string() && args(1).string_value()=="autotune")
+	{
+		rsb_err_t errval=RSB_ERR_NO_ERROR;
+		/* these are user settable */
+		rsb_coo_idx_t nrhs=0;
+		rsb_int_t oitmax=1;
+		rsb_time_t tmax=2.0;
+		rsb_int_t tn=0;
+		rsb_real_t sf=1.0;
+		rsb_trans_t transA=RSB_TRANSPOSITION_N; 
+		/* TODO: these shall also be user settable */
+		const void * alphap=NULL;
+		const void * betap=NULL;
+		/* these not */
+	       	rsb_flags_t order=RSB_OI_DMTXORDER;
+	       	const void * Bp=NULL;
+		rsb_nnz_idx_t ldB=0;
+		rsb_nnz_idx_t ldC=0;
+		void * Cp=NULL;
+
+		if (nargin > 2) transA = RSB_CHAR_AS_TRANSPOSITION(args(2).string_value()[0]);
+		if (nargin > 3) nrhs=args(3).scalar_value();
+		if (nargin > 4) oitmax=args(4).scalar_value();
+		if (nargin > 5) tmax=args(5).scalar_value();
+		if (nargin > 6) tn=args(6).scalar_value();
+		if (nargin > 7) sf=args(7).scalar_value();
+
+		if(!osmp || !osmp->mtxAp)
+			goto ret;/* FIXME: error handling missing here */
+		errval = rsb_tune_spmm(&osmp->mtxAp,&sf,&tn,oitmax,tmax,transA,alphap,osmp->mtxAp,nrhs,order,Bp,ldB,betap,Cp,ldC);
+		/* FIXME: serious error handling missing here */
+		goto ret;
+	}
+#endif
+
+
+#if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 	if (nargin == 3 && isr 
  		&& args(1).is_string() && args(1).string_value()=="render"
 		&& args(2).is_string())

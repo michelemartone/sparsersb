@@ -17,6 +17,7 @@
 
 /*
  * TODO wishlist:
+ * should not rely on string_value().c_str()  --- stack corruption!
  * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
  * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
@@ -1883,16 +1884,18 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	{
 		/* FIXME: undocumented feature */
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		const char *mis=args(2).string_value().c_str();
 		/* rsb_real_t miv=RSBOI_ZERO;*/ /* FIXME: this is extreme danger! */
+		char is[RSBOI_INFOBUF];
 		char ss[RSBOI_INFOBUF];
+
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */
-		if(strlen(mis)==0)
-		{
-			mis="RSB_MIF_MATRIX_INFO__TO__CHAR_P";
-		}
-		errval = rsb_mtx_get_info_str(osmp->mtxAp,mis,ss,RSBOI_INFOBUF);
+
+		if(strlen(args(2).string_value().c_str())==0)
+			strncpy(is,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",sizeof(is));
+		else
+			strncpy(is,args(2).string_value().c_str(),sizeof(is));
+		errval = rsb_mtx_get_info_str(osmp->mtxAp,is,ss,RSBOI_INFOBUF);
 
 		if(!RSBOI_SOME_ERROR(errval))
 		{
@@ -1929,7 +1932,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			/* FIXME: to add interpretation */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
-			octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
+			// octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
 			/* FIXME: shall not print out, but rather return the info as a string*/
 			//retval.append("place info string here !\n");
 			goto ret;
@@ -2059,12 +2062,14 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	{
 		rsb_flags_t eflags=RSBOI_DCF;
 		octave_idx_type nrA=0,ncA=0;
+		int sai=0;
+
 		if (nargin > 3)
 		{
 			if ( nargin < 5)
 			{
-//				if(nargin==4 && args(3).is_string())
-//					goto checked;
+				if(nargin==4 && args(3).is_string())
+					goto checked;
 				RSBOI_EERROR(RSBOI_0_BADINVOERRMSG);
 				goto errp;
 			}
@@ -2080,20 +2085,26 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 				goto errp;
 			}
 		}
-//checked:
+checked:
 		if (nargin >= 5  )
 		{
-			nrA=args(3).scalar_value();/* FIXME: need index value here! */
-			ncA=args(4).scalar_value();
+			nrA = args(3).scalar_value();/* FIXME: need index value here! */
+			ncA = args(4).scalar_value();
 			if(nrA<=0 || ncA<=0)
 			{
 				RSBOI_EERROR(RSBOI_O_NPMSERR);
 				goto errp;
 			}
 		}
+
 		if (nargin >= 6  && args(5).is_string())
+			sai=5;
+		else
+			if (nargin == 4  && args(3).is_string())
+				sai=3;
+		if(sai)
 		{
-			std::string vv= args(5).string_value();
+			std::string vv= args(sai).string_value();
 			if ( vv == "summation" || vv == "sum" )
 				eflags=RSB_FLAG_DUPLICATES_SUM;
 			else

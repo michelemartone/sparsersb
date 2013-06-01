@@ -61,6 +61,9 @@ while f<=nargin
 	[ia,ja,va]=find(nm);
 	printf("%s: %.2f MBytes read in  %.4f s (%10.2f MB/s)\n",mn',fsz/MB,rt,fsz/(rt*MB));
 	#ia=ia'; ja=ja'; va=va';
+	sep=" ";
+	csvlstring=sprintf("#mn entries nrows ncols");
+	csvdstring=sprintf("%%:%s%s%d%s%d%s%d",mn,sep,entries,sep,nrows,sep,ncols);
 for ski=1:uc
 	oppnz=1;
 	# FIXME: what about symmetry ?
@@ -96,7 +99,8 @@ for ski=1:uc
 	end
 
 	#rm=sparsersb(ia,ja,va);# UNFINISHED
-	r=v=linspace(1,1,size(om,1))';
+	r=linspace(1,1,size(om,1))';
+	v=linspace(1,1,size(om,2))';
 	tic(); for i=1:n; r+=om  *v; end; umt=toc();
 	UMflops=oppnz*n*2.0*mnz/(10^6 * umt);
 	printf("%s (%s) %d spMV  for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,mnz,umt, UMflops);
@@ -105,11 +109,16 @@ for ski=1:uc
 	# FIXME: finish the following!
 	#printbenchline(mn',"spMV",sparsekw,n,mnz,umt, UMflops,bpnz,msstr);
 	#
+	tmp=r;r=v;v=tmp;
 	tic(); for i=1:n; r+=om.'*v; end; tmt=toc();
 	TMflops=oppnz*n*2.0*mnz/(10^6 * tmt);
 	printf("%s (%s) %d spMVT for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,mnz,tmt, TMflops);
+	csvlstring=sprintf("%s%s",csvlstring," n at amflops umt UMflops tmt TMflops");
+	csvdstring=sprintf("%s%s%d%s%f%s%f%s%f%s%f%s%f%s%f",csvdstring,sep,n,sep,at,sep,amflops,sep,umt,sep,UMflops,sep,tmt,sep,TMflops);
 end 
 	++f;
+	printf("%s\n",csvlstring);
+	printf("%s\n",csvdstring);
 end 
 
 printf("benchmark terminated\n");

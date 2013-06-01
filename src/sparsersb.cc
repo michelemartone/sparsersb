@@ -17,7 +17,7 @@
 
 /*
  * TODO wishlist:
- * should not rely on string_value().c_str()  --- stack corruption!
+ * should not rely on string_value().c_str()  --- stack corruption danger!
  * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
  * (:,:) , (:,p) ... do not work, test with octave's bicg, bicgstab, cgs, ...
@@ -1061,10 +1061,10 @@ octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 		octave_idx_type ldc=do_trans?this->columns():this->rows();
 		octave_idx_type nrhs=b_nc;
 		Matrix retval(ldc,nrhs,RSBOI_ZERO);
-		if(this->columns()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
-		if(( do_trans) &&(this->rows() !=b_nr)) { error("matrices dimensions do not match!\n"); return Matrix(); }
-		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrices dimensions do not match!\n"); return Matrix(); }
-		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		// if(this->columns()!=b_nr) { error("matrices dimensions do not match!\n"); return Matrix(); }
+		if(( do_trans)&&(this->rows()   !=b_nr)) { error("matrix rows count does not match operand rows!\n"); return Matrix(); }
+		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrix columns count does not match operand rows!\n"); return Matrix(); }
+		errval=rsb_spmm(transa,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
 		RSBOI_PERROR(errval);
 		return retval;
 	}
@@ -1077,9 +1077,9 @@ octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 		octave_idx_type ldc=do_trans?this->columns():this->rows();
 		octave_idx_type nrhs=b_nc;
 		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
-		if(( do_trans) &&(this->rows() !=b_nr)) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
-		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrices dimensions do not match!\n"); return ComplexMatrix(); }
-		errval=rsb_spmm(RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+		if(( do_trans)&&(this->rows()   !=b_nr)) { error("matrix rows count does not match operand rows!\n"); return Matrix(); }
+		if((!do_trans)&&(this->columns()!=b_nr)) { error("matrix columns count does not match operand rows!\n"); return Matrix(); }
+		errval=rsb_spmm(transa,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
 		RSBOI_PERROR(errval);
 		return retval;
 	}

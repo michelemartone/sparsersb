@@ -91,6 +91,7 @@ for ski=1:uc
 	eval(["for i=1:n;  om=",sparsekw,"(ia,ja,va,mrc,mcc,\"summation\"); end"]);
 	printf("benchmarking %s\n",sparsekw);
 	at=toc();
+	#if(ski==2) tic(); nm=sparsersb(om,"autotune","N");om=nm; att=toc(); ;endif
 	mnz=nnz(om);
 	amflops=n*2.0*mnz/(10^6 * at);
 	printf("%s (%s) %d spBLD for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,rnz,at,amflops);
@@ -113,8 +114,10 @@ for ski=1:uc
 	tic(); for i=1:n; r+=om.'*v; end; tmt=toc();
 	TMflops=oppnz*n*2.0*mnz/(10^6 * tmt);
 	printf("%s (%s) %d spMVT for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,mnz,tmt, TMflops);
-	csvlstring=sprintf("%s%s",csvlstring," n at amflops umt UMflops tmt TMflops");
-	csvdstring=sprintf("%s%s%d%s%f%s%f%s%f%s%f%s%f%s%f",csvdstring,sep,n,sep,at,sep,amflops,sep,umt,sep,UMflops,sep,tmt,sep,TMflops);
+	if(ski<3);
+		csvlstring=sprintf("%s%s",csvlstring," n at amflops umt UMflops tmt TMflops");
+		csvdstring=sprintf("%s%s%d%s%f%s%f%s%f%s%f%s%f%s%f",csvdstring,sep,n,sep,at,sep,amflops,sep,umt,sep,UMflops,sep,tmt,sep,TMflops);
+	endif
 end 
 	++f;
 	printf("%s\n",csvlstring);

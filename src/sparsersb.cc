@@ -164,6 +164,8 @@
 #define RSBOI_WANT_SUBSREF 1
 #define RSBOI_WANT_HEAVY_DEBUG 0
 #define RSBOI_WANT_VECLOAD_INSTEAD_MTX 1
+#define RSBOI_WANT_MTX_LOAD 1
+#define RSBOI_WANT_MTX_SAVE 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -252,6 +254,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		}
 
+#if RSBOI_WANT_MTX_LOAD
 		octave_sparsersb_mtx (const std::string &mtxfilename, rsb_type_t typecode=RSBOI_TYPECODE) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX)
 		{
 			rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -266,6 +269,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
 #endif
 		}
+#endif
 
 		//void alloc_rsb_mtx_from_coo_copy(const idx_vector &IM, const idx_vector &JM, const void * SMp, octave_idx_type nrA, octave_idx_type ncA, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
 		void alloc_rsb_mtx_from_coo_copy(idx_vector & IM, idx_vector & JM, const void * SMp, octave_idx_type nrA, octave_idx_type ncA, bool iscomplex=false, rsb_flags_t eflags=RSBOI_DCF)
@@ -1717,6 +1721,11 @@ Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 @deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
 Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mtxfilename}. The optional argument {@var{mtxtypestring}} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
 "In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned. If the file turns out to contain a Matrix Market vector, this will be loaded as such.\n"\
+
+
+"\n\
+@deftypefnx {Loadable Function} "RSBOI_FNS" (@var{a},\"save\",@var{mtxfilename})\n\
+Saves a sparse RSB matrix as a Matrix Market matrix file named @var{mtxfilename}.\n"\
 "\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
 Create a sparse RSB matrix given integer index vectors @var{i} and @var{j},\n\
@@ -1877,7 +1886,15 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		goto ret;
 	}
 #endif
-
+#if RSBOI_WANT_MTX_SAVE
+	if (nargin == 3 && isr 
+ 		&& args(1).is_string() && args(1).string_value()=="save"
+		&& args(2).is_string())
+	{
+		rsb_file_mtx_save(osmp->mtxAp,args(2).string_value().c_str()); /* TODO: error handling */
+		goto ret;
+	}
+#endif
 	if (nargin == 3 && isr 
  		&& args(1).is_string() && args(1).string_value()=="get"
 		&& args(2).is_string())
@@ -1996,7 +2013,11 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 					if(mtxtypestring=="real" || mtxtypestring=="D")
 						typecode=RSB_NUMERICAL_TYPE_DOUBLE;
 				}
+#if RSBOI_WANT_MTX_LOAD
 				osmp=new octave_sparsersb_mtx(mtxfilename,typecode);
+#else
+				goto ret; /* TODO: need error message here */
+#endif
 				if(osmp->mtxAp)
 					retval.append(osmp);
 				else

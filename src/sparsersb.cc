@@ -17,6 +17,9 @@
 
 /*
  * TODO wishlist:
+ * shall add "load"; implicit filename based is confusing
+ * shall rename "load"/"save" to "loadMatrixMarket"/... or something explicit
+ * save/load capability (in own, rsb format)
  * should not rely on string_value().c_str()  --- stack corruption danger!
  * ("get","RSB_IO_WANT_...") is not yet available
  * (.) is incomplete. it is needed by trace()
@@ -129,6 +132,7 @@
 #define RSBOI_0_FATALNBMSG  "fatal error! matrix NOT built!\n"
 #define RSBOI_0_ASSERRMSG  "assignment is still unsupported on 'sparse_rsb' matrices"
 #define RSBOI_0_NSQERRMSG  "matrix is not square"
+#define RSBOI_0_NIYERRMSG  "not implemented yet in sparsersb"
 #define RSBOI_D_EMPTY_MSG  ""
 #define RSBOI_O_MISSIMPERRMSG  "implementation missing here\n"
 #define RSBOI_O_NPMSERR  "providing non positive matrix size is not allowed!"
@@ -689,6 +693,26 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 		}
 //		int is_struct (void) const { return false; }
 
+		bool save_ascii (std::ostream& os)
+		{
+			error("save_ascii() "RSBOI_0_NIYERRMSG);
+			return false;
+		}
+		bool load_ascii (std::istream& is)
+		{
+			error("load_ascii() "RSBOI_0_NIYERRMSG);
+			return false;
+		}
+		bool save_binary (std::ostream& os, bool& save_as_floats)
+		{
+			error("save_binary() "RSBOI_0_NIYERRMSG);
+			return false;
+		}
+		bool load_binary (std::istream& is, bool swap, oct_mach_info::float_format fmt)
+		{
+			error("load_binary() "RSBOI_0_NIYERRMSG);
+			return false;
+		}
 		octave_value subsasgn (const std::string& type, const std::list<octave_value_list>& idx, const octave_value& rhs)
 		{
 			octave_value retval;
@@ -1868,19 +1892,24 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 	if (nargin == 3 && isr 
- 		&& args(1).is_string() && args(1).string_value()=="render"
+ 		&& args(1).is_string() && args(1).string_value().substr(0,6)=="render"
 		&& args(2).is_string())
 	{
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		const char *rmf=args(2).string_value().c_str();
+		std::string rmf=args(2).string_value();
 		rsb_coo_idx_t pmWidth=512, pmHeight=512;
+		rsb_flags_t marf = RSB_MARF_EPS;
 
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */
 
-		errval = rsb_mtx_render(rmf,osmp->mtxAp,pmWidth,pmHeight,RSB_MARF_EPS);
+ 		if( args(1).string_value() == "renders")
+			marf = RSB_MARF_EPS_S;
+ 		if( args(1).string_value() == "renderb")
+			marf = RSB_MARF_EPS_B;
+		errval = rsb_mtx_render(rmf.c_str(),osmp->mtxAp,pmWidth,pmHeight,marf);
 
-		/* FIXME: serious error handling missing here */
+		/* FIXME: serious error handling still missing here */
 		if(RSBOI_SOME_ERROR(errval))
 			retval.append(std::string("Error returned from rsb_file_mtx_render()"));
 		goto ret;

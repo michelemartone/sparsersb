@@ -56,6 +56,19 @@ while f<=nargin
 		#if(symm=="symmetric")uc+=2;endif
 		if(strcmp(symm,"symmetric"))uc+=1;endif
 	end
+	wr=0 ;
+	if wr==1 
+		sparsersb(sparsersb(nm),"render",[mn,"-original.eps"]);
+		pct=-time; 
+		#p=colamd(nm);
+		p=colperm(nm);
+		pct+=time;
+		pat=-time; 
+		nm=nm(:,p);
+		pat+=time;
+		#sparsersb(sparsersb(nm),"render",[mn,"-colamd.eps"])
+		sparsersb(sparsersb(nm),"render",[mn,"-colperm.eps"]);
+	end
 	fsz=stat(mn).size;
 	rt=toc();
 	[ia,ja,va]=find(nm);

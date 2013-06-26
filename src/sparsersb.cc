@@ -17,6 +17,13 @@
 
 /*
  * TODO wishlist:
+ * all *.m files shall go to inst/
+ * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.0.tar.gz 
+ * produce ../doc/sparsersb.txi; can use get_help_text
+ * put to ./devel/ what is not to be distributed
+ * make or configure should fail on missing library (actually it does not)
+ * spfind in order to update easily and quickly nonzeroes
+ * need A(IA,JA,VA)=nVA
  * shall add "load"; implicit filename based is confusing
  * shall rename "load"/"save" to "loadMatrixMarket"/... or something explicit
  * save/load capability (in own, rsb format)
@@ -1743,7 +1750,7 @@ Create a sparse RSB matrix from the full matrix @var{a}.\n"\
 /*is forced back to a full matrix if resulting matrix is sparse\n*/\
 "\n\
 @deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
-Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mtxfilename}. The optional argument {@var{mtxtypestring}} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
+Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mtxfilename}. The optional argument @var{mtxtypestring} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
 "In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned. If the file turns out to contain a Matrix Market vector, this will be loaded as such.\n"\
 
 

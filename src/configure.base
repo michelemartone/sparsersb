@@ -3,10 +3,15 @@ dnl and the various configure.add files in the source tree.  Edit
 dnl configure.base and reprocess rather than modifying ./configure.
 
 dnl autoconf 2.13 certainly doesn't work! What is the minimum requirement?
-AC_PREREQ(2.2)
+AC_PREREQ([2.67])
 
-AC_INIT(configure.base)
-
+AC_INIT([sparsersb package], [1.0.0])
+dnl
+dnl AC_CHECK_HEADERS([rsb.h], [], [AC_MSG_ERROR([missing the rsb library])])
+dnl AC_OUTPUT
+dnl 
+dnl TODO: shall clean up all from here on
+dnl
 PACKAGE=octave-forge
 MAJOR_VERSION=0
 MINOR_VERSION=1

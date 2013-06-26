@@ -3,8 +3,8 @@ sinclude Makeconf
 # You have to define RSBLIBDIR in the environment!
 # You have to define RSBINCDIR in the environment!
 #
-LIBRSB_CXXFLAGS=-I$(RSBINCDIR)
-LIBRSB_LIBS=$(RSBLIBDIR)/librsb.a
+LIBRSB_CXXFLAGS?=-I$(RSBINCDIR)
+LIBRSB_LIBS?=$(RSBLIBDIR)/librsb.a
 #
 #
 #
@@ -25,13 +25,13 @@ $(SPARSERSB_OCT): sparsersb.cc
 	CXXFLAGS="$(CXXFLAGS)" $(MKOCTFILE)  -D''RSB_SPARSERSB_LABEL=sparsersb $(RSBOI_CXXFLAGS) $(LIBRSB_CXXFLAGS) -o $@ $< $(LIBRSB_LIBS)
 
 rtest: $(SPARSERSB_OCT)
-	$(OCTAVE) --silent sparsersbtester.m
-	$(OCTAVE) --silent octavebench.m pd.mtx
+	$(OCTAVE) --silent ../inst/sparsersbtester.m
+	$(OCTAVE) --silent ../bin/octavebench.m ../bin/pd.mtx
 
 bench: $(SPARSERSB_OCT)
-	$(OCTAVE) --silent obench.m
-	$(OCTAVE) --silent lsbench.m
-	$(OCTAVE) --silent sparsersbbench.m
+	$(OCTAVE) --silent ../bin/obench.m
+	$(OCTAVE) --silent ../bin/lsbench.m
+	$(OCTAVE) --silent ../inst/sparsersbbench.m
 	
 tests: rtest
 check: rtest

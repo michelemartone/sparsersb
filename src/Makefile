@@ -1,4 +1,13 @@
 sinclude Makeconf
+#
+# You have to define RSBLIBDIR in the environment!
+# You have to define RSBINCDIR in the environment!
+#
+LIBRSB_CXXFLAGS=-I$(RSBINCDIR)
+LIBRSB_LIBS=$(RSBLIBDIR)/librsb.a
+#
+#
+#
 
 .PHONY: all check
 

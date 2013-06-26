@@ -4,6 +4,7 @@
 # e.g.: http://www.cise.ufl.edu/research/sparse/mat/Hamm/memplus.mat
 # 
 # s=load("~/memplus.mat");
+1; # This is a script
 s=load(argv(){length(argv())});
 n=rows(s.Problem.A);
 minres=1e-7;

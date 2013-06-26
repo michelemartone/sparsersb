@@ -5,6 +5,7 @@
 # It may serve as a reference point when profiling sparsersb/librsb.
 # Please note that sparsersb is optimized for large matrices.
 #
+1; # This is a script
 
 function lsb_compare(A)
 n=rows(A);

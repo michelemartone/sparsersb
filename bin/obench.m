@@ -1,3 +1,4 @@
+1; # This is a script
 # once complete, this program will benchmark our matrix implementation against octave's
 cmt="#";
 #for n_=1:6*0+1

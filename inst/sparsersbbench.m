@@ -2,7 +2,9 @@
 # TODO: document this file's functions so they get installed and are properly usable.
 # TODO: sprand should not be used in a consistent way
 
-function dt=sparsersbbench(precmd,cmd,postcmd,mint)
+1; # This is a script.
+
+function dt=sparsersbbench_(precmd,cmd,postcmd,mint)
 # ..
 	eval(precmd);
 	nops=0;
@@ -29,8 +31,8 @@ function speedup=sparsersbbench_(gprecmd,precmd,cmd,postcmd,gpostcmd,mint)
 	all=[gprecmd,dots,precmd,predots,cmd,postdots,postcmd,dots,gpostcmd];
 #	printf("will see speedup for %s\n",all);
 	printf("#%s #-> speedup is...",all);
-	dtr=sparsersbbench([gprecmd,"", precmd,""], cmd,[ postcmd,":",gpostcmd],mint);
-	dto=sparsersbbench([gprecmd,"",rprecmd,""],rcmd,[rpostcmd,":",gpostcmd],mint);
+	dtr=sparsersbbench_([gprecmd,"", precmd,""], cmd,[ postcmd,":",gpostcmd],mint);
+	dto=sparsersbbench_([gprecmd,"",rprecmd,""],rcmd,[rpostcmd,":",gpostcmd],mint);
 	speedup=dto/dtr;
 	printf("%.2f\n",speedup);
 #	printf("%.2f speedup for %s\n",speedup,all);

@@ -14,6 +14,8 @@
 # - shall test +-, &=, --, ++, .', ./, .\, /, -, +, .*, ./, .^, +0, ==, <=, >=, >, <, |, &
 # 
 
+1; # This is a script.
+
 function ase=are_spm_equal(OM,XM)
 	if(nnz(XM)!=nnz(OM));ase=0; return; end
 	if(columns(XM)!=columns(OM));ase=0; return; end

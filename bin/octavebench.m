@@ -1,4 +1,5 @@
 #!/usr/bin/octave -q
+1; # This is a script
 # a benchmark program for octave/matlab
 # TODO: fix output format 
 # TODO: correct symmetric / hermitian matrices handling

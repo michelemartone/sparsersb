@@ -1,4 +1,6 @@
-function mbench(fname)
+# Undocumented
+# function mbench(fname)
+function matlabbench(fname)
 addpath ext/
 mp=matlabpath();
 n=10;

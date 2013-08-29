@@ -813,8 +813,8 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 										if (! error_state)
 											;//retval = octave_value (matrix.index (i, j, resize_ok));
 									}
-//		  class Octave_map;
-//		  retval = Octave_map();
+//		  class octave_map;
+//		  retval = octave_map();
 //	RSBOI_DEBUG_NOTICE("UNFINISHED: set %d %d <- %lg\n",ii,jj,rhs.double_value());
 	      							}
 							}

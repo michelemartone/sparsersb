@@ -2215,3 +2215,8 @@ err:
 ret:
 	return retval;
 }
+/*
+%!test
+%! #help sparsersb
+%! sparsersb([1])
+*/

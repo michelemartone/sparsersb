@@ -2098,20 +2098,28 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		}
 		else
 		{
-			if(!ic0)
+			if (nargin == 2  && args(0).is_scalar_type() && args(1).is_scalar_type() )
 			{
-				Matrix m = args(0).matrix_value();
-				if (error_state) goto err;
-				retval.append(osmp=new octave_sparsersb_mtx(m));
+				const SparseMatrix m = args(0).sparse_matrix_value();
+				retval.append(osmp=new octave_sparsersb_mtx(SparseMatrix(args(0).scalar_value(),args(1).scalar_value())));
 			}
-#if RSBOI_WANT_DOUBLE_COMPLEX
 			else
 			{
-				ComplexMatrix m = args(0).complex_matrix_value();
-				if (error_state) goto err;
-				retval.append(osmp=new octave_sparsersb_mtx(m));
-			}
+				if(!ic0)
+				{
+					Matrix m = args(0).matrix_value();
+					if (error_state) goto err;
+					retval.append(osmp=new octave_sparsersb_mtx(m));
+				}
+#if RSBOI_WANT_DOUBLE_COMPLEX
+				else
+				{
+					ComplexMatrix m = args(0).complex_matrix_value();
+					if (error_state) goto err;
+					retval.append(osmp=new octave_sparsersb_mtx(m));
+				}
 #endif
+			}
 		}
 	}
 	else

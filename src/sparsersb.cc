@@ -1914,7 +1914,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 			marf = RSB_MARF_EPS_S;
  		if( args(1).string_value() == "renderb")
 			marf = RSB_MARF_EPS_B;
-		errval = rsb_mtx_render(rmf.c_str(),osmp->mtxAp,pmWidth,pmHeight,marf);
+		errval = rsb_mtx_rndr(rmf.c_str(),osmp->mtxAp,pmWidth,pmHeight,marf);
 
 		/* FIXME: serious error handling still missing here */
 		if(RSBOI_SOME_ERROR(errval))

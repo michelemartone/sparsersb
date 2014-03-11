@@ -390,6 +390,8 @@ shell commands will install into the following directories:
    headers:   $includedir
 
 octave-forge is configured with
+   CXX:         $CXX
+   CXXFLAGS:    $CXXFLAGS
    octave:      $OCTAVE (version $OCTAVE_VERSION)
    mkoctfile:	$MKOCTFILE for Octave $subver
    swig:        $SWIG"

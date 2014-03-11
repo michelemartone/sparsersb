@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2013   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+ Copyright (C) 2011-2014   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 
 /*
  * TODO wishlist:
+ * adapt to when octave_idx_type is 64 bit long
+ * rsb_file_vec_save (1.1)
  * all *.m files shall go to inst/
  * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.0.tar.gz 
  * produce ../doc/sparsersb.txi; can use get_help_text
@@ -208,6 +210,15 @@ extern "C" {
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) (((V1).is_complex_type()||(V2).is_complex_type())?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE)
 #else
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) RSBOI_TYPECODE
+#endif
+#if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
+#define RSBOI_10100_DOC \
+"@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A},\"render\", @var{filename}[, @var{rWidth}, @var{rHeight}])\n"\
+"If @var{A} is a "RSBOI_FNS" matrix and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postcript file @var{filename}. Optionally, width and height can be specified. Defaults are 512.\n"\
+"@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
+"If @var{A} is a "RSBOI_FNS" matrix, autotuning of the matrix will take place, with SpMV and autotuning parameters. After \"autotune\", the remaining parameters are optional.\n"
+#else
+#define RSBOI_10100_DOC	""
 #endif
 
 void rsboi_strerr(rsb_err_t errval)
@@ -916,7 +927,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			/* FIXME: and now ? */
 #endif
 			if(rcm.VA==NULL)
-				nnzA=0;
+				nnzA = 0;
 			else
 				errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			rcm.nrA=this->rows();
@@ -1801,6 +1812,7 @@ If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be inte
 \n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/
+RSBOI_10100_DOC""\
 "\n\
 Please note that on @code{"RSBOI_FNS"} type variables are available most, but not all of the operators available for @code{full} or @code{sparse} typed variables.\n\
 \n\
@@ -1866,7 +1878,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_err_t errval=RSB_ERR_NO_ERROR;
 		/* these are user settable */
 		rsb_coo_idx_t nrhs=0;
-		rsb_int_t oitmax=1;
+		rsb_int_t maxr=1;
 		rsb_time_t tmax=2.0;
 		rsb_int_t tn=0;
 		rsb_real_t sf=1.0;
@@ -1883,14 +1895,15 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 
 		if (nargin > 2) transA = RSB_CHAR_AS_TRANSPOSITION(args(2).string_value()[0]);
 		if (nargin > 3) nrhs=args(3).scalar_value();
-		if (nargin > 4) oitmax=args(4).scalar_value();
+		if (nargin > 4) maxr=args(4).scalar_value();
 		if (nargin > 5) tmax=args(5).scalar_value();
 		if (nargin > 6) tn=args(6).scalar_value();
 		if (nargin > 7) sf=args(7).scalar_value();
 
+		// ...
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */
-		errval = rsb_tune_spmm(&osmp->mtxAp,&sf,&tn,oitmax,tmax,transA,alphap,osmp->mtxAp,nrhs,order,Bp,ldB,betap,Cp,ldC);
+		errval = rsb_tune_spmm(&osmp->mtxAp,&sf,&tn,maxr,tmax,transA,alphap,NULL/*osmp->mtxAp*/,nrhs,order,Bp,ldB,betap,Cp,ldC);
 		/* FIXME: serious error handling missing here */
 		goto ret;
 	}
@@ -1898,14 +1911,18 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 
 
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
-	if (nargin == 3 && isr 
+	if (nargin >= 3 && isr 
  		&& args(1).is_string() && args(1).string_value().substr(0,6)=="render"
 		&& args(2).is_string())
 	{
-		rsb_err_t errval=RSB_ERR_NO_ERROR;
-		std::string rmf=args(2).string_value();
-		rsb_coo_idx_t pmWidth=512, pmHeight=512;
+		rsb_err_t errval = RSB_ERR_NO_ERROR;
+		std::string rmf = args(2).string_value();
+		rsb_coo_idx_t pmWidth = 512, pmHeight = 512;
 		rsb_flags_t marf = RSB_MARF_EPS;
+		/* may tell the user to supply a sparsersb matrix in case input is not 'sparse' */
+
+		if (nargin > 2) pmWidth = args(3).scalar_value();
+		if (nargin > 3) pmHeight = args(4).scalar_value();
 
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */

@@ -1131,6 +1131,28 @@ octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 	}
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+octave_value spmm(const octave_complex_matrix&v2, bool do_trans=false)const
+{
+	rsb_err_t errval=RSB_ERR_NO_ERROR;
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	rsb_trans_t transa = do_trans ? RSB_TRANSPOSITION_T : RSB_TRANSPOSITION_N;
+	const ComplexMatrix b = v2.complex_matrix_value ();
+	octave_idx_type b_nc = b.cols ();
+	octave_idx_type b_nr = b.rows ();
+	octave_idx_type ldb=b_nr;
+	octave_idx_type ldc=do_trans?this->columns():this->rows();
+	octave_idx_type nrhs=b_nc;
+	ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
+
+	if(( do_trans)&&(this->rows()   !=b_nr)) { error("matrix rows count does not match operand rows!\n"); return Matrix(); }
+	if((!do_trans)&&(this->columns()!=b_nr)) { error("matrix columns count does not match operand rows!\n"); return Matrix(); }
+	errval=rsb_spmm(transa,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+	RSBOI_PERROR(errval);
+	return retval;
+}
+#endif
+
 octave_value spmsp(const octave_sparsersb_mtx&v2)const
 {
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
@@ -1636,6 +1658,15 @@ DEFBINOP(op_trans_mul, sparse_rsb_mtx, matrix)
 	return v1.spmm(v2, true);
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(op_c_mul, sparse_rsb_mtx, matrix)
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
+	return v1.spmm(v2, false);
+}
+#endif
+
 static void install_sparsersb_ops (void)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1693,6 +1724,7 @@ static void install_sparsersb_ops (void)
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_scalar, rsb_s_mul);
 #if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex, rsb_c_mul);
+	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_mul);
 #endif
 	//INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
 	INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_matrix, el_div);

@@ -55,6 +55,10 @@
  * update to symmetric be forbidden or rather trigger a conversion ?
  * after file read, return various structural info
  * norm computation
+ * format spacings for readability
+ * TODO: spsm against complex is missing
+ * TODO: spmm -> rsboi_spmm
+ * TODO: although librsb has been optimized for performance, this source may not be always optimal.
 
  * Developer notes:
  http://www.gnu.org/software/octave/doc/interpreter/index.html
@@ -76,7 +80,7 @@
 #endif
 #include <rsb.h>
 
-#ifdef RSBOI_VERBOSE_CONFIG
+#ifdef RSBOI_VERBOSE_CONFIG /* poor man's trace facility */
 #if (RSBOI_VERBOSE_CONFIG>0)
 #define RSBOI_VERBOSE RSBOI_VERBOSE_CONFIG
 #endif
@@ -1134,20 +1138,38 @@ octave_value spmm(const octave_matrix&v2, bool do_trans=false)const
 #if RSBOI_WANT_DOUBLE_COMPLEX
 octave_value spmm(const octave_complex_matrix&v2, bool do_trans=false)const
 {
+	/*
+		TODO: to avoid e.g. v2.complex_matrix_value, one may use: dim_vector  dv = v2.dims(); ... dv(ndims) ...
+	*/
 	rsb_err_t errval=RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	rsb_trans_t transa = do_trans ? RSB_TRANSPOSITION_T : RSB_TRANSPOSITION_N;
+	rsb_trans_t transa = do_trans == true ? RSB_TRANSPOSITION_T : RSB_TRANSPOSITION_N;
+	struct rsb_mtx_t *mtxCp = NULL;
 	const ComplexMatrix b = v2.complex_matrix_value ();
 	octave_idx_type b_nc = b.cols ();
 	octave_idx_type b_nr = b.rows ();
 	octave_idx_type ldb=b_nr;
 	octave_idx_type ldc=do_trans?this->columns():this->rows();
 	octave_idx_type nrhs=b_nc;
-	ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
+	ComplexMatrix retval(ldc,nrhs/*,RSBOI_ZERO*/); /* RSBOI_ZERO is unnecessary: we zero in rsb_spmm */
+	RSBOI_T* Cp =(RSBOI_T*)retval.data();
+	RSBOI_T* Bp =(RSBOI_T*)b.data();
+
+	if(this->is_real_type())
+		errval = rsb_mtx_clone(&mtxCp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,NULL,this->mtxAp,RSBOI_EXPF);
+	else
+		mtxCp = this->mtxAp;
+	if(RSBOI_SOME_ERROR(errval))
+		goto err;
 
 	if(( do_trans)&&(this->rows()   !=b_nr)) { error("matrix rows count does not match operand rows!\n"); return Matrix(); }
 	if((!do_trans)&&(this->columns()!=b_nr)) { error("matrix columns count does not match operand rows!\n"); return Matrix(); }
-	errval=rsb_spmm(transa,&rsboi_pone,this->mtxAp,nrhs,RSB_OI_DMTXORDER,(RSBOI_T*)b.data(),ldb,&rsboi_zero,(RSBOI_T*)retval.data(),ldc);
+
+	errval=rsb_spmm(transa,&rsboi_pone,mtxCp,nrhs,RSB_OI_DMTXORDER,Bp,ldb,&rsboi_zero,Cp,ldc);
+
+	if(this->is_real_type())
+		RSBOI_DESTROY(mtxCp);
+err:
 	RSBOI_PERROR(errval);
 	return retval;
 }
@@ -1665,6 +1687,13 @@ DEFBINOP(op_c_mul, sparse_rsb_mtx, matrix)
 	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
 	return v1.spmm(v2, false);
 }
+
+DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
+	return v1.spmm(v2, true);
+}
 #endif
 
 static void install_sparsersb_ops (void)
@@ -1725,6 +1754,7 @@ static void install_sparsersb_ops (void)
 #if RSBOI_WANT_DOUBLE_COMPLEX
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex, rsb_c_mul);
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_mul);
+	INSTALL_BINOP (op_trans_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_trans_mul);
 #endif
 	//INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
 	INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_matrix, el_div);

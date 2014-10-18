@@ -56,7 +56,7 @@
  * after file read, return various structural info
  * norm computation
  * format spacings for readability
- * TODO: spsm against complex is missing
+ * TODO: rsboi_spsm against complex is missing
  * Note: although librsb has been optimized for performance, sparsersb is not.
 
  * Developer notes:
@@ -1339,6 +1339,7 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	if(v1.is_complex_type())
 	{
+	/* FIXME: useless case. */
 	ComplexMatrix retval= v2.complex_matrix_value();
 	octave_idx_type b_nc = retval.cols ();
 	octave_idx_type b_nr = retval.rows ();
@@ -1389,6 +1390,15 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 	}
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_complex_matrix&v2, rsb_trans_t transA)
+{
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	/* FIXME: implementation missing */
+	return errval;
+}
+#endif /* RSBOI_WANT_DOUBLE_COMPLEX */
+
 DEFBINOP(ldiv, sparse_rsb_mtx, matrix)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1416,6 +1426,38 @@ DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
 		return (v1.sparse_matrix_value().transpose()).solve(v2.matrix_value());
 	//RSBOI_RSB_MATRIX_SOLVE(v1,v2);
 }
+
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(c_ldiv, sparse_rsb_mtx, matrix)
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
+	if(v1.is__triangular()) 
+		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_N);
+
+	if(v1.is_complex_type() || v2.is_complex_type())
+		return (v1.sparse_complex_matrix_value()).solve(v2.sparse_complex_matrix_value());
+	else
+		return (v1.sparse_matrix_value()).solve(v2.matrix_value());
+	//RSBOI_RSB_MATRIX_SOLVE(v1,v2);
+}
+
+DEFBINOP(trans_c_ldiv, sparse_rsb_mtx, matrix)
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
+	if(v1.is__triangular()) 
+		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_T);
+
+	if(v1.is_complex_type() || v2.is_complex_type())
+		return (v1.sparse_complex_matrix_value().transpose()).solve(v2.sparse_complex_matrix_value());
+	else
+		return (v1.sparse_matrix_value().transpose()).solve(v2.matrix_value());
+	//RSBOI_RSB_MATRIX_SOLVE(v1,v2);
+}
+#endif /* RSBOI_WANT_DOUBLE_COMPLEX */
+
+
 
 DEFBINOP(el_div, sparse_rsb_mtx, matrix)
 {
@@ -1757,6 +1799,8 @@ static void install_sparsersb_ops (void)
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex, rsb_c_mul);
 	INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_mul);
 	INSTALL_BINOP (op_trans_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_trans_mul);
+	INSTALL_BINOP (op_ldiv, octave_sparsersb_mtx, octave_complex_matrix, c_ldiv);
+	INSTALL_BINOP (op_trans_ldiv, octave_sparsersb_mtx, octave_complex_matrix, trans_c_ldiv);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	//INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
 	INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_matrix, el_div);

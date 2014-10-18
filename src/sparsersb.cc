@@ -219,8 +219,8 @@ extern "C" {
 #define RSBOI_10100_DOC \
 "@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A},\"render\", @var{filename}[, @var{rWidth}, @var{rHeight}])\n"\
 "If @var{A} is a "RSBOI_FNS" matrix and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postcript file @var{filename}. Optionally, width and height can be specified. Defaults are 512.\n"\
-"@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
-"If @var{A} is a "RSBOI_FNS" matrix, autotuning of the matrix will take place, with SpMV and autotuning parameters. After \"autotune\", the remaining parameters are optional.\n"
+"@deftypefnx {Loadable Function} {[@var{O} =]} "RSBOI_FNS" (@var{A},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
+"If @var{A} is a "RSBOI_FNS" matrix, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged.\n"
 #else
 #define RSBOI_10100_DOC	""
 #endif
@@ -2052,7 +2052,15 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		// ...
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */
-		errval = rsb_tune_spmm(&osmp->mtxAp,&sf,&tn,maxr,tmax,transA,alphap,NULL/*osmp->mtxAp*/,nrhs,order,Bp,ldB,betap,Cp,ldC);
+		if(nargout)
+		{
+			struct rsb_mtx_t*mtxAp = NULL;
+			errval = rsb_mtx_clone(&mtxAp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,NULL,osmp->mtxAp,RSBOI_EXPF);
+			errval = rsb_tune_spmm(&mtxAp,&sf,&tn,maxr,tmax,transA,alphap,NULL,nrhs,order,Bp,ldB,betap,Cp,ldC);
+			retval.append(new octave_sparsersb_mtx(mtxAp));
+		}
+		else
+			errval = rsb_tune_spmm(&osmp->mtxAp,&sf,&tn,maxr,tmax,transA,alphap,NULL/*osmp->mtxAp*/,nrhs,order,Bp,ldB,betap,Cp,ldC);
 		/* FIXME: serious error handling missing here */
 		goto ret;
 	}

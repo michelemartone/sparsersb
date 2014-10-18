@@ -64,11 +64,13 @@
      rendered as an Encapsulated Postcript file FILENAME. Optionally,
      width and height can be specified. Defaults are 512.
 
- -- Loadable Function: S = sparsersb (A,"autotune"[, TRANSA, NRHS,
+ -- Loadable Function: [O =] sparsersb (A,"autotune"[, TRANSA, NRHS,
           MAXR, TMAX, TN, SF])
      If A is a sparsersb matrix, autotuning of the matrix will take
-     place, with SpMV and autotuning parameters. After "autotune", the
-     remaining parameters are optional.
+     place, with SpMV and autotuning parameters. After the "autotune"
+     string, the remaining parameters are optional. If giving an output
+     argument O, that will be assigned to the autotuned matrix, and the
+     input one A will remain unchanged.
 
      Please note that on `sparsersb' type variables are available most,
      but not all of the operators available for `full' or `sparse'

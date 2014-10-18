@@ -55,8 +55,7 @@
  * update to symmetric be forbidden or rather trigger a conversion ?
  * after file read, return various structural info
  * norm computation
- * format spacings for readability
- * TODO: rsboi_spsm against complex is missing
+ * reformat code for readability
  * Note: although librsb has been optimized for performance, sparsersb is not.
 
  * Developer notes:
@@ -1339,15 +1338,14 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	if(v1.is_complex_type())
 	{
-	/* FIXME: useless case. */
 	ComplexMatrix retval= v2.complex_matrix_value();
 	octave_idx_type b_nc = retval.cols ();
 	octave_idx_type b_nr = retval.rows ();
-	octave_idx_type ldb=b_nr;
-	octave_idx_type ldc=v1.rows();
-	octave_idx_type nrhs=b_nc;
-	octave_idx_type nels=retval.rows()*retval.cols();
-	errval=rsb_spsm(transA,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
+	octave_idx_type ldb = b_nr;
+	octave_idx_type ldc = v1.rows();
+	octave_idx_type nrhs = b_nc;
+	octave_idx_type nels = retval.rows()*retval.cols();
+	errval = rsb_spsm(transA,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
 	if(RSBOI_SOME_ERROR(errval))
 	{
 		if(errval==RSB_ERR_INVALID_NUMERICAL_DATA)
@@ -1365,14 +1363,16 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 	}
 	else
 	{
-	Matrix retval=v2.matrix_value();
+	Matrix retval = v2.matrix_value();
 	octave_idx_type b_nc = retval.cols ();
 	octave_idx_type b_nr = retval.rows ();
-	octave_idx_type ldb=b_nr;
-	octave_idx_type ldc=v1.rows();
-	octave_idx_type nrhs=b_nc;
-	octave_idx_type nels=retval.rows()*retval.cols();
-	errval=rsb_spsm(transA,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
+	octave_idx_type ldb = b_nr;
+	octave_idx_type ldc = v1.rows();
+	octave_idx_type nrhs = b_nc;
+	octave_idx_type nels = retval.rows()*retval.cols();
+
+	errval = rsb_spsm(transA,&rsboi_pone,v1.mtxAp,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
+
 	if(RSBOI_SOME_ERROR(errval))
 	{
 		if(errval==RSB_ERR_INVALID_NUMERICAL_DATA)

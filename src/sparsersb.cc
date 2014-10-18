@@ -1394,8 +1394,43 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_complex_matrix&v2, rsb_trans_t transA)
 {
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
-	/* FIXME: implementation missing */
-	return errval;
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	ComplexMatrix retval= v2.complex_matrix_value();
+	octave_idx_type b_nc = retval.cols ();
+	octave_idx_type b_nr = retval.rows ();
+	octave_idx_type ldb = b_nr;
+	octave_idx_type ldc = v1.rows();
+	octave_idx_type nrhs = b_nc;
+	octave_idx_type nels = retval.rows()*retval.cols();
+	struct rsb_mtx_t *mtxCp = NULL;
+
+	if(v1.is_real_type())
+		errval = rsb_mtx_clone(&mtxCp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,NULL,v1.mtxAp,RSBOI_EXPF);
+	else
+		mtxCp = v1.mtxAp;
+	if(RSBOI_SOME_ERROR(errval))
+		goto err;
+
+	errval = rsb_spsm(transA,&rsboi_pone,mtxCp,nrhs,RSB_OI_DMTXORDER,&rsboi_zero,(const RSBOI_T*)retval.data(),ldb,(RSBOI_T*)retval.data(),ldc);
+
+	if(RSBOI_SOME_ERROR(errval))
+	{
+		if(errval==RSB_ERR_INVALID_NUMERICAL_DATA)
+		{
+			RSBOI_PERROR(errval);// FIXME: need a specific error message here
+		}
+		else
+		{
+			RSBOI_PERROR(errval);// FIXME: generic case, here
+		}
+		for(octave_idx_type i=0;i<nels;++i)
+			retval(i)=octave_NaN;
+	}
+	if(v1.is_real_type())
+		RSBOI_DESTROY(mtxCp);
+err:
+	RSBOI_PERROR(errval);
+	return retval;
 }
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 

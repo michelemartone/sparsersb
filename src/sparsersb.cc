@@ -1151,7 +1151,7 @@ octave_value spmm(const octave_complex_matrix&v2, bool do_trans=false)const
 	octave_idx_type ldb=b_nr;
 	octave_idx_type ldc=do_trans?this->columns():this->rows();
 	octave_idx_type nrhs=b_nc;
-	ComplexMatrix retval(ldc,nrhs/*,RSBOI_ZERO*/); /* RSBOI_ZERO is unnecessary: we zero in rsb_spmm */
+	ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO); /* zeroing is in principle unnecessary (we zero in rsb_spmm), but otherwise data may not be allocated. */
 	RSBOI_T* Cp =(RSBOI_T*)retval.data();
 	RSBOI_T* Bp =(RSBOI_T*)b.data();
 

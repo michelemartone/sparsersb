@@ -14,11 +14,16 @@ make check
 If you desire, you can pass some options to configure; e.g.: 
 ./configure CXXFLAGS="-O3  "
 ./configure CXXFLAGS="-O3  " LIBRSB_CONFIG=/opt/librsb-optimized/bin/librsb-config 
+./configure SPARSERSB_LIBS="-lmpi++"
 ./configure 
+
+More options:
+./configure --help
 
 Usage instructions:
 # go in the directory where sparsersb.oct is located and run octave.
 octave
-# you can use the sparsersb function
+# you can use the sparsersb function, starting with 
+ > help sparsersb.
 
 ================================================================================

@@ -65,7 +65,7 @@ AC_SUBST(altmpath)
 AC_SUBST(altopath)
 dnl
 AC_SUBST(LIBRSB_CONFIG)
-AC_ARG_VAR([LIBRSB_CONFIG],[Pathname to the librsb-config script (MANDATORY!).])
+AC_ARG_VAR([LIBRSB_CONFIG],[Pathname to the librsb-config script.])
 AC_SUBST(SPARSERSB_LIBS)
 AC_ARG_VAR([SPARSERSB_LIBS],[Additional libraries you want to link sparsersb against.])
 AC_SUBST(LIBRSB_LIBS)

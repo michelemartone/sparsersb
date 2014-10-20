@@ -21,7 +21,7 @@ AC_OPENMP([])
 STATUS_MSG="
 \$STATUS_MSG
 
-librsb configured as:
+sparsersb configured as:
       LIBRSB_CONFIG=\${LIBRSB_CONFIG}
       LIBRSB_CXXFLAGS=\${LIBRSB_CXXFLAGS}
       LIBRSB_LIBS=\${LIBRSB_LIBS}

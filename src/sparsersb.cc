@@ -74,6 +74,7 @@
 #include <octave/ov-complex.h>
 #include <octave/ops.h>
 #include <octave/ov-typeinfo.h>
+#include <octave/oct-alloc.h> /* DECLARE_OCTAVE_ALLOCATOR */
 #if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
 #include <iomanip>	// std::setprecision
 #endif
@@ -1223,7 +1224,7 @@ octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=NULL)const
 }
 
 	private:
-
+	public:
 		DECLARE_OCTAVE_ALLOCATOR
 			DECLARE_OV_TYPEID_FUNCTIONS_AND_DATA
 };/* end of class octave_sparsersb_mtx definition  */

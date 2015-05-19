@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2014   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+ Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -911,7 +911,11 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			return ss;
 		}
 
+#if defined(OCTAVE_MAJOR_VERSION) && (OCTAVE_MAJOR_VERSION>=4)
+		void print (std::ostream& os, bool pr_as_read_syntax = false)
+#else  /* OCTAVE_MAJOR_VERSION */
 		void print (std::ostream& os, bool pr_as_read_syntax = false) const
+#endif /* OCTAVE_MAJOR_VERSION */
 		{
 			RSBOI_FIXME("what to do with pr_as_read_syntax ?");
 			struct rsboi_coo_matrix_t rcm;

@@ -176,6 +176,7 @@ end
 function match=testpcgm(OM,XM)
 	# FIXME! This test ignores OM and XM !
 	match=1;
+	tol=1e-10;
 	A=sparse   ([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
 	[OX, OFLAG, ORELRES, OITER, ORESVEC, OEIGEST]=pcg(A,B);
 	A=sparsersb([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
@@ -193,14 +194,14 @@ function match=testpcgm(OM,XM)
 	[l, u, p, q] = luinc (A, 1.e-3);
 	[OX, OFLAG, ORELRES, OITER, ORESVEC, OEIGEST]= pcg (          A ,b);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC, XEIGEST]= pcg (sparsersb(A),b);
-	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	#
 	#function y = apply_a (x)
 	#	y = [1:N]' .* x;
 	#endfunction
 	[OX, OFLAG, ORELRES, OITER, ORESVEC, OEIGEST]= pcg (          A ,b, 1.e-6, 500, l,u);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC, XEIGEST]= pcg (sparsersb(A),b, 1.e-6, 500, l,u);
-	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	testmsg(match,"pcg");
 end
 
@@ -216,6 +217,7 @@ end
 function match=testpcrm(OM,XM)
 	# FIXME! This test ignores OM and XM !
 	match=1;
+	tol=1e-10;
 	A=sparse   ([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
 	[OX, OFLAG, ORELRES, OITER, ORESVEC]=pcr(A,B);
 	A=sparsersb([11,12;21,23]);X=[11;22];B=A*X;X=[0;0];
@@ -233,14 +235,14 @@ function match=testpcrm(OM,XM)
 	[l, u, p, q] = luinc (A, 1.e-3);
 	[OX, OFLAG, ORELRES, OITER, ORESVEC]= pcr (          A ,b);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b);
-	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	#
 	#function y = apply_a (x)
 	#	y = [1:N]' .* x;
 	#endfunction
 	[OX, OFLAG, ORELRES, OITER, ORESVEC]= pcr (          A ,b, 1.e-6, 500, l);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b, 1.e-6, 500, l);
-	match&=(sum(OX-XX)==0.0);# FIXME: a very brittle check!
+	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	testmsg(match,"pcr");
 end
 

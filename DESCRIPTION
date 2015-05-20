@@ -1,11 +1,11 @@
 Name: sparsersb
 Version: 1.0.0
-Date: 2015-06-01
+Date: 2015-05-21
 Author: Michele Martone <michelemartone@users.sourceforge.net> 
 Maintainer: Michele Martone <michelemartone@users.sourceforge.net> 
 Title: Interface to the librsb package implementing the RSB sparse matrix format.
 Description: Interface to the librsb package implementing the RSB sparse matrix format.
-Depends: octave (>= 3.6.3)
+Depends: octave (>= 4.0.0)
 License: GPL version 3 or later
 Url: http://librsb.sourceforge.net/
 Categories: Sparse Matrix Computations

@@ -4,6 +4,7 @@ sinclude Makeconf
 # You have to define RSBINCDIR in the environment!
 #
 LIBRSB_CXXFLAGS?=-I$(RSBINCDIR)
+RSBLIBDIR?=/usr/local/lib
 LIBRSB_LIBS?=$(RSBLIBDIR)/librsb.a
 #
 #

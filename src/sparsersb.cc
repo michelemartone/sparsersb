@@ -152,6 +152,9 @@
 #define RSBOI_O_NPMSERR  "providing non positive matrix size is not allowed!"
 #define RSBOI_0_EMCHECK(M) if(!(M))RSBOI_0_ERROR(RSBOI_0_EMERRMSG);
 #define RSBOI_FNSS(S)	#S
+#ifndef RSB_SPARSERSB_LABEL
+#define RSB_SPARSERSB_LABEL sparsersb
+#endif /* RSB_SPARSERSB_LABEL */
 //#define RSBOI_FNS	RSBOI_FNSS(RSB_SPARSERSB_LABEL)
 #define RSBOI_FSTR	"Recursive Sparse Blocks"
 #define RSBOI_FNS	"sparsersb"

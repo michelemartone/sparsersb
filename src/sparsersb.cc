@@ -15,9 +15,6 @@
  along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
-// PKG_ADD: autoload ("sparsersb", fullfile (fileparts (mfilename ("fullpath")), "sparsersb.oct"));
-// PKG_DEL: autoload ("sparsersb", fullfile (fileparts (mfilename ("fullpath")), "sparsersb.oct", "remove"));
-
 /*
  * TODO wishlist (patches are welcome!):
  * adapt to when octave_idx_type is 64 bit long

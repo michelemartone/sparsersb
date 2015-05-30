@@ -2103,7 +2103,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 
 		/* FIXME: serious error handling still missing here */
 		if(RSBOI_SOME_ERROR(errval))
-			retval.append(std::string("Error returned from rsb_file_mtx_render()"));
+			retval.append(std::string("Error returned from rsb_mtx_rndr()"));
 		goto ret;
 	}
 #endif

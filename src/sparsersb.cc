@@ -2089,8 +2089,8 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 		rsb_flags_t marf = RSB_MARF_EPS;
 		/* may tell the user to supply a sparsersb matrix in case input is not 'sparse' */
 
-		if (nargin > 2) pmWidth = args(3).scalar_value();
-		if (nargin > 3) pmHeight = args(4).scalar_value();
+		if (nargin > 3) pmWidth = args(3).scalar_value();
+		if (nargin > 4) pmHeight = args(4).scalar_value();
 
 		if(!osmp || !osmp->mtxAp)
 			goto ret;/* FIXME: error handling missing here */

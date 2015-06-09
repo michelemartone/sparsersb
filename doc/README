@@ -17,6 +17,8 @@ If you desire, you can pass some options to configure; e.g.:
 ./configure SPARSERSB_LIBS="-lmpi++"
 ./configure 
 
+On many systems, you will have to build librsb with the PIC (-fPIC on GCC) option or you will get link time problems.
+
 More options:
 ./configure --help
 

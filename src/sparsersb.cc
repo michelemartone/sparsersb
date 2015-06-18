@@ -1959,10 +1959,10 @@ Uses @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}\n\
 If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
-If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the correspondent librsb option will be set to that value.\n\
+If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the corresponding librsb option will be set to that value.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's rsb_mtx_get_info_from_string()), then the correspondent value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's rsb_mtx_get_info_from_string()), then the corresponding value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
 \n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
 If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\

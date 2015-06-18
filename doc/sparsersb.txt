@@ -45,12 +45,12 @@
  -- Loadable Function: S = sparsersb ("set", OPN, OPV)
      If OPN is a string representing a valid librsb option name and OPV
      is a string representing a valid librsb option value, the
-     correspondent librsb option will be set to that value.
+     corresponding librsb option will be set to that value.
 
  -- Loadable Function: S = sparsersb (A, "get", MIF)
      If MIF is a string specifying a valid librsb matrix info string
      (valid for librsb's rsb_mtx_get_info_from_string()), then the
-     correspondent value will be returned for matrix A. If MIF is the
+     corresponding value will be returned for matrix A. If MIF is the
      an empty string (""), matrix structure information will be
      returned.
 

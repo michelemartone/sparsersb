@@ -1925,8 +1925,8 @@ DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv})\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{m}, @var{n})\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{s}, @var{m}, @var{n}, \"unique\")\n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
+@deftypefnx {Loadable Function}             "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
+@deftypefnx {Loadable Function} {@var{v} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{QS})\n\
 @deftypefnx {Loadable Function} "RSBOI_FNS" (@var{a},\"save\",@var{mtxfilename})\n\
 @deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
@@ -1991,10 +1991,10 @@ If @var{m} or @var{n} are not specified, then @code{@var{m} = max (@var{i})}, @c
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, these will be passed to the @code{rsb_lib_set_opt_str()} function.\n\
 \n\
 \
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{A}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
 \n\
 \
-If @var{A} is a "RSBOI_FNS" matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}.\n\
+If @var{A} is a "RSBOI_FNS" matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}. String @code{@var{v}} will be returned.\n\
 \n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/

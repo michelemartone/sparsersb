@@ -5,8 +5,8 @@
  -- Loadable Function: S = sparsersb (I, J, SV)
  -- Loadable Function: S = sparsersb (M, N)
  -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
- -- Loadable Function: S = sparsersb ("set", OPN, OPV)
- -- Loadable Function: S = sparsersb (A, "get", MIF)
+ -- Loadable Function: sparsersb ("set", OPN, OPV)
+ -- Loadable Function: V = sparsersb (A, "get", MIF)
  -- Loadable Function: S = sparsersb (A, QS)
  -- Loadable Function: sparsersb (A,"save",MTXFILENAME)
  -- Loadable Function: [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY]
@@ -67,12 +67,13 @@
 
      If MIF is a string specifying a valid librsb matrix info string
      (valid for librsb's `rsb_mtx_get_info_from_string()'), then the
-     corresponding value will be returned for matrix A. If MIF is the
-     an empty string (""), matrix structure information will be
-     returned.
+     corresponding value will be returned for matrix `A', in string
+     `V'. If MIF is the an empty string (""), matrix structure
+     information will be returned.
 
      If A is a sparsersb matrix and QS is a string, QS will be
-     interpreted as a query string about matrix A.
+     interpreted as a query string about matrix A. String `V' will be
+     returned.
 
      If A is a sparsersb matrix and the "render" keyword is specified,
      and FILENAME is a string, A will be rendered as an Encapsulated

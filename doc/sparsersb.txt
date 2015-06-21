@@ -4,16 +4,16 @@
  -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
  -- Loadable Function: S = sparsersb (I, J, SV)
  -- Loadable Function: S = sparsersb (M, N)
- -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
+ -- Loadable Function: S = sparsersb (I, J, SV, M, N, "unique")
  -- Loadable Function: sparsersb ("set", OPN, OPV)
- -- Loadable Function: V = sparsersb (A, "get", MIF)
- -- Loadable Function: S = sparsersb (A, QS)
+ -- Loadable Function: V = sparsersb (S, "get", MIF)
+ -- Loadable Function: V = sparsersb (S, QS)
  -- Loadable Function: sparsersb (A,"save",MTXFILENAME)
  -- Loadable Function: [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY]
 = sparsersb (MTXFILENAME, MTXTYPESTRING)
- -- Loadable Function: S = sparsersb (A,"render", FILENAME[, RWIDTH,
+ -- Loadable Function: sparsersb (S,"render", FILENAME[, RWIDTH,
           RHEIGHT])
- -- Loadable Function: [O =] sparsersb (A,"autotune"[, TRANSA, NRHS,
+ -- Loadable Function: [O =] sparsersb (S,"autotune"[, TRANSA, NRHS,
           MAXR, TMAX, TN, SF])
      Create or manipulate sparse matrices using the RSB format provided
      by librsb, as similarly as possible to `sparse'.
@@ -44,7 +44,7 @@
      Market matrix file named MTXFILENAME.
 
      *Note*: if multiple values are specified with the same I, J
-     indices, the corresponding values in S will be added.
+     indices, the corresponding values in SV will be added.
 
      The following are all equivalent:
 
@@ -77,16 +77,16 @@
      feature is still incomplete, and whatever the value of QS, a
      general information string will be returned.
 
-     If A is a sparsersb matrix and the "render" keyword is specified,
+     If S is a sparsersb matrix and the "render" keyword is specified,
      and FILENAME is a string, A will be rendered as an Encapsulated
      Postscript file FILENAME. Optionally, width and height can be
      specified in `RWIDTH, RHEIGHT'. Defaults are 512.
 
-     If A is a sparsersb matrix and the "autotune" keyword is
+     If S is a sparsersb matrix and the "autotune" keyword is
      specified, autotuning of the matrix will take place, with SpMV and
      autotuning parameters. After the "autotune" string, the remaining
      parameters are optional. Parameter TRANSA specifies whether to
-     tune for untransposed ("n") or transposed ("t"); NRHS the number
+     tune for untransposed ("N") or transposed ("T"); NRHS the number
      of right hand sides; MAXR the number of tuning rounds; TMAX the
      threads to use. If giving an output argument O, that will be
      assigned to the autotuned matrix, and the input one A will remain

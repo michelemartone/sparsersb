@@ -221,15 +221,16 @@ extern "C" {
 #endif
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 #define RSBOI_10100_DOCH \
-"@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{A},\"render\", @var{filename}[, @var{rWidth}, @var{rHeight}])\n"\
-"@deftypefnx {Loadable Function} {[@var{O} =]} " RSBOI_FNS " (@var{A},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
+"@deftypefnx {Loadable Function}      " RSBOI_FNS " (@var{S},\"render\", @var{filename}[, @var{rWidth}, @var{rHeight}])\n"\
+"@deftypefnx {Loadable Function} {[@var{O} =]} " RSBOI_FNS " (@var{S},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
 
+/* #define RSBOI_10100_DOC "If @var{S} is a " RSBOI_FNS " matrix and one of the \"render\",\"renderb\",\"renders\" keywords ... */
 #define RSBOI_10100_DOC \
 \
-"If @var{A} is a " RSBOI_FNS " matrix and the \"render\" keyword is specified, and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postscript file @var{filename}. Optionally, width and height can be specified in @code{@var{rWidth}, @var{rHeight}}. Defaults are 512.\n"\
+"If @var{S} is a " RSBOI_FNS " matrix and the \"render\" keyword is specified, and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postscript file @var{filename}. Optionally, width and height can be specified in @code{@var{rWidth}, @var{rHeight}}. Defaults are 512.\n"\
 "\n"\
 \
-"If @var{A} is a " RSBOI_FNS " matrix and the \"autotune\" keyword is specified, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. Parameter @var{transA} specifies whether to tune for untransposed (\"n\") or transposed (\"t\"); @var{nrhs} the number of right hand sides; @var{maxr} the number of tuning rounds; @var{tmax} the threads to use. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged. See librsb documentation for @code{rsb_tune_spmm} to learn more.\n"
+"If @var{S} is a " RSBOI_FNS " matrix and the \"autotune\" keyword is specified, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. Parameter @var{transA} specifies whether to tune for untransposed (\"N\") or transposed (\"T\"); @var{nrhs} the number of right hand sides; @var{maxr} the number of tuning rounds; @var{tmax} the threads to use. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged. See librsb documentation for @code{rsb_tune_spmm} to learn more.\n"
 #else
 #define RSBOI_10100_DOC	""
 #define RSBOI_10100_DOCH	""
@@ -1919,17 +1920,17 @@ err:
 
 DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 "-*- texinfo -*-\n\
-@deftypefn {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{a})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{m}, @var{n})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{s}, @var{m}, @var{n}, \"unique\")\n\
+@deftypefn {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{a})\n\
+@deftypefnx {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n})\n\
+@deftypefnx {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
+@deftypefnx {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv})\n\
+@deftypefnx {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{m}, @var{n})\n\
+@deftypefnx {Loadable Function} {@var{S} =} " RSBOI_FNS " (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, \"unique\")\n\
 @deftypefnx {Loadable Function}             " RSBOI_FNS " (\"set\", @var{opn}, @var{opv})\n\
-@deftypefnx {Loadable Function} {@var{v} =} " RSBOI_FNS " (@var{A}, \"get\", @var{mif})\n\
-@deftypefnx {Loadable Function} {@var{s} =} " RSBOI_FNS " (@var{A}, @var{QS})\n\
+@deftypefnx {Loadable Function} {@var{v} =} " RSBOI_FNS " (@var{S}, \"get\", @var{mif})\n\
+@deftypefnx {Loadable Function} {@var{v} =} " RSBOI_FNS " (@var{S}, @var{QS})\n\
 @deftypefnx {Loadable Function} " RSBOI_FNS " (@var{a},\"save\",@var{mtxfilename})\n\
-@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} " RSBOI_FNS " (@var{mtxfilename}, @var{mtxtypestring})\n\
+@deftypefnx {Loadable Function} {[@var{S}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} " RSBOI_FNS " (@var{mtxfilename}, @var{mtxtypestring})\n\
 " RSBOI_10100_DOCH ""\
 \
 "\n"\
@@ -1960,7 +1961,7 @@ If \"save\" is specified, saves a sparse RSB matrix as a Matrix Market matrix fi
 "\n\
 \
 @strong{Note}: if multiple values are specified with the same\n\
-@var{i}, @var{j} indices, the corresponding values in @var{s} will\n\
+@var{i}, @var{j} indices, the corresponding values in @var{sv} will\n\
 be added.\n\
 \n\
 The following are all equivalent:\n\
@@ -2457,7 +2458,7 @@ ret:
 %!test
 %! sparsersb("set","RSB_IO_WANT_VERBOSE_TUNING","1")
 %!test
-%! # sparsersb("get","RSB_IO_WANT_VERBOSE_TUNING","1")
+%! # sparsersb("get","RSB_IO_WANT_VERBOSE_TUNING","1") # FIXME
 %!test
 %! sparsersb(sparsersb([11,0;21,22]),"RSB_MIF_TOTAL_SIZE__TO__SIZE_T")
 %!test
@@ -2467,7 +2468,8 @@ ret:
 %!test
 %! [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY] = sparsersb("sparsersb_temporary_matrix_file.mtx", "Z"); assert(NROWS==2);assert(NCOLS==2);assert(NNZ==3);assert(FIELD=="complex");assert(SYMMETRY=='U');
 %!test
-%! sparsersb(sparsersb([11,0;21,22]),"render","sparsersb_temporary_rendering.eps",1024,1024)
+%! rrm=sparsersb(sprand(1000,1000,0.001)); sparsersb(rrm,"render", "sparsersb_temporary_render.eps" ,1024,1024); 
+%! # sparsersb(rrm,"renderb", "sparsersb_temporary_renderb.eps"); sparsersb(rrm,"renders", "sparsersb_temporary_renders.eps"); # FIXME
 %!test
 %! sparsersb(sparsersb(sprand(100,100,0.4)),"autotune","n",20,4,1,1,1)
 */

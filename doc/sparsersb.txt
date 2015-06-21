@@ -73,7 +73,9 @@
 
      If A is a sparsersb matrix and QS is a string, QS will be
      interpreted as a query string about matrix A. String `V' will be
-     returned.
+     returned. See librsb's `rsb_mtx_get_info_str()'.  *Note*: this
+     feature is still incomplete, and whatever the value of QS, a
+     general information string will be returned.
 
      If A is a sparsersb matrix and the "render" keyword is specified,
      and FILENAME is a string, A will be rendered as an Encapsulated

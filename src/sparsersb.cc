@@ -1994,7 +1994,8 @@ If @var{opn} is a string representing a valid librsb option name and @var{opv} i
 If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{A}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
 \n\
 \
-If @var{A} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}. String @code{@var{v}} will be returned.\n\
+If @var{A} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}. String @code{@var{v}} will be returned. See librsb's @code{rsb_mtx_get_info_str()}.\n\
+@strong{Note}: this feature is still incomplete, and whatever the value of @var{QS}, a general information string will be returned.\n\
 \n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/
@@ -2192,9 +2193,13 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		if (nargin == 2 && isr && args(1).is_string())
 		{
 			char ss[RSBOI_INFOBUF];
+			rsb_err_t errval = RSB_ERR_NO_ERROR;
+
 			if(!osmp || !osmp->mtxAp)goto ret;/* FIXME: error handling missing here */
-			rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
-			/* FIXME: to add interpretation */
+			errval = rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
+			if(!RSBOI_SOME_ERROR(errval))
+				retval.append(ss);
+			/* TODO, FIXME: to add interpretation (we are ignoring args(1) !): this is unfinished */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
 			// octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
 			/* FIXME: shall not print out, but rather return the info as a string*/
@@ -2453,6 +2458,8 @@ ret:
 %! sparsersb("set","RSB_IO_WANT_VERBOSE_TUNING","1")
 %!test
 %! # sparsersb("get","RSB_IO_WANT_VERBOSE_TUNING","1")
+%!test
+%! sparsersb(sparsersb([11,0;21,22]),"RSB_MIF_TOTAL_SIZE__TO__SIZE_T")
 %!test
 %! sparsersb(sparsersb([11,0;21,22]),"save","sparsersb_temporary_matrix_file.mtx")
 %!test

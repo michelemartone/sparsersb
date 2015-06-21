@@ -76,7 +76,7 @@
 
      If A is a sparsersb matrix and the "render" keyword is specified,
      and FILENAME is a string, A will be rendered as an Encapsulated
-     Postcript file FILENAME. Optionally, width and height can be
+     Postscript file FILENAME. Optionally, width and height can be
      specified in `RWIDTH, RHEIGHT'. Defaults are 512.
 
      If A is a sparsersb matrix and the "autotune" keyword is

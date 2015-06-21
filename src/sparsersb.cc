@@ -226,7 +226,7 @@ extern "C" {
 
 #define RSBOI_10100_DOC \
 \
-"If @var{A} is a "RSBOI_FNS" matrix and the \"render\" keyword is specified, and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postcript file @var{filename}. Optionally, width and height can be specified in @code{@var{rWidth}, @var{rHeight}}. Defaults are 512.\n"\
+"If @var{A} is a "RSBOI_FNS" matrix and the \"render\" keyword is specified, and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postscript file @var{filename}. Optionally, width and height can be specified in @code{@var{rWidth}, @var{rHeight}}. Defaults are 512.\n"\
 "\n"\
 \
 "If @var{A} is a "RSBOI_FNS" matrix and the \"autotune\" keyword is specified, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. Parameter @var{transA} specifies whether to tune for untransposed (\"n\") or transposed (\"t\"); @var{nrhs} the number of right hand sides; @var{maxr} the number of tuning rounds; @var{tmax} the threads to use. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged. See librsb documentation for @code{rsb_tune_spmm} to learn more.\n"

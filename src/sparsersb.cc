@@ -2473,3 +2473,41 @@ ret:
 %!test
 %! sparsersb(sparsersb(sprand(100,100,0.4)),"autotune","n",20,4,1,1,1)
 */
+
+/*
+%!demo
+%! s=sparsersb([2])
+%! s=sparsersb([1,2],[1,1],[11,21],2,2)
+%! 
+%! M=10000;N=10000;P=1 / M;
+%! s=sparse(sprand(M,N,P));
+%! r=sparsersb(s);
+%! x=ones(M,1);
+%! bdt=1.0;
+%! nnz(s)
+%! nnz(r)
+%! 
+%! tic()
+%! nnz(s);
+%! sc=0;
+%! for i=1,10
+%!   s*x;
+%!   sc=sc+1;
+%! end
+%! toc()
+
+%! tic()
+%! nnz(s);
+%! sc=0;
+%! for i=1,10
+%!   r*x;
+%!   sc=sc+1;
+%! end
+%! sc
+%! toc()
+%! 
+%! # FIXME: this is incomplete.
+*/
+
+
+

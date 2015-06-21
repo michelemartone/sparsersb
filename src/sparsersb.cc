@@ -2436,5 +2436,31 @@ ret:
 /*
 %!test
 %! #help sparsersb
-%! sparsersb([1])
+%! s=sparsersb([2]), assert(s==2), assert(s!=1)
+%!test
+%! s=sparsersb([1,2],[1,1],[11,21],2,2         ), assert(nnz(s)==2)
+%!test
+%! s=sparsersb([1,2],[1,1],[11,21],2,2,-1      ), assert(nnz(s)==2)
+%!test
+%! s=sparsersb([1,2],[1,1],[11,21]             ), assert(nnz(s)==2)
+%!test
+%! s=sparsersb(10,10                           ), assert(nnz(s)==0)
+%!test
+%! s=sparsersb([1,1],[1,1],[11,21]             ), assert(nnz(s)==1), assert(s(1,1)==32)
+%!test
+%! s=sparsersb([1,1],[1,1],[11,21],2,2,"unique"), assert(nnz(s)==1), assert(s(1,1)==21)
+%!test
+%! sparsersb("set","RSB_IO_WANT_VERBOSE_TUNING","1")
+%!test
+%! # sparsersb("get","RSB_IO_WANT_VERBOSE_TUNING","1")
+%!test
+%! sparsersb(sparsersb([11,0;21,22]),"save","sparsersb_temporary_matrix_file.mtx")
+%!test
+%! [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY] = sparsersb("sparsersb_temporary_matrix_file.mtx"     ); assert(NROWS==2);assert(NCOLS==2);assert(NNZ==3);assert(FIELD=="real"   );assert(SYMMETRY=='U');
+%!test
+%! [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY] = sparsersb("sparsersb_temporary_matrix_file.mtx", "Z"); assert(NROWS==2);assert(NCOLS==2);assert(NNZ==3);assert(FIELD=="complex");assert(SYMMETRY=='U');
+%!test
+%! sparsersb(sparsersb([11,0;21,22]),"render","sparsersb_temporary_rendering.eps",1024,1024)
+%!test
+%! sparsersb(sparsersb(sprand(100,100,0.4)),"autotune","n",20,4,1,1,1)
 */

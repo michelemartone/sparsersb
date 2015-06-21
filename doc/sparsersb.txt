@@ -1,26 +1,47 @@
 
  -- Loadable Function: S = sparsersb (A)
-     Create a sparse RSB matrix from the full matrix A.
-
+ -- Loadable Function: S = sparsersb (I, J, SV, M, N)
+ -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
+ -- Loadable Function: S = sparsersb (I, J, SV)
+ -- Loadable Function: S = sparsersb (M, N)
+ -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
+ -- Loadable Function: S = sparsersb ("set", OPN, OPV)
+ -- Loadable Function: S = sparsersb (A, "get", MIF)
+ -- Loadable Function: S = sparsersb (A, QS)
+ -- Loadable Function: sparsersb (A,"save",MTXFILENAME)
  -- Loadable Function: [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY]
 = sparsersb (MTXFILENAME, MTXTYPESTRING)
-     Create a sparse RSB matrix by loading the Matrix Market matrix
-     file named MTXFILENAME. The optional argument MTXTYPESTRING can
-     specify either real ("D") or complex ("Z") type. Default is real.
-     In the case MTXFILENAME is "?", a string listing the available
-     numerical types with BLAS-style characters will be returned. If
-     the file turns out to contain a Matrix Market vector, this will be
-     loaded as such.
+ -- Loadable Function: S = sparsersb (A,"render", FILENAME[, RWIDTH,
+          RHEIGHT])
+ -- Loadable Function: [O =] sparsersb (A,"autotune"[, TRANSA, NRHS,
+          MAXR, TMAX, TN, SF])
+     Create or manipulate sparse matrices using the RSB format provided
+     by librsb, as similarly as possible to `sparse'.
 
- -- Loadable Function: sparsersb (A,"save",MTXFILENAME)
-     Saves a sparse RSB matrix as a Matrix Market matrix file named
-     MTXFILENAME.
+     If A is a full matrix, convert it to a sparse matrix
+     representation, removing all zero values in the process.
 
- -- Loadable Function: S = sparsersb (I, J, SV, M, N, NZMAX)
-     Create a sparse RSB matrix given integer index vectors I and J, a
-     1-by-`nnz' vector of real of complex values SV, overall dimensions
-     M and N of the sparse matrix.  The argument `nzmax' is ignored but
-     accepted for compatibility with MATLAB.
+     Given the integer index vectors I and J, and a 1-by-`nnz' vector
+     of real or complex values SV, construct the sparse matrix
+     `S(I(K),J(K)) = SV(K)' with overall dimensions M and N.
+
+     The argument `NZMAX' is ignored but accepted for compatibility
+     with MATLAB and `sparsersb'.
+
+     If M or N are not specified their values are derived from the
+     maximum index in the vectors I and J as given by `M = max (I)', `N
+     = max (J)'.
+
+     Can load a matrix from a Matrix Market matrix file named
+     MTXFILENAME. The optional argument MTXTYPESTRING can specify
+     either real ("D") or complex ("Z") type. Default is real.  In the
+     case MTXFILENAME is "?", a string listing the available numerical
+     types with BLAS-style characters will be returned. If the file
+     turns out to contain a Matrix Market dense vector, this will be
+     loaded.
+
+     If "save" is specified, saves a sparse RSB matrix as a Matrix
+     Market matrix file named MTXFILENAME.
 
      *Note*: if multiple values are specified with the same I, J
      indices, the corresponding values in S will be added.
@@ -31,46 +52,43 @@
           s = sparsersb (i, j, s, m, n, "summation")
           s = sparsersb (i, j, s, m, n, "sum")
 
- -- Loadable Function: S = sparsersb (I, J, S, M, N, "unique")
-     Same as above, except that if more than two values are specified
-     for the same I, J indices, the last specified value will be used.
+     If the optional "unique" keyword is specified, then if more than
+     two values are specified for the same I, J indices, only the last
+     value will be used.
 
- -- Loadable Function: S = sparsersb (I, J, SV)
-     Uses `M = max (I)', `N = max (J)'
+     `sparsersb (M, N)' will create an empty MxN sparse matrix and is
+     equivalent to `sparsersb ([], [], [], M, N)'.
 
- -- Loadable Function: S = sparsersb (M, N)
-     If M and N are integers, equivalent to `sparsersb ([], [], [], M,
-     N, 0)'
+     If M or N are not specified, then `M = max (I)', `N = max (J)'.
 
- -- Loadable Function: S = sparsersb ("set", OPN, OPV)
      If OPN is a string representing a valid librsb option name and OPV
-     is a string representing a valid librsb option value, the
-     corresponding librsb option will be set to that value.
+     is a string representing a valid librsb option value, these will
+     be passed to the `rsb_lib_set_opt_str()' function.
 
- -- Loadable Function: S = sparsersb (A, "get", MIF)
      If MIF is a string specifying a valid librsb matrix info string
-     (valid for librsb's rsb_mtx_get_info_from_string()), then the
+     (valid for librsb's `rsb_mtx_get_info_from_string()'), then the
      corresponding value will be returned for matrix A. If MIF is the
      an empty string (""), matrix structure information will be
      returned.
 
- -- Loadable Function: S = sparsersb (A, S)
-     If A is a sparsersb matrix and S is a string, S will be
+     If A is a sparsersb matrix and QS is a string, QS will be
      interpreted as a query string about matrix A.
 
- -- Loadable Function: S = sparsersb (A,"render", FILENAME[, RWIDTH,
-          RHEIGHT])
-     If A is a sparsersb matrix and FILENAME is a string, A will be
-     rendered as an Encapsulated Postcript file FILENAME. Optionally,
-     width and height can be specified. Defaults are 512.
+     If A is a sparsersb matrix and the "render" keyword is specified,
+     and FILENAME is a string, A will be rendered as an Encapsulated
+     Postcript file FILENAME. Optionally, width and height can be
+     specified in `RWIDTH, RHEIGHT'. Defaults are 512.
 
- -- Loadable Function: [O =] sparsersb (A,"autotune"[, TRANSA, NRHS,
-          MAXR, TMAX, TN, SF])
-     If A is a sparsersb matrix, autotuning of the matrix will take
-     place, with SpMV and autotuning parameters. After the "autotune"
-     string, the remaining parameters are optional. If giving an output
-     argument O, that will be assigned to the autotuned matrix, and the
-     input one A will remain unchanged.
+     If A is a sparsersb matrix and the "autotune" keyword is
+     specified, autotuning of the matrix will take place, with SpMV and
+     autotuning parameters. After the "autotune" string, the remaining
+     parameters are optional. Parameter TRANSA specifies whether to
+     tune for untransposed ("n") or transposed ("t"); NRHS the number
+     of right hand sides; MAXR the number of tuning rounds; TMAX the
+     threads to use. If giving an output argument O, that will be
+     assigned to the autotuned matrix, and the input one A will remain
+     unchanged. See librsb documentation for `rsb_tune_spmm' to learn
+     more.
 
      Please note that on `sparsersb' type variables are available most,
      but not all of the operators available for `full' or `sparse'

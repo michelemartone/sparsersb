@@ -220,13 +220,19 @@ extern "C" {
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) RSBOI_TYPECODE
 #endif
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
-#define RSBOI_10100_DOC \
+#define RSBOI_10100_DOCH \
 "@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A},\"render\", @var{filename}[, @var{rWidth}, @var{rHeight}])\n"\
-"If @var{A} is a "RSBOI_FNS" matrix and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postcript file @var{filename}. Optionally, width and height can be specified. Defaults are 512.\n"\
 "@deftypefnx {Loadable Function} {[@var{O} =]} "RSBOI_FNS" (@var{A},\"autotune\"[, @var{transA}, @var{nrhs}, @var{maxr}, @var{tmax}, @var{tn}, @var{sf}])\n"\
-"If @var{A} is a "RSBOI_FNS" matrix, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged.\n"
+
+#define RSBOI_10100_DOC \
+\
+"If @var{A} is a "RSBOI_FNS" matrix and the \"render\" keyword is specified, and @var{filename} is a string, @var{A} will be rendered as an Encapsulated Postcript file @var{filename}. Optionally, width and height can be specified in @code{@var{rWidth}, @var{rHeight}}. Defaults are 512.\n"\
+"\n"\
+\
+"If @var{A} is a "RSBOI_FNS" matrix and the \"autotune\" keyword is specified, autotuning of the matrix will take place, with SpMV and autotuning parameters. After the \"autotune\" string, the remaining parameters are optional. Parameter @var{transA} specifies whether to tune for untransposed (\"n\") or transposed (\"t\"); @var{nrhs} the number of right hand sides; @var{maxr} the number of tuning rounds; @var{tmax} the threads to use. If giving an output argument @var{O}, that will be assigned to the autotuned matrix, and the input one @var{A} will remain unchanged. See librsb documentation for @code{rsb_tune_spmm} to learn more.\n"
 #else
 #define RSBOI_10100_DOC	""
+#define RSBOI_10100_DOCH	""
 #endif
 
 void rsboi_strerr(rsb_err_t errval)
@@ -1914,24 +1920,45 @@ err:
 DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 "-*- texinfo -*-\n\
 @deftypefn {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{a})\n\
-Create a sparse RSB matrix from the full matrix @var{a}.\n"\
-/*is forced back to a full matrix if resulting matrix is sparse\n*/\
-"\n\
-@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
-Create a sparse RSB matrix by loading the Matrix Market matrix file named @var{mtxfilename}. The optional argument @var{mtxtypestring} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
-"In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned. If the file turns out to contain a Matrix Market vector, this will be loaded as such.\n"\
-
-
-"\n\
-@deftypefnx {Loadable Function} "RSBOI_FNS" (@var{a},\"save\",@var{mtxfilename})\n\
-Saves a sparse RSB matrix as a Matrix Market matrix file named @var{mtxfilename}.\n"\
-"\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n})\n\
 @deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv}, @var{m}, @var{n}, @var{nzmax})\n\
-Create a sparse RSB matrix given integer index vectors @var{i} and @var{j},\n\
-a 1-by-@code{nnz} vector of real of complex values @var{sv}, overall\n\
-dimensions @var{m} and @var{n} of the sparse matrix.  The argument\n\
-@code{nzmax} is ignored but accepted for compatibility with @sc{Matlab}.\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv})\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{m}, @var{n})\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{s}, @var{m}, @var{n}, \"unique\")\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
+@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{QS})\n\
+@deftypefnx {Loadable Function} "RSBOI_FNS" (@var{a},\"save\",@var{mtxfilename})\n\
+@deftypefnx {Loadable Function} {[@var{s}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} "RSBOI_FNS" (@var{mtxfilename}, @var{mtxtypestring})\n\
+"RSBOI_10100_DOCH""\
+\
+"\n"\
+"Create or manipulate sparse matrices using the RSB format provided by librsb, as similarly as possible to @code{sparse}.\n"\
+"\n"\
+"If @var{a} is a full matrix, convert it to a sparse matrix representation,\n\
+removing all zero values in the process.\n"\
+"\n\
+Given the integer index vectors @var{i} and @var{j}, and a 1-by-@code{nnz}\n\
+vector of real or complex values @var{sv}, construct the sparse matrix\n\
+@code{S(@var{i}(@var{k}),@var{j}(@var{k})) = @var{sv}(@var{k})} with overall\n\
+dimensions @var{m} and @var{n}.  \n\
+\nThe argument\n\
+@code{@var{nzmax}} is ignored but accepted for compatibility with @sc{Matlab} and @code{sparsersb}.\n\
 \n\
+If @var{m} or @var{n} are not specified their values are derived from the\n\
+maximum index in the vectors @var{i} and @var{j} as given by\n\
+@code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}.\n\
+\n\
+\
+Can load a matrix from a Matrix Market matrix file named @var{mtxfilename}. The optional argument @var{mtxtypestring} can specify either real (\"D\") or complex (\"Z\") type. Default is real.\n"\
+"In the case @var{mtxfilename} is \""RSBOI_LIS"\", a string listing the available numerical types with BLAS-style characters will be returned. If the file turns out to contain a Matrix Market dense vector, this will be loaded.\n"\
+\
+\
+"\n\
+\
+If \"save\" is specified, saves a sparse RSB matrix as a Matrix Market matrix file named @var{mtxfilename}.\n"\
+"\n\
+\
 @strong{Note}: if multiple values are specified with the same\n\
 @var{i}, @var{j} indices, the corresponding values in @var{s} will\n\
 be added.\n\
@@ -1948,24 +1975,26 @@ s = "RSBOI_FNS" (i, j, s, m, n, \"sum\")\n"\
 "@end group\n\
 @end example\n\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{s}, @var{m}, @var{n}, \"unique\")\n\
-Same as above, except that if more than two values are specified for the\n\
-same @var{i}, @var{j} indices, the last specified value will be used.\n\
+\
+If the optional \"unique\" keyword is specified, then if more than two values are specified for the\n\
+same @var{i}, @var{j} indices, only the last value will be used.\n\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{i}, @var{j}, @var{sv})\n\
-Uses @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}\n\
+@code{"RSBOI_FNS" (@var{m}, @var{n})} will create an empty @var{m}x@var{n} sparse\n\
+matrix and is equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n})}.\n\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{m}, @var{n})\n\
-If @var{m} and @var{n} are integers, equivalent to @code{"RSBOI_FNS" ([], [], [], @var{m}, @var{n}, 0)}\n\
+\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (\"set\", @var{opn}, @var{opv})\n\
-If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, the corresponding librsb option will be set to that value.\n\
+\
+If @var{m} or @var{n} are not specified, then @code{@var{m} = max (@var{i})}, @code{@var{n} = max (@var{j})}.\n\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, \"get\", @var{mif})\n\
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's rsb_mtx_get_info_from_string()), then the corresponding value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
+\
+If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, these will be passed to the @code{rsb_lib_set_opt_str()} function.\n\
 \n\
-@deftypefnx {Loadable Function} {@var{s} =} "RSBOI_FNS" (@var{A}, @var{S})\n\
-If @var{A} is a "RSBOI_FNS" matrix and @var{S} is a string, @var{S} will be interpreted as a query string about matrix @var{A}.\n\
+\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @var{A}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned.\n\
+\n\
+\
+If @var{A} is a "RSBOI_FNS" matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}.\n\
 \n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/
@@ -2082,7 +2111,7 @@ Please note that on @code{"RSBOI_FNS"} type variables are available most, but no
 	{
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		std::string rmf = args(2).string_value();
-		rsb_coo_idx_t pmWidth = 512, pmHeight = 512;
+		rsb_coo_idx_t pmWidth = 512, pmHeight = 512; /* Care to update the documentation when changing these. */
 		rsb_flags_t marf = RSB_MARF_EPS;
 		/* may tell the user to supply a sparsersb matrix in case input is not 'sparse' */
 

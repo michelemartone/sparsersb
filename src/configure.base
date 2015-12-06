@@ -54,6 +54,8 @@ dnl but defines --oct-site-dir and --m-site-dir
 dnl Check for mkoctfile
 AC_CHECK_PROG(MKOCTFILE,mkoctfile,mkoctfile)
 test -z "$MKOCTFILE" &&	AC_MSG_WARN([no mkoctfile found on path])
+AC_CHECK_PROG(OCTAVE_CONFIG,octave-config,octave-config)
+test -z "$OCTAVE_CONFIG" && AC_MSG_WARN([no octave-config found on path])
 
 AC_SUBST(ver)
 AC_SUBST(subver)
@@ -193,21 +195,24 @@ LIBS=`$MKOCTFILE -p LIBS`
 # add -fPIC or equivalent flags
 FPICFLAG=`$MKOCTFILE -p FPICFLAG`
 CPICFLAG=`$MKOCTFILE -p CPICFLAG`
+
 FFLAGS="$FFLAGS $FPICFLAG"
 CFLAGS="$CFLAGS $CPICFLAG"
 AC_SUBST(CC)
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(CPICFLAG)
+
 RSBOI_CXXFLAGS=""
 if test x$RSBOI_VERBOSE_CONFIG != x ; then
-	RSBOI_CXXFLAGS="$RSBOI_CXXFLAGS -D''RSBOI_VERBOSE_CONFIG=$RSBOI_VERBOSE_CONFIG"; 
+	RSBOI_CXXFLAGS="$RSBOI_CXXFLAGS -DRSBOI_VERBOSE_CONFIG=$RSBOI_VERBOSE_CONFIG"; 
 fi
 
 dnl Fortran compiler and flags
 F77=`$MKOCTFILE -p F77`
 FFLAGS=`$MKOCTFILE -p FFLAGS`
 FPICFLAG=`$MKOCTFILE -p FPICFLAG`
+
 AC_SUBST(F77)
 AC_SUBST(FFLAGS)
 AC_SUBST(FPICFLAG)
@@ -304,6 +309,24 @@ AC_MSG_RESULT($$2)
 AC_SUBST($2)
 ])
 
+dnl Use octave-config to get an octave setting
+dnl and set as a variable
+dnl
+AC_DEFUN(OCTAVE_CONFIG_EVAL,
+[AC_MSG_CHECKING([for $1 in octave-config])
+$2=`$OCTAVE_CONFIG -p $1`
+AC_MSG_RESULT($$2)
+AC_SUBST($2)
+])
+
+AC_DEFUN(MKOCTFILE_EVAL,
+[AC_MSG_CHECKING([for $1 in mkoctfile])
+$2=`$MKOCTFILE -p $1`
+AC_MSG_RESULT($$2)
+AC_SUBST($2)
+])
+
+
 dnl Check status of an octave variable
 dnl
 dnl OCTAVE_CHECK_EXIST(variable,action_if_true,action_if_false)
@@ -321,13 +344,16 @@ fi
 
 dnl should check that $(OCTAVE) --version matches $(MKOCTFILE) --version
 AC_CHECK_PROG(OCTAVE,octave,octave)
-OCTAVE_EVAL(OCTAVE_VERSION,OCTAVE_VERSION)
+dnl OCTAVE_EVAL(OCTAVE_VERSION,OCTAVE_VERSION)
+OCTAVE_CONFIG_EVAL(VERSION,OCTAVE_VERSION)
 
 dnl grab canonical host type so we can write system specific install stuff
-OCTAVE_EVAL(octave_config_info('canonical_host_type'),canonical_host_type)
+dnl OCTAVE_EVAL(octave_config_info('canonical_host_type'),canonical_host_type)
+OCTAVE_CONFIG_EVAL(CANONICAL_HOST_TYPE,canonical_host_type)
 
 dnl grab SHLEXT from octave config
-OCTAVE_EVAL(octave_config_info('SHLEXT'),SHLEXT)
+dnl OCTAVE_EVAL(octave_config_info('SHLEXT'),SHLEXT)
+OCTAVE_CONFIG_EVAL(SHLEXT,SHLEXT)
 
 AC_PROG_LN_S
 
@@ -346,8 +372,10 @@ OTHERLIBS=
 OF_CHECK_LIB(m,sin,[OTHERLIBS=-lm])
 AC_SUBST(OTHERLIBS)
 
-OCTAVE_EVAL(octave_config_info('AR'),AR)
-OCTAVE_EVAL(octave_config_info('ARFLAGS'),ARFLAGS)
+dnl OCTAVE_EVAL(octave_config_info('AR'),AR)
+dnl OCTAVE_EVAL(octave_config_info('ARFLAGS'),ARFLAGS)
+MKOCTFILE_EVAL(AR,AR)
+MKOCTFILE_EVAL(ARFLAGS,ARFLAGS)
 
 CPPFLAGS="$CPPFLAGS -DSTATIC_LINKED"
 
@@ -402,4 +430,6 @@ octave-forge is configured with
    CXXFLAGS:    $CXXFLAGS
    octave:      $OCTAVE (version $OCTAVE_VERSION)
    mkoctfile:	$MKOCTFILE for Octave $subver
+   octave-config: $OCTAVE_CONFIG for Octave $subver
    swig:        $SWIG"
+

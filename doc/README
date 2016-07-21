@@ -1,10 +1,20 @@
 
 ================================================================================
 This is a plugin to interface the "librsb" sparse matrix library to Octave.
-Author: Michele Martone
+Author: Michele MARTONE
 ================================================================================
 
-Build instructions:
+Build instructions (using pkg):
+
+To use the built-in librsb (will take time to compile librsb):
+pkg -local -verbose install sparsersb-1.0.1.tar.gz
+
+If you intend to use an existing librsb implementation, call
+octave like in:
+RSBLIBDIR=/opt/librsb-debug/lib/ octave --no-gui
+before entering the pkg command.
+
+Build instructions (externally):
 
 sh autogen.sh
 ./configure

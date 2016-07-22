@@ -1,12 +1,8 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1???? Release Date: 2015-??-??
+sparsersb-1.0.1 Release Date: 2016-07-22
 ===============================================================================
-** Documentation fixes: ???
-** sparsersb("get",...) functionality ???
-** sparsersb(A,"any_query_string") functionality (interface to librsb's
-   rsb_mtx_get_info_str ) has been documented and fixed ???
-** ...
+** librsb-1.2.0-rc4 ist now part of sparsersb.
 ===============================================================================
 sparsersb-1.0.0 Release Date: 2015-05-31
 ===============================================================================

@@ -1,6 +1,6 @@
 #!/usr/bin/octave -q
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2016   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 # TODO: sprand should not be used in a consistent way
 
 1; # This is a script.
+pkg load sparsersb
 
-function dt=sparsersbbench_(precmd,cmd,postcmd,mint)
+function dt=sparsersbbench__(precmd,cmd,postcmd,mint)
 # ..
 	eval(precmd);
 	nops=0;
@@ -47,8 +48,8 @@ function speedup=sparsersbbench_(gprecmd,precmd,cmd,postcmd,gpostcmd,mint)
 	all=[gprecmd,dots,precmd,predots,cmd,postdots,postcmd,dots,gpostcmd];
 #	printf("will see speedup for %s\n",all);
 	printf("#%s #-> speedup is...",all);
-	dtr=sparsersbbench_([gprecmd,"", precmd,""], cmd,[ postcmd,":",gpostcmd],mint);
-	dto=sparsersbbench_([gprecmd,"",rprecmd,""],rcmd,[rpostcmd,":",gpostcmd],mint);
+	dtr=sparsersbbench__([gprecmd,"", precmd,""], cmd,[ postcmd,":",gpostcmd],mint);
+	dto=sparsersbbench__([gprecmd,"",rprecmd,""],rcmd,[rpostcmd,":",gpostcmd],mint);
 	speedup=dto/dtr;
 	printf("%.2f\n",speedup);
 #	printf("%.2f speedup for %s\n",speedup,all);

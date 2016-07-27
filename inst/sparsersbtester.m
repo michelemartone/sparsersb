@@ -1,6 +1,6 @@
 #!/usr/bin/octave -q
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2016   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -473,11 +473,11 @@ if(match) printf("All tests passed.\n"); else printf("Failure while performing t
 #XM=sparsepsb(M);
 #
 #
-exit
+# exit
 #
-XM
-find(XM)
-[i,j]=find(XM)
+# XM
+# find(XM)
+# [i,j]=find(XM)
 #
-exit
+# exit
 #

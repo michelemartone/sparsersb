@@ -1,17 +1,17 @@
 #sinclude Makeconf
 #
-# You have to define RSBLIBDIR in the environment!
-# You have to define RSBINCDIR in the environment!
+# Makeconf is disabled now.
+# You can customize the build by modifying any of:
 #
-#LIBRSB_CFLAGS?=-O0
-LIBRSB_CFLAGS?=-O3
-LIBRSB_CXXFLAGS?=-I$(RSBINCDIR)
-#RSBLIBDIR?=/usr/local/lib
-RSBLIBDIRDEFAULT=`pwd`/../lib/
-RSBLIBDIR?=$(RSBLIBDIRDEFAULT)
-LIBRSB_LIBS?=$(RSBLIBDIR)/librsb.a
+# 1. LIBRSB_PREFIX
+# 2. LIBRSB_CXXFLAGS
 #
-#
+LIBRSB_PREFIX?=$(shell pwd)/..
+RSBINCDIR=$(LIBRSB_PREFIX)/include
+RSBLIBDIR=$(LIBRSB_PREFIX)/lib
+LIBRSB_CXX11?=-std=gnu++11
+LIBRSB_CXXFLAGS?=-I$(RSBINCDIR) $(LIBRSB_CXX11)
+LIBRSB_LIBS=`$(LIBRSB_PREFIX)/bin/librsb-config --static --extra_libs` `$(LIBRSB_PREFIX)/bin/librsb-config --libdir`/librsb.a
 #
 
 .PHONY: all check
@@ -22,12 +22,10 @@ all: $(SPARSERSB_OCT)
 tags: *.cc
 	ctags *
 
-#include omf/Makefile.inc
-#LIBRSB_CXXFLAGS=-I$(RSBINCDIR)
-#LIBRSB_LIBS=$(RSBLIBDIR)/librsb.a
 library:
-	if test "$(RSBLIBDIR)" = "$(RSBLIBDIRDEFAULT)" ; then \
-		make -C $(RSBLIBDIR) LIBRSB_CFLAGS=$(LIBRSB_CFLAGS) ; fi
+	if test "$(RSBLIBDIR)" = $(shell pwd)/../lib ; then \
+	echo "Will build librsb so to have RSBINCDIR=$(RSBINCDIR) and RSBLIBDIR=$(RSBLIBDIR)"; \
+		make -C $(RSBLIBDIR) ; fi
 
 $(SPARSERSB_OCT): sparsersb.cc library
 	CXXFLAGS="$(CXXFLAGS)" $(MKOCTFILE)  -D'RSB_SPARSERSB_LABEL=sparsersb' $(RSBOI_CXXFLAGS) $(LIBRSB_CXXFLAGS) -o $@ $< $(LIBRSB_LIBS) $(SPARSERSB_LIBS)

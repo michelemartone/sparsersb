@@ -1,8 +1,13 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.1 Release Date: 2016-07-22
+sparsersb-1.0.1 Release Date: 2016-08-01
 ===============================================================================
-** librsb-1.2.0-rc4 ist now part of sparsersb.
+** Default is to use the bundled librsb-1.2.0-rc4, now part of sparsersb.
+** Likewise you can pass custom compilation flags, overriding LIBRSB_CFLAGS .
+** You can override the default C++11 flag: LIBRSB_CXX11?=-std=gnu++11 .
+** To use a custom librsb installation, set environment variable LIBRSB_PREFIX
+**  to the value you used during configuration of librsb:
+** ./configure --prefix="$LIBRSB_PREFIX" e.g.: /usr/local/ .
 ===============================================================================
 sparsersb-1.0.0 Release Date: 2015-05-31
 ===============================================================================

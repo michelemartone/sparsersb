@@ -11,7 +11,9 @@ RSBINCDIR=$(LIBRSB_PREFIX)/include
 RSBLIBDIR=$(LIBRSB_PREFIX)/lib
 LIBRSB_CXX11?=-std=gnu++11
 LIBRSB_CXXFLAGS?=-I$(RSBINCDIR) $(LIBRSB_CXX11)
-LIBRSB_LIBS=`$(LIBRSB_PREFIX)/bin/librsb-config --static --extra_libs` `$(LIBRSB_PREFIX)/bin/librsb-config --libdir`/librsb.a
+LIBRSB_LIBS?=`$(LIBRSB_PREFIX)/bin/librsb-config --static --extra_libs --libdir`/librsb.a
+#LIBRSB_LIBS?=`$(LIBRSB_PREFIX)/bin/librsb-config --static --ldflags --extra_libs`
+#LIBRSB_LIBS?=`$(LIBRSB_PREFIX)/bin/librsb-config --static --ldflags --extra_libs` -static
 #
 
 .PHONY: all check

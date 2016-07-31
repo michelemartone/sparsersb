@@ -48,7 +48,11 @@ clean:
 #	tar tzf $(PACKAGE_NAME).tgz
 
 dist:
-	hg archive --exclude '.hg*' ~/sparsersb-1.0.1.tar.gz
+	hg archive -t tar --exclude '*.hgignore'  ~/src/sparsersb-1.0.1.tar
+	cd ../.. && tar rf ~/src/sparsersb-1.0.1.tar --add-file sparsersb-1.0.1/src/configure
+	#tar tvf ~/src/sparsersb-1.0.1.tar
+	gzip ~/src/sparsersb-1.0.1.tar
+	tar tvzf ~/src/sparsersb-1.0.1.tar.gz
 
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt

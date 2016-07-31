@@ -1,33 +1,31 @@
 
 ================================================================================
-This is a plugin to interface the "librsb" sparse matrix library to Octave.
+This (sparsersb) is a plugin to interface the "librsb" high performance sparse
+matrix library to GNU Octave.
 Author: Michele MARTONE
 ================================================================================
 
 Build instructions (using pkg):
 
-To use the built-in librsb (will take time to compile librsb):
-pkg -local -verbose install sparsersb-1.0.1.tar.gz
+To use the configure auto-detected librsb from within octave:
+ > pkg -local -verbose install sparsersb-1.0.1.tar.gz
+ > pkg load sparsersb
 
-If you intend to use an existing librsb implementation, call
-octave like in:
-RSBLIBDIR=/opt/librsb-debug/lib/ octave --no-gui
-before entering the pkg command.
+Alternatively:
+ tar czf sparsersb-1.0.1.tar.gz
+ cd sparsersb-1.0.1/src
+ ./configure
+ make
+ make check
 
-Build instructions (externally):
+It is possible to provide the configure script with a librsb sources 
+archive you have downloaded separately and make it build on the fly for you
+and use it; e.g.: 
+ ./configure --with-librsb-tarball=$HOME/librsb-1.2.0.tar.gz
+Check out http://librsb.sf.net for the latest librsb.
 
-sh autogen.sh
-./configure
-make
-make check
-
-If you desire, you can pass some options to configure; e.g.: 
-./configure CXXFLAGS="-O3  "
-./configure CXXFLAGS="-O3  " LIBRSB_CONFIG=/opt/librsb-optimized/bin/librsb-config 
-./configure SPARSERSB_LIBS="-lmpi++"
-./configure 
-
-On many systems, you will have to build librsb with the PIC (-fPIC on GCC) option or you will get link time problems.
+On many systems, you will have to build librsb with the PIC (-fPIC on GCC) option
+or you will get link time problems.
 
 More options:
 ./configure --help

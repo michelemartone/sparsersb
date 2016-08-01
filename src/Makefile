@@ -48,8 +48,10 @@ clean:
 #	tar tzf $(PACKAGE_NAME).tgz
 
 dist:
-	hg archive -t tar --exclude '*.hgignore'  ~/src/sparsersb-1.0.1.tar
+	hg archive -t tar ~/src/sparsersb-1.0.1.tar  --exclude '*.hgignore' -X ".hg*"
 	cd ../.. && tar rf ~/src/sparsersb-1.0.1.tar --add-file sparsersb-1.0.1/src/configure
+	cd ../.. && tar  f ~/src/sparsersb-1.0.1.tar \
+	       	--delete sparsersb-1.0.1/.hg_archival.txt --delete sparsersb-1.0.1/.hgtags --delete sparsersb-1.0.1/.hgignore
 	#tar tvf ~/src/sparsersb-1.0.1.tar
 	gzip ~/src/sparsersb-1.0.1.tar
 	tar tvzf ~/src/sparsersb-1.0.1.tar.gz

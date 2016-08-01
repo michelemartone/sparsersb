@@ -16,6 +16,7 @@ AC_ARG_VAR([OCTAVE],[The octave executable])
 AC_ARG_VAR([SPARSERSB_LDFLAGS],[Linking flags for sparsersb])
 AC_ARG_VAR([SPARSERSB_CXXFLAGS],[C++ compilation flags for sparsersb])
 AC_ARG_VAR([SPARSERSB_CXX11],[C++11 additional compilation flags for sparsersb])
+AC_ARG_VAR([LIBRSB_TARBALL],[Environment variable equivalent for --with-librsb-tarball=..])
 
 if [ test "$MKOCTFILE" = "none" ]; then
   AC_MSG_ERROR([mkoctfile required to install $PACKAGE_NAME])
@@ -38,6 +39,13 @@ AC_ARG_WITH(static-librsb,
 AC_ARG_WITH(librsb-tarball, 
 	[  --with-librsb-tarball=... Will use specified user provided librsb tarball (e.g. librsb-1.2.0.tar.gz) to build a local librsb installation. You can specify LIBRSB_CFLAGS to customize. With this option --with-librsb-conf will be ignored.],
 	[ librsb_tarball=$withval ], [ librsb_tarball=no ])
+
+if [ test x"$LIBRSB_TARBALL" != "x" ]; then
+	AC_MSG_NOTICE([Detected user-set LIBRSB_TARBALL=... variable; equivalent to --with-librsb-tarball=... .])
+        librsb_tarball="$LIBRSB_TARBALL"
+else
+	AC_MSG_NOTICE([No user-set LIBRSB_TARBALL environment variable detected (set it to build using a custom librsb tarball).])
+fi
 
 if test x"$librsb_tarball" != x"no" ; then
    	dnl AC_MSG_WARN([...])

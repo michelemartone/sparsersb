@@ -22,6 +22,9 @@ It is possible to provide the configure script with a librsb sources
 archive you have downloaded separately and make it build on the fly for you
 and use it; e.g.: 
  ./configure --with-librsb-tarball=$HOME/librsb-1.2.0.tar.gz
+or setting LIBRSB_TARBALL=$HOME/librsb-1.2.0.tar.gz before entering
+in octave and building with:
+ > pkg -local -verbose install sparsersb-1.0.1.tar.gz
 Check out http://librsb.sf.net for the latest librsb.
 
 On many systems, you will have to build librsb with the PIC (-fPIC on GCC) option

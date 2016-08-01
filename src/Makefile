@@ -48,14 +48,17 @@ clean:
 #	tar tzf $(PACKAGE_NAME).tgz
 
 dist:
-	rm -f ~/src/sparsersb-1.0.1.tar
-	hg archive -t tar ~/src/sparsersb-1.0.1.tar  --exclude '*.hgignore' -X ".hg*"
-	cd ../.. && tar rf ~/src/sparsersb-1.0.1.tar --add-file sparsersb-1.0.1/src/configure
-	cd ../.. && tar  f ~/src/sparsersb-1.0.1.tar \
+	sh autogen.sh
+	rm -f ~/sparsersb-1.0.1.tar
+	hg archive -t tar ~/sparsersb-1.0.1.tar  --exclude '*.hgignore' -X ".hg*"
+	cd ../.. && tar rf ~/sparsersb-1.0.1.tar --add-file sparsersb-1.0.1/src/configure
+	cd ../.. && tar  f ~/sparsersb-1.0.1.tar \
 	       	--delete sparsersb-1.0.1/.hg_archival.txt --delete sparsersb-1.0.1/.hgtags --delete sparsersb-1.0.1/.hgignore
-	#tar tvf ~/src/sparsersb-1.0.1.tar
-	gzip -f ~/src/sparsersb-1.0.1.tar
-	tar tvzf ~/src/sparsersb-1.0.1.tar.gz
+	gzip -f ~/sparsersb-1.0.1.tar
+	tar tvzf ~/sparsersb-1.0.1.tar.gz
+	cd && octave --no-gui --eval 'pkg -local -verbose -verbose  install sparsersb-1.0.1.tar.gz'
+	cd && octave --no-gui --eval 'pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge") ' && tar czf ~/sparsersb-html.tag.gz sparsersb-html
+	ls -l ~/sparsersb-1.0.1.tar.gz ~/sparsersb-html.tag.gz
 
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt

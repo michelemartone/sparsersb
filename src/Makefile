@@ -53,7 +53,7 @@ dist:
 	cd ../.. && tar  f ~/src/sparsersb-1.0.1.tar \
 	       	--delete sparsersb-1.0.1/.hg_archival.txt --delete sparsersb-1.0.1/.hgtags --delete sparsersb-1.0.1/.hgignore
 	#tar tvf ~/src/sparsersb-1.0.1.tar
-	gzip ~/src/sparsersb-1.0.1.tar
+	gzip -f ~/src/sparsersb-1.0.1.tar
 	tar tvzf ~/src/sparsersb-1.0.1.tar.gz
 
 doc: $(SPARSERSB_OCT)

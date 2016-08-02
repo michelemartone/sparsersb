@@ -70,7 +70,7 @@ dist:
 # This is expected to work on author's machine.
 commit:
 	cd .. ; hg commit -u michelemartone
-	cd .. ; hg pull
+	cd .. ; hg push
 
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt

@@ -67,6 +67,11 @@ dist:
 	md5sum $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz       > $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz.md5
 	ls -l $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz* $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz*
 
+# This is expected to work on author's machine.
+commit:
+	cd .. ; hg commit -u michelemartone
+	cd .. ; hg pull
+
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
 #

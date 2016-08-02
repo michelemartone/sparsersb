@@ -47,19 +47,27 @@ clean:
 #	tar czf $(PACKAGE_NAME).tgz $(PACKAGE_NAME)
 #	tar tzf $(PACKAGE_NAME).tgz
 
+# This is expected to work on author's machine.
+SPARSERSB_VERNAME=sparsersb-1.0.1
+SPARSERSB_ARCHIVES=~/src/sparsersb-archives
 dist:
 	sh autogen.sh
-	rm -f ~/sparsersb-1.0.1.tar
-	hg archive -t tar ~/sparsersb-1.0.1.tar  --exclude '*.hgignore' -X ".hg*"
-	cd ../.. && tar rf ~/sparsersb-1.0.1.tar --add-file sparsersb-1.0.1/src/configure
-	cd ../.. && tar  f ~/sparsersb-1.0.1.tar \
-	       	--delete sparsersb-1.0.1/.hg_archival.txt --delete sparsersb-1.0.1/.hgtags --delete sparsersb-1.0.1/.hgignore
-	gzip -f ~/sparsersb-1.0.1.tar
-	tar tvzf ~/sparsersb-1.0.1.tar.gz
-	cd && octave --no-gui --eval 'pkg -local -verbose -verbose  install sparsersb-1.0.1.tar.gz'
-	cd && octave --no-gui --eval 'pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge") ' && tar czf ~/sparsersb-html.tag.gz sparsersb-html
-	ls -l ~/sparsersb-1.0.1.tar.gz ~/sparsersb-html.tag.gz
+	rm -f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar
+	hg archive -t tar $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar  --exclude '*.hgignore' -X ".hg*"
+	cd ../.. && tar rf $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar --add-file $(SPARSERSB_VERNAME)/src/configure
+	cd ../.. && tar  f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar \
+	       	--delete $(SPARSERSB_VERNAME)/.hg_archival.txt --delete $(SPARSERSB_VERNAME)/.hgtags --delete $(SPARSERSB_VERNAME)/.hgignore
+	gzip -f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar
+	tar tvzf $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz
+	cd && octave --no-gui --eval 'pkg -local -verbose -verbose  install $(SPARSERSB_VERNAME).tar.gz'
+	cd && octave --no-gui --eval 'pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge") ' && tar czf $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz sparsersb-html
+	gpg -sbav -u EF1258B8 $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz 
+	gpg -sbav -u EF1258B8 $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz
+	md5sum $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz > $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz.md5
+	md5sum $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz       > $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz.md5
+	ls -l $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz* $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz*
 
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
+#
 

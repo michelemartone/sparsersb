@@ -5,11 +5,12 @@ matrix library to GNU Octave.
 Author: Michele MARTONE
 ================================================================================
 
-Build instructions (using pkg):
+Build / use instructions (using pkg):
 
-To use the configure auto-detected librsb from within octave:
+To use the configure auto-detected librsb from within Octave:
  > pkg -local -verbose install sparsersb-1.0.1.tar.gz
  > pkg load sparsersb
+ > help sparsersb
 
 Alternatively:
  tar czf sparsersb-1.0.1.tar.gz
@@ -22,21 +23,22 @@ It is possible to provide the configure script with a librsb sources
 archive you have downloaded separately and make it build on the fly for you
 and use it; e.g.: 
  ./configure --with-librsb-tarball=$HOME/librsb-1.2.0.tar.gz
-or setting LIBRSB_TARBALL=$HOME/librsb-1.2.0.tar.gz before entering
-in octave and building with:
+or setting:
+ export LIBRSB_TARBALL=$HOME/librsb-1.2.0.tar.gz
+before entering in Octave and building with pkg:
  > pkg -local -verbose install sparsersb-1.0.1.tar.gz
-Check out http://librsb.sf.net for the latest librsb.
 
-On many systems, you will have to build librsb with the PIC (-fPIC on GCC) option
-or you will get link time problems.
+On many systems, you will have to build librsb with the PIC (-fPIC on GCC)
+option or you will get link time problems.
 
-More options:
+More configure options:
 ./configure --help
 
-Usage instructions:
-# go in the directory where sparsersb.oct is located and run octave.
+Usage instructions without using pkg:
+# go to the directory where sparsersb.oct is located and run Octave:
 octave
-# you can use the sparsersb function, starting with 
- > help sparsersb.
+# you can use the sparsersb function, starting with e.g.:
+ > help sparsersb
 
+Check out http://librsb.sf.net for the latest librsb.
 ================================================================================

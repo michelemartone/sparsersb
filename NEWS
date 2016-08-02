@@ -1,6 +1,6 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.1 Release Date: 2016-08-01
+sparsersb-1.0.1 Release Date: 2016-08-03
 ===============================================================================
 ** Thought to be used with the latest librsb-1.2.0.
 ** Changed sparsersb's `configure --help': 

@@ -72,6 +72,7 @@ if test x"$librsb_tarball" != x"no" ; then
 	librsb_conf="${LIBRSB_PREFIX}"/bin/librsb-config
 	test -f ${librsb_conf} || AC_MSG_ERROR([Temporary librsb installation config file ${librsb_conf} not executable ? Something went wrong with the install ?!])
 	AC_MSG_NOTICE([Temporary librsb installation in ${LIBRSB_PREFIX} done.])
+	AC_MSG_NOTICE([Forcing static linking due to temporary librsb.])
 	librsb_conf_static='yes'
 else
 	AC_MSG_NOTICE([No librsb tarball provided: following the default procedure.])

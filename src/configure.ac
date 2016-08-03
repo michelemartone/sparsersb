@@ -111,11 +111,11 @@ if [test x"$SPARSERSB_LDFLAGS" != "x" ]; then
 else
 	if [test x"$librsb_conf" != x"no"]; then
 	if [test x"$librsb_conf_static" = x"no"]; then
-		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --static --ldflags --extra_libs...])
-		SPARSERSB_LDFLAGS="`$librsb_conf --static --ldflags --extra_libs`"
+		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --ldflags --extra_libs])
+		SPARSERSB_LDFLAGS="`$librsb_conf              --ldflags --extra_libs`"
 	else
-		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --static --extra_libs --libdir + /librsb.a])
-		SPARSERSB_LDFLAGS="`$librsb_conf --static --extra_libs --libdir`"/librsb.a
+		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --static --libs --extra_libs])
+		SPARSERSB_LDFLAGS="`$librsb_conf              --static --libs --extra_libs`"
 	fi
 	fi
 fi

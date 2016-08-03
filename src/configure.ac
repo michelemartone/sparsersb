@@ -25,7 +25,7 @@ fi
 # Checks for librsb
 have_rsb=no
 librsb_conf='no'
-librsb_conf_static='yes' # internal
+librsb_conf_static='no' # internal
 
 AC_ARG_WITH(static-librsb, 
 	[  --with-static-librsb=[yes|no] Whether to use static linking with the librsb-conf script. (recommended: yes).],
@@ -33,7 +33,7 @@ AC_ARG_WITH(static-librsb,
 	 if x"$librsb_conf_static" != xyes -a x"$librsb_conf_static" != xno ; then
 		AC_MSG_ERROR([--static-librsb=yes or --static-librsb=no !! ])
 	 fi
-	       	 ], [ librsb_conf_static=yes ])
+	       	 ], [  ])
 
 # BEGIN tarball-based on-the-fly install of librsb
 AC_ARG_WITH(librsb-tarball, 

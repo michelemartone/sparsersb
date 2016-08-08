@@ -87,7 +87,7 @@
 #endif
 #endif
 
-#define RSBOI_USE_PATCH_38143  ( ! ( defined(OCTAVE_MAJOR_VERSION) && (OCTAVE_MAJOR_VERSION>=4) ) ) /* See http://savannah.gnu.org/bugs/?48335#comment5 */
+#define RSBOI_USE_PATCH_38143 ( defined(OCTAVE_MAJOR_VERSION) && (OCTAVE_MAJOR_VERSION>=4) ) /* See http://savannah.gnu.org/bugs/?48335#comment5 */
 
 #if 0
 #define RSBOI_WARN( MSG ) \
@@ -1241,7 +1241,7 @@ octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=NULL)const
 
 	private:
 	public:
-#if RSBOI_USE_PATCH_38143
+#if !RSBOI_USE_PATCH_38143
 		DECLARE_OCTAVE_ALLOCATOR
 #endif /* RSBOI_USE_PATCH_38143   */
 			DECLARE_OV_TYPEID_FUNCTIONS_AND_DATA

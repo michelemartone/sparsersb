@@ -47,32 +47,16 @@ clean:
 #	tar czf $(PACKAGE_NAME).tgz $(PACKAGE_NAME)
 #	tar tzf $(PACKAGE_NAME).tgz
 
-# This is expected to work on author's machine.
-SPARSERSB_VERNAME=sparsersb-1.0.1
-SPARSERSB_ARCHIVES=~/src/sparsersb-archives
 dist:
-	sh autogen.sh
-	rm -f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar
-	hg archive -t tar $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar  --exclude '*.hgignore' -X ".hg*"
-	cd ../.. && tar rf $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar --add-file $(SPARSERSB_VERNAME)/src/configure
-	cd ../.. && tar  f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar \
-	       	--delete $(SPARSERSB_VERNAME)/.hg_archival.txt --delete $(SPARSERSB_VERNAME)/.hgtags --delete $(SPARSERSB_VERNAME)/.hgignore
-	gzip -f $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar
-	tar tvzf $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz
-	cd && octave --no-gui --eval 'pkg -local -verbose -verbose  install $(SPARSERSB_VERNAME).tar.gz'
-	cd && octave --no-gui --eval 'pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge") ' && tar czf $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz sparsersb-html
-	gpg -sbav -u EF1258B8 $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz 
-	gpg -sbav -u EF1258B8 $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz
-	md5sum $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz > $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz.md5
-	md5sum $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz       > $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz.md5
-	ls -l $(SPARSERSB_ARCHIVES)/$(SPARSERSB_VERNAME).tar.gz* $(SPARSERSB_ARCHIVES)/sparsersb-html.tar.gz*
-
-# This is expected to work on author's machine.
-commit:
-	cd .. ; hg commit -u michelemartone
-	cd .. ; hg push
+	rm -f ~/src/sparsersb-1.0.2.tar
+	hg archive -t tar ~/src/sparsersb-1.0.2.tar  --exclude '*.hgignore' -X ".hg*"
+	cd ../.. && tar rf ~/src/sparsersb-1.0.2.tar --add-file sparsersb-1.0.2/src/configure
+	cd ../.. && tar  f ~/src/sparsersb-1.0.2.tar \
+	       	--delete sparsersb-1.0.2/.hg_archival.txt --delete sparsersb-1.0.2/.hgtags --delete sparsersb-1.0.2/.hgignore
+	#tar tvf ~/src/sparsersb-1.0.2.tar
+	gzip -f ~/src/sparsersb-1.0.2.tar
+	tar tvzf ~/src/sparsersb-1.0.2.tar.gz
 
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
-#
 

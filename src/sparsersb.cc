@@ -20,7 +20,7 @@
  * adapt to when octave_idx_type is 64 bit long
  * rsb_file_vec_save (1.1)
  * all *.m files shall go to inst/
- * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.1.tar.gz 
+ * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.2.tar.gz 
  * produce ../doc/sparsersb.txi; can use get_help_text
  * put to ./devel/ what is not to be distributed
  * make or configure should fail on missing library (actually it does not)

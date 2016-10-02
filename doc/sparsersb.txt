@@ -10,33 +10,34 @@
  -- Loadable Function: V = sparsersb (S, QS)
  -- Loadable Function: sparsersb (A,"save",MTXFILENAME)
  -- Loadable Function: [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY]
-= sparsersb (MTXFILENAME, MTXTYPESTRING)
+          = sparsersb (MTXFILENAME, MTXTYPESTRING)
  -- Loadable Function: sparsersb (S,"render", FILENAME[, RWIDTH,
           RHEIGHT])
  -- Loadable Function: [O =] sparsersb (S,"autotune"[, TRANSA, NRHS,
           MAXR, TMAX, TN, SF])
+
      Create or manipulate sparse matrices using the RSB format provided
-     by librsb, as similarly as possible to `sparse'.
+     by librsb, as similarly as possible to 'sparse'.
 
      If A is a full matrix, convert it to a sparse matrix
      representation, removing all zero values in the process.
 
-     Given the integer index vectors I and J, and a 1-by-`nnz' vector
-     of real or complex values SV, construct the sparse matrix
-     `S(I(K),J(K)) = SV(K)' with overall dimensions M and N.
+     Given the integer index vectors I and J, and a 1-by-'nnz' vector of
+     real or complex values SV, construct the sparse matrix
+     'S(I(K),J(K)) = SV(K)' with overall dimensions M and N.
 
-     The argument `NZMAX' is ignored but accepted for compatibility
-     with MATLAB and `sparsersb'.
+     The argument 'NZMAX' is ignored but accepted for compatibility with
+     MATLAB and 'sparsersb'.
 
      If M or N are not specified their values are derived from the
-     maximum index in the vectors I and J as given by `M = max (I)', `N
+     maximum index in the vectors I and J as given by 'M = max (I)', 'N
      = max (J)'.
 
      Can load a matrix from a Matrix Market matrix file named
-     MTXFILENAME. The optional argument MTXTYPESTRING can specify
-     either real ("D") or complex ("Z") type. Default is real.  In the
+     MTXFILENAME.  The optional argument MTXTYPESTRING can specify
+     either real ("D") or complex ("Z") type.  Default is real.  In the
      case MTXFILENAME is "?", a string listing the available numerical
-     types with BLAS-style characters will be returned. If the file
+     types with BLAS-style characters will be returned.  If the file
      turns out to contain a Matrix Market dense vector, this will be
      loaded.
 
@@ -56,54 +57,56 @@
      two values are specified for the same I, J indices, only the last
      value will be used.
 
-     `sparsersb (M, N)' will create an empty MxN sparse matrix and is
-     equivalent to `sparsersb ([], [], [], M, N)'.
+     'sparsersb (M, N)' will create an empty MxN sparse matrix and is
+     equivalent to 'sparsersb ([], [], [], M, N)'.
 
-     If M or N are not specified, then `M = max (I)', `N = max (J)'.
+     If M or N are not specified, then 'M = max (I)', 'N = max (J)'.
 
      If OPN is a string representing a valid librsb option name and OPV
-     is a string representing a valid librsb option value, these will
-     be passed to the `rsb_lib_set_opt_str()' function.
+     is a string representing a valid librsb option value, these will be
+     passed to the 'rsb_lib_set_opt_str()' function.
 
      If MIF is a string specifying a valid librsb matrix info string
-     (valid for librsb's `rsb_mtx_get_info_from_string()'), then the
-     corresponding value will be returned for matrix `A', in string
-     `V'. If MIF is the an empty string (""), matrix structure
-     information will be returned.
+     (valid for librsb's 'rsb_mtx_get_info_from_string()'), then the
+     corresponding value will be returned for matrix 'A', in string 'V'.
+     If MIF is the an empty string (""), matrix structure information
+     will be returned.
 
      If A is a sparsersb matrix and QS is a string, QS will be
-     interpreted as a query string about matrix A. String `V' will be
-     returned. See librsb's `rsb_mtx_get_info_str()'.  *Note*: this
+     interpreted as a query string about matrix A.  String 'V' will be
+     returned.  See librsb's 'rsb_mtx_get_info_str()'.  *Note*: this
      feature is still incomplete, and whatever the value of QS, a
      general information string will be returned.
 
      If S is a sparsersb matrix and the "render" keyword is specified,
      and FILENAME is a string, A will be rendered as an Encapsulated
-     Postscript file FILENAME. Optionally, width and height can be
-     specified in `RWIDTH, RHEIGHT'. Defaults are 512.
+     Postscript file FILENAME.  Optionally, width and height can be
+     specified in 'RWIDTH, RHEIGHT'.  Defaults are 512.
 
-     If S is a sparsersb matrix and the "autotune" keyword is
-     specified, autotuning of the matrix will take place, with SpMV and
-     autotuning parameters. After the "autotune" string, the remaining
-     parameters are optional. Parameter TRANSA specifies whether to
-     tune for untransposed ("N") or transposed ("T"); NRHS the number
-     of right hand sides; MAXR the number of tuning rounds; TMAX the
-     threads to use. If giving an output argument O, that will be
-     assigned to the autotuned matrix, and the input one A will remain
-     unchanged. See librsb documentation for `rsb_tune_spmm' to learn
-     more.
+     If S is a sparsersb matrix and the "autotune" keyword is specified,
+     autotuning of the matrix will take place, with SpMV and autotuning
+     parameters.  After the "autotune" string, the remaining parameters
+     are optional.  Parameter TRANSA specifies whether to tune for
+     untransposed ("N") or transposed ("T"); NRHS the number of right
+     hand sides; MAXR the number of tuning rounds; TMAX the threads to
+     use.  If giving an output argument O, that will be assigned to the
+     autotuned matrix, and the input one A will remain unchanged.  See
+     librsb documentation for 'rsb_tune_spmm' to learn more.
 
-     Please note that on `sparsersb' type variables are available most,
-     but not all of the operators available for `full' or `sparse'
-     typed variables.
+     Long (64 bit) index support is partial: if Octave has been
+     configured for 64 bit indices, sparsersb will correctly handle and
+     convert matrices/indices that would fit in a 32 bit indices setup,
+     failing on 'larger' ones.
 
-     See also: full, sparse
+     Please note that on 'sparsersb' type variables are available most,
+     but not all of the operators available for 'full' or 'sparse' typed
+     variables.
 
-
+     See also: full, sparse.
 
 Additional help for built-in functions and operators is
-available in the on-line version of the manual.  Use the command
-`doc <topic>' to search the manual index.
+available in the online version of the manual.  Use the command
+'doc <topic>' to search the manual index.
 
 Help and information about Octave is also available on the WWW
 at http://www.octave.org and via the help@octave.org

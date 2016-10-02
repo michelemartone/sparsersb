@@ -238,6 +238,124 @@ extern "C" {
 #define RSBOI_10100_DOCH	""
 #endif
 
+#define RSBOI_VERSION	100002	/* e.g. 100002 means 1.0.2 */
+
+#if defined(USE_64_BIT_IDX_T) || defined(OCTAVE_ENABLE_64) || defined(RSBOI_DETECTED_LONG_IDX) /* 4.1.0+ / 4.0.3 / any */
+#define RSBOI_O64_R32 1
+#else /* USE_64_BIT_IDX_T */
+#define RSBOI_O64_R32 0
+#endif /* USE_64_BIT_IDX_T */
+
+#define RSBOI_SIZEMAX RSB_MAX_MATRIX_DIM /* Upper limit to librsb matrix dimension. */
+
+static rsb_err_t rsboi_idxv_overflow( const idx_vector & IM, const idx_vector & JM)
+{
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	
+	if( IM.extent(0) > RSBOI_SIZEMAX || JM.extent(0) > RSBOI_SIZEMAX )
+		errval = RSB_ERR_LIMITS;
+
+	return errval;
+}
+
+#if RSBOI_O64_R32
+static rsb_err_t rsboi_idx_overflow( rsb_err_t * errvalp, octave_idx_type idx1, octave_idx_type idx2=0, octave_idx_type idx3=0)
+{
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+
+	if( idx1 > RSBOI_SIZEMAX || idx2 > RSBOI_SIZEMAX || idx3 > RSBOI_SIZEMAX )
+		errval = RSB_ERR_LIMITS;
+	if( errvalp )
+		*errvalp = errval;
+	return errval;
+}
+
+static void rsboi_oi2ri( octave_idx_type * IP, rsb_nnz_idx_t nnz)
+{
+	// octave_idx_type -> rsb_coo_idx_t
+	rsb_coo_idx_t * RP=(rsb_coo_idx_t*)IP;
+	const octave_idx_type * OP=(const octave_idx_type*)IP;
+	rsb_nnz_idx_t nzi;
+
+	for(nzi=0;nzi<nnz;++nzi)
+		RP[nzi]=OP[nzi];
+}
+
+static void rsboi_ri2oi( rsb_coo_idx_t * IP, rsb_nnz_idx_t nnz)
+{
+	// rsb_coo_idx_t -> octave_idx_type
+	const rsb_coo_idx_t * RP=(const rsb_coo_idx_t*)IP;
+	octave_idx_type * OP=(octave_idx_type*)IP;
+	rsb_nnz_idx_t nzi;
+
+	for(nzi=0;nzi<nnz;++nzi)
+		OP[nnz-(nzi+1)]=RP[nnz-(nzi+1)];
+}
+
+static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t * mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
+{
+	// assumes tacitly that rsboi_idx_overflow(IA[i],JA[i])==false for i in 0..nnzA-1.
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)JA, flags );
+	rsb_nnz_idx_t nnzA = 0;
+	rsb_mtx_get_info(mtxAp,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&nnzA); // FIXME: make this a member and use nnz()
+	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t*)JA,nnzA);
+	return errval;
+}
+
+static struct rsb_mtx_t * rsboi_mtx_alloc_from_csc_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+{
+	struct rsb_mtx_t * mtxAp = NULL;
+
+	if( RSBOI_SOME_ERROR(rsboi_idx_overflow(errvalp,nrA,ncA,nnzA) ) )
+		goto ret;
+	rsboi_oi2ri(IA,nnzA);
+	rsboi_oi2ri(CP,ncA+1);
+	mtxAp = rsb_mtx_alloc_from_csc_const(VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)CP, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t*)CP,ncA+1);
+ret:
+	return mtxAp;
+}
+
+static struct rsb_mtx_t * rsboi_mtx_alloc_from_coo_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+{
+	struct rsb_mtx_t * mtxAp = NULL;
+
+	if( RSBOI_SOME_ERROR(rsboi_idx_overflow(errvalp,nrA,ncA,nnzA) ) )
+		goto ret;
+	rsboi_oi2ri(IA,nnzA);
+	rsboi_oi2ri(JA,nnzA);
+	mtxAp = rsb_mtx_alloc_from_coo_const(VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)JA, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t*)JA,nnzA);
+ret:
+	return mtxAp;
+}
+#else /* RSBOI_O64_R32 */
+static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t * mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
+{
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	errval = rsb_mtx_get_coo(mtxAp, VA, IA, JA, flags );
+	return errval;
+}
+
+static struct rsb_mtx_t * rsboi_mtx_alloc_from_csc_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+{
+	struct rsb_mtx_t * mtxAp = NULL;
+	mtxAp = rsb_mtx_alloc_from_csc_const(VA, IA, CP, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	return mtxAp;
+}
+
+static struct rsb_mtx_t * rsboi_mtx_alloc_from_coo_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+{
+	struct rsb_mtx_t * mtxAp = NULL;
+	mtxAp = rsb_mtx_alloc_from_coo_const(VA, IA, JA, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	return mtxAp;
+}
+#endif /* RSBOI_O64_R32 */
+
 void rsboi_strerr(rsb_err_t errval)
 {
 	const int errstrlen=128;
@@ -263,11 +381,19 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 
 static bool sparsersb_tester(void)
 {
+#if (RSBOI_VERSION < 100002)	
 	if(sizeof(octave_idx_type)!=sizeof(rsb_coo_idx_t))
 	{
 		RSBOI_ERROR(RSBOI_0_INMISMMSG);
 		goto err;
 	}
+#else /* RSBOI_VERSION */
+	if(sizeof(octave_idx_type)< sizeof(rsb_coo_idx_t))
+	{
+		RSBOI_ERROR(RSBOI_0_INMISMMSG);
+		goto err;
+	}
+#endif /* RSBOI_VERSION */
 	RSBOI_WARN(RSBOI_0_INCFERRMSG);
 	return true;
 err:
@@ -320,17 +446,23 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 #else /* RSBOI_WANT_DOUBLE_COMPLEX */
 			rsb_type_t typecode = RSBOI_TYPECODE;
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
-			const rsb_coo_idx_t *IA = NULL,*JA = NULL;
+			const octave_idx_type *IA = NULL,*JA = NULL;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 #if RSBOI_WANT_SYMMETRY
 			/* shall verify if any symmetry is present */
 #endif
-			IA = (const rsb_coo_idx_t*)IM.raw();
-		       	JA = (const rsb_coo_idx_t*)JM.raw();
+			IA = (const octave_idx_type*)IM.raw();
+		       	JA = (const octave_idx_type*)JM.raw();
+
 			//RSB_DO_FLAG_ADD(eflags,rsb_util_determine_uplo_flags(IA,JA,nnzA));
-			if(!(this->mtxAp = rsb_mtx_alloc_from_coo_const(SMp,IA,JA,nnzA,typecode,nrA,ncA,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
+			
+			if( (nrA==0 || ncA==0) && RSBOI_SOME_ERROR(errval=rsboi_idxv_overflow( IM, JM )))
+				goto err;
+
+			if(!(this->mtxAp = rsboi_mtx_alloc_from_coo_const(SMp,(octave_idx_type*)IA,(octave_idx_type*)JA,nnzA,typecode,nrA,ncA,RSBOI_RB,RSBOI_CB,RSBOI_RF|eflags ,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALERRMSG);
 			//RSBOI_MP(this->mtxAp);
+err:
 			RSBOI_PERROR(errval);
 			if(!this->mtxAp)
 				RSBOI_0_ERROR(RSBOI_0_ALLERRMSG);
@@ -367,7 +499,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			if(sm.is_symmetric())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
 #endif
-			if(!(this->mtxAp = rsb_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->mtxAp)
@@ -398,7 +530,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			if(sm.is_hermitian())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_HERMITIAN|RSB_FLAG_TRIANGULAR);
 #endif
-			if(!(this->mtxAp = rsb_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
+			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
 			RSBOI_PERROR(errval);
 			if(!this->mtxAp)
@@ -493,7 +625,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			Array<octave_idx_type> IA( dim_vector(1,nnzA) );
 			Array<octave_idx_type> JA( dim_vector(1,nnzA) );
 			Array<RSBOI_T> VA( dim_vector(1,nnzA) );
-			rcm.IA = (rsb_coo_idx_t*)IA.data(),rcm.JA = (rsb_coo_idx_t*)JA.data();
+			rcm.IA = (octave_idx_type*)IA.data(),rcm.JA = (octave_idx_type*)JA.data();
 			if(!this->is_real_type())
 			{
 				Array<Complex> VAC( dim_vector(1,nnzA) );
@@ -503,14 +635,14 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 				/* FIXME: and now ? shall we expand symmetry or not ? */
 #endif
 				/* FIXME: shall use some librsb's dedicated call for this */
-				errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 				for(nzi=0;nzi<nnzA;++nzi)
 					VAp[nzi]=((RSBOI_T*)rcm.VA)[2*nzi];
 			}
 			else
 			{
 				rcm.VA=(RSBOI_T*)VA.data();
-				errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			}
 			rcm.nrA = this->rows();
 			rcm.ncA = this->cols();
@@ -557,9 +689,9 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			Array<octave_idx_type> JA( dim_vector(1,nnzA) );
 			Array<Complex> VA( dim_vector(1,nnzA) );
 			RSBOI_T* VAp=((RSBOI_T*)VA.data());
-			rcm.IA = (rsb_coo_idx_t*)IA.data(),rcm.JA = (rsb_coo_idx_t*)JA.data();
+			rcm.IA = (octave_idx_type*)IA.data(),rcm.JA = (octave_idx_type*)JA.data();
 			rcm.VA=VAp;
-			errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
+			errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 #if RSBOI_WANT_SYMMETRY
 			/* FIXME: and now ? shall we expand symmetry or not ? */
 #endif
@@ -636,7 +768,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 							{
 								idx_vector j = idx.front() (1).index_vector ();
 								RSBOI_T rv;
-						  		octave_idx_type ii=-1,jj=-1;
+						  		rsb_coo_idx_t ii=-1,jj=-1;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
        								errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
@@ -648,7 +780,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 							{
 								idx_vector j = idx.front() (1).index_vector ();
 								Complex rv;
-						  		octave_idx_type ii=-1,jj=-1;
+						  		rsb_coo_idx_t ii=-1,jj=-1;
   								ii=i(0); jj=j(0);
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d) complex\n",ii,jj);
        								errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
@@ -806,7 +938,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 									if(is_real_type())
 									{
 										rsb_err_t errval = RSB_ERR_NO_ERROR;
-										octave_idx_type ii=-1,jj=-1;
+										rsb_coo_idx_t ii=-1,jj=-1;
 										RSBOI_T rv=rhs.double_value();
 										ii=i(0); jj=j(0);
 										RSBOI_DEBUG_NOTICE("update elements (%d %d)\n",ii,jj);
@@ -825,7 +957,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 									else
 									{
 										rsb_err_t errval = RSB_ERR_NO_ERROR;
-										octave_idx_type ii=-1,jj=-1;
+										rsb_coo_idx_t ii=-1,jj=-1;
 										Complex rv=rhs.complex_value();
 										ii=i(0); jj=j(0);
 										RSBOI_DEBUG_NOTICE("update elements (%d %d) complex\n",ii,jj);
@@ -943,14 +1075,14 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 			rsb_mtx_get_info_str(this->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 #endif
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rcm.VA=(RSBOI_T*)VA.data(),rcm.IA = (rsb_coo_idx_t*)IA.data(),rcm.JA = (rsb_coo_idx_t*)JA.data();
+			rcm.VA=(RSBOI_T*)VA.data(),rcm.IA = (octave_idx_type*)IA.data(),rcm.JA = (octave_idx_type*)JA.data();
 #if RSBOI_WANT_SYMMETRY
 			/* FIXME: and now ? */
 #endif
 			if(rcm.VA==NULL)
 				nnzA = 0;
 			else
-				errval = rsb_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
+				errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			rcm.nrA = this->rows();
 			rcm.ncA = this->cols();
 			double pct = 100.0*(((RSBOI_T)nnzA)/((RSBOI_T)rcm.nrA))/rcm.ncA;
@@ -2020,6 +2152,8 @@ If @var{A} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be 
 to have a common size.\n*/
 RSBOI_10100_DOC ""\
 "\n\
+Long (64 bit) index support is partial: if Octave has been configured for 64 bit indices, " RSBOI_FNS " will correctly handle and convert matrices/indices that would fit in a 32 bit indices setup, failing on 'larger' ones. \n\
+\n\
 Please note that on @code{" RSBOI_FNS "} type variables are available most, but not all of the operators available for @code{full} or @code{sparse} typed variables.\n\
 \n\
 @seealso{full, sparse}\n\

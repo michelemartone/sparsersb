@@ -107,6 +107,18 @@ else
 	fi
 fi
 
+if test -x `which $OCTAVE-cli` ; then
+	OCTAVE_CLI="$OCTAVE-cli";
+else
+	OCTAVE_CLI="$OCTAVE";
+fi
+
+SPARSERSB_USE_64BIT_IDX=`$OCTAVE_CLI --no-line-editing -qf --eval 'printf ("%i", sizemax() > intmax ("int32"))'`
+if [test x"$SPARSERSB_USE_64BIT_IDX" = x"1" ]; then
+	AC_MSG_NOTICE([Adding -D RSBOI_DETECTED_LONG_IDX to SPARSERSB_CXXFLAGS ...])
+	SPARSERSB_CXXFLAGS="$SPARSERSB_CXXFLAGS -D RSBOI_DETECTED_LONG_IDX=1"
+fi
+
 if [test x"$SPARSERSB_LDFLAGS" != "x" ]; then
 	AC_MSG_NOTICE([Using user set SPARSERSB_LDFLAGS...])
 else

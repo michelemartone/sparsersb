@@ -1,6 +1,12 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.1 Release Date: 2016-08-05
+sparsersb-1.0.2 Release Date: 2016-09-15
+===============================================================================
+** Thought to be used with the latest librsb-1.2.0.
+**  - builds even if octave built with --enable-64, but limited to matrices
+**    which would fit when using a normal setup.
+===============================================================================
+sparsersb-1.0.1 Release Date: 2016-08-01
 ===============================================================================
 ** Thought to be used with the latest librsb-1.2.0.
 ** Changed sparsersb's `configure --help': 

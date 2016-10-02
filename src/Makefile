@@ -47,16 +47,37 @@ clean:
 #	tar czf $(PACKAGE_NAME).tgz $(PACKAGE_NAME)
 #	tar tzf $(PACKAGE_NAME).tgz
 
-dist:
-	rm -f ~/src/sparsersb-1.0.2.tar
-	hg archive -t tar ~/src/sparsersb-1.0.2.tar  --exclude '*.hgignore' -X ".hg*"
-	cd ../.. && tar rf ~/src/sparsersb-1.0.2.tar --add-file sparsersb-1.0.2/src/configure
-	cd ../.. && tar  f ~/src/sparsersb-1.0.2.tar \
-	       	--delete sparsersb-1.0.2/.hg_archival.txt --delete sparsersb-1.0.2/.hgtags --delete sparsersb-1.0.2/.hgignore
-	#tar tvf ~/src/sparsersb-1.0.2.tar
-	gzip -f ~/src/sparsersb-1.0.2.tar
-	tar tvzf ~/src/sparsersb-1.0.2.tar.gz
+SPARSERSB=sparsersb-1.0.2
+ARCHIVE=$(HOME)/src/sparsersb-archives
+GPGSIGNCMD=gpg -sbav -u 1DBB555AEA359B8AAF0C6B88E0E669C8EF1258B8 
 
+dist: tarball html-doc
+
+tarball:
+	rm -f $(ARCHIVE)/$(SPARSERSB).tar
+	hg archive -t tar  $(ARCHIVE)/$(SPARSERSB).tar  --exclude '*.hgignore' -X ".hg*"
+	rm -f ../../$(SPARSERSB)
+	ln -s `pwd`/.. ../../$(SPARSERSB)
+	cd ../.. && tar rf $(ARCHIVE)/$(SPARSERSB).tar --add-file $(SPARSERSB)/src/configure
+	cd ../.. && tar  f $(ARCHIVE)/$(SPARSERSB).tar \
+	       	        --delete $(SPARSERSB)/.hg_archival.txt --delete $(SPARSERSB)/.hgtags --delete $(SPARSERSB)/.hgignore
+	#tar tvf $(SPARSERSB).tar
+	gzip -f  $(ARCHIVE)/$(SPARSERSB).tar
+	tar tvzf $(ARCHIVE)/$(SPARSERSB).tar.gz
+	$(GPGSIGNCMD) $(ARCHIVE)/$(SPARSERSB).tar.gz
+	gpg --verify $(ARCHIVE)/$(SPARSERSB).tar.gz.asc
+
+html-doc:
+	rm -fR   ./octfiles-tmp ./sparsersb-html $(SPARSERSB)
+	mkdir -p ./octfiles-tmp 
+	#tar xvzf $(ARCHIVE)/$(SPARSERSB).tar.gz
+	$(OCTAVE) --norc --eval 'pkg prefix ./octfiles-tmp ; echo on; diary sparsersb-diary-install.log; more off; pkg install -verbose '$(ARCHIVE)/$(SPARSERSB).tar.gz'; echo off; pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge")'
+	tar czf $(ARCHIVE)/sparsersb-html.tar.gz sparsersb-html
+	$(GPGSIGNCMD) $(ARCHIVE)/sparsersb-html.tar.gz
+	ls -l   $(ARCHIVE)/sparsersb-html.tar.gz $(ARCHIVE)/$(SPARSERSB).tar.gz 
+	md5sum  $(ARCHIVE)/sparsersb-html.tar.gz $(ARCHIVE)/$(SPARSERSB).tar.gz 
+	cd $(ARCHIVE)/
+	
 doc: $(SPARSERSB_OCT)
 	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
 

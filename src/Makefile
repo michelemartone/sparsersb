@@ -51,9 +51,21 @@ SPARSERSB=sparsersb-1.0.2
 ARCHIVE=$(HOME)/src/sparsersb-archives
 GPGSIGNCMD=gpg -sbav -u 1DBB555AEA359B8AAF0C6B88E0E669C8EF1258B8 
 
-dist: tarball html-doc
+help:
+	@echo "# As a user, './configure ... .; make;' shall suffice."
+	@echo "# If you are developing, you might be interested in 'make' followed by either of dist, sdist, sign, tarballs, html-doc."
 
-tarball:
+dist: tarballs html-doc
+
+sdist: sign tarballs html-doc
+
+sign: tarballs html-doc
+	$(GPGSIGNCMD) $(ARCHIVE)/$(SPARSERSB).tar.gz
+	gpg --verify  $(ARCHIVE)/$(SPARSERSB).tar.gz.asc
+	$(GPGSIGNCMD) $(ARCHIVE)/sparsersb-html.tar.gz
+	gpg --verify  $(ARCHIVE)/sparsersb-html.tar.gz.asc
+
+tarballs:
 	rm -f $(ARCHIVE)/$(SPARSERSB).tar
 	hg archive -t tar  $(ARCHIVE)/$(SPARSERSB).tar  --exclude '*.hgignore' -X ".hg*"
 	rm -f ../../$(SPARSERSB)
@@ -64,20 +76,19 @@ tarball:
 	#tar tvf $(SPARSERSB).tar
 	gzip -f  $(ARCHIVE)/$(SPARSERSB).tar
 	tar tvzf $(ARCHIVE)/$(SPARSERSB).tar.gz
-	$(GPGSIGNCMD) $(ARCHIVE)/$(SPARSERSB).tar.gz
-	gpg --verify $(ARCHIVE)/$(SPARSERSB).tar.gz.asc
 
 html-doc:
 	rm -fR   ./octfiles-tmp ./sparsersb-html $(SPARSERSB)
 	mkdir -p ./octfiles-tmp 
 	#tar xvzf $(ARCHIVE)/$(SPARSERSB).tar.gz
+	# If missing.. pkg install -forge generate_html
 	$(OCTAVE) --norc --eval 'pkg prefix ./octfiles-tmp ; echo on; diary sparsersb-diary-install.log; more off; pkg install -verbose '$(ARCHIVE)/$(SPARSERSB).tar.gz'; echo off; pkg load generate_html; generate_package_html ("sparsersb", "sparsersb-html", "octave-forge")'
 	tar czf $(ARCHIVE)/sparsersb-html.tar.gz sparsersb-html
-	$(GPGSIGNCMD) $(ARCHIVE)/sparsersb-html.tar.gz
+	echo "You maybe want to remove dirs: ./octfiles-tmp ./sparsersb-html $(SPARSERSB)"
 	ls -l   $(ARCHIVE)/sparsersb-html.tar.gz $(ARCHIVE)/$(SPARSERSB).tar.gz 
 	md5sum  $(ARCHIVE)/sparsersb-html.tar.gz $(ARCHIVE)/$(SPARSERSB).tar.gz 
 	cd $(ARCHIVE)/
 	
 doc: $(SPARSERSB_OCT)
-	$(OCTAVE) -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
+	$(OCTAVE) --norc -q --eval 'help sparsersb' | grep -v 'is a function from the'  > ../doc/sparsersb.txt
 

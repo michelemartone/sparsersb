@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
-AC_INIT([octave sparsersb package], [1.0.2])
+AC_INIT([octave sparsersb package], [1.0.3-pre])
 dnl AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -124,8 +124,8 @@ if [test x"$SPARSERSB_LDFLAGS" != "x" ]; then
 else
 	if [test x"$librsb_conf" != x"no"]; then
 	if [test x"$librsb_conf_static" = x"no"]; then
-		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --ldflags --extra_libs])
-		SPARSERSB_LDFLAGS="`$librsb_conf              --ldflags --extra_libs`"
+		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --L_opts --libs])
+		SPARSERSB_LDFLAGS="`$librsb_conf              --L_opts --libs`"
 	else
 		AC_MSG_NOTICE([Setting SPARSERSB_LDFLAGS from --static --libs --extra_libs])
 		SPARSERSB_LDFLAGS="`$librsb_conf              --static --libs --extra_libs`"

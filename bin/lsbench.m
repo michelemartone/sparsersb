@@ -1,5 +1,5 @@
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 # 
 # 
-# Linear Solvers benchmarks using sparsersb.
+# Linear Solvers benchmark demos using sparsersb.
 # 
 # TODO: this file shall host some linear system solution benchmarks using sparsersb.
 # It may serve as a reference point when profiling sparsersb/librsb.
@@ -66,26 +66,28 @@ end
 
 # This one is based on what Carlo De Falco posted on the octave-dev mailing list:
 # (he used n=1000, k=15)
-n = 4;
-k = 1; 
-A= k * eye (n) + sprandn (n, n, .8);
-lsb_compare(A);
 
-n = 100;
-k = 5; 
-A= k * eye (n) + sprandn (n, n, .2);
-lsb_compare(A);
+#n = 4;
+#k = 1; 
+#A= sqrt(k) * eye (n) + sprandn (n, n, .9);
+#lsb_compare(A);
 
-n = 1000;
-k = 15; 
-A= k * eye (n) + sprandn (n, n, .2);
+#n = 100;
+#k = 5; 
+#A= sqrt(k) * eye (n) + sprandn (n, n, .8);
+#lsb_compare(A);
+
+n = 2000;
+k = 1000; 
+A= sqrt(k) * eye (n) + sprandn (n, n, .4);
 lsb_compare(A);
 
 n = 5000;
 k = 1500; 
-A= k * eye (n) + sprandn (n, n, .2);
+A= sqrt(k) * eye (n) + sprandn (n, n, .2);
 lsb_compare(A);
 
+if 0 != 0 ;
 #nx=40,ny=20;
 nx0=10;ny0=10;
 for xm=1:2
@@ -109,6 +111,8 @@ A = - kron(Dxx, speye(ny))-kron(speye(nx),Dyy) + 5*kron(speye(nx),Dy);
 b=xx(:);
 lsb_compare(A);
 end
+end
+
 end
 
 printf "All done."

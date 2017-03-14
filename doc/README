@@ -40,5 +40,7 @@ octave
 # you can use the sparsersb function, starting with e.g.:
  > help sparsersb
 
-Check out http://librsb.sf.net for the latest librsb.
+Check out http://librsb.sf.net for the latest librsb release, 
+ http://octave.sourceforge.net/sparsersb/ for the latest sparsersb release and
+ http://hg.code.sf.net/p/octave/sparsersb/ for the latest repository version.
 ================================================================================

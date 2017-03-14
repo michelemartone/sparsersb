@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2016   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+ Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -74,7 +74,6 @@
 #include <octave/ov-complex.h>
 #include <octave/ops.h>
 #include <octave/ov-typeinfo.h>
-#include <octave/oct-alloc.h> /* DECLARE_OCTAVE_ALLOCATOR */
 #if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
 #include <iomanip>	// std::setprecision
 #endif
@@ -1373,9 +1372,6 @@ octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=NULL)const
 
 	private:
 	public:
-#if !RSBOI_USE_PATCH_38143
-		DECLARE_OCTAVE_ALLOCATOR
-#endif /* RSBOI_USE_PATCH_38143   */
 			DECLARE_OV_TYPEID_FUNCTIONS_AND_DATA
 };/* end of class octave_sparsersb_mtx definition  */
 
@@ -1415,7 +1411,6 @@ static octave_base_value * default_numeric_conversion_function (const octave_bas
 		return new octave_sparse_complex_matrix (v.sparse_complex_matrix_value());
 }
 
-DEFINE_OCTAVE_ALLOCATOR (octave_sparsersb_mtx)
 DEFINE_OV_TYPEID_FUNCTIONS_AND_DATA (octave_sparsersb_mtx,
 RSB_OI_TYPEINFO_STRING,
 RSB_OI_TYPEINFO_TYPE)

@@ -1,5 +1,5 @@
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,7 +15,19 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 # 
 1; # This is a script
-# once complete, this program will benchmark our matrix implementation against octave's
+
+pkg load sparsersb
+
+disp " ***********************************************************************"
+disp "**           A small 'sparse' vs 'sparsersb' benchmark.                **"
+disp "**  On a few sample problems, tests:                                   **"
+disp "**   - matrix-vector multiplication               (SPMV)               **"
+disp "**   - matrix-vector multiplication transposed    (SPMV_T)             **"
+disp "**   - sparse matrix-spares matrix multiplication (SPGEMM)             **"
+disp " ***********************************************************************"
+
+disp "OP	ROWS	COLUMNS	NONZEROES	OPTIME	MFLOPS	SPEEDUP	IMPLEMENTATION"
+
 cmt="#";
 #for n_=1:6*0+1
 for n_=1:6
@@ -32,7 +44,7 @@ for ro=0:1
 	nz=nnz(om);
 	M=10^6;
 	if ro==1 
-		printf("%s%s\n",cmt,"reordering with colamd");
+		printf("%s%s\n",cmt," reordering with colamd...");
 		pct=-time; 
 		p=colamd(om);
 		pct+=time;
@@ -40,9 +52,11 @@ for ro=0:1
 		om=om(:,p);
 		pat+=time;
 		# TODO: use an array to select/specify the different reordering algorithms
-		printf("%g\t%g\t(%s)\n",(nz/M)/pct,(nz/M)/pat,"mflops for pct/pat");
+		# printf("%g\t%g\t(%s)\n",(nz/M)/pct,(nz/M)/pat,"mflops for pct/pat");
+		printf("# ...colamd took %.1es (%.1e nnz/s), ",pct,nz/pct);
+		printf(   "  permutation took %.1es (%.1e nnz/s)\n",pat,nz/pat);
 	else
-		printf("%s%s\n",cmt,"no reordering");
+		printf("%s%s\n",cmt," testing with no reordering");
 	end
 	#bm=sparsevbr(om);
 	bm=sparsersb(sparse(om));
@@ -54,26 +68,27 @@ for ro=0:1
 	#
 	bt=-time; bx=bm*b; bt+=time;
 	t=ot; p=["octave-",version]; mflops=(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","*",m,k,nz,mflops, p);
+	printf("%s\t%d\t%d\t%d\t%.1es\t%g\t%.1ex\t%s\n","SPMV  ",m,k,nz,t,mflops,1    ,p);
 	t=bt; p=["RSB"]; mflops=(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","*",m,k,nz,mflops, p);
+	printf("%s\t%d\t%d\t%d\t%.1es\t%g\t%.1ex\t%s\n","SPMV  ",m,k,nz,t,mflops,ot/bt,p);
 
 	## spmvt
 	ot=-time; ox=om.'*b; ot+=time;
 	#
 	bt=-time; bx=bm.'*b; bt+=time;
 	t=ot; p=["octave-",version]; mflops=(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","*",m,k,nz,mflops, p);
+	printf("%s\t%d\t%d\t%d\t%.1es\t%g\t%.1ex\t%s\n","SPMV_T",m,k,nz,t,mflops,1    ,p);
 	t=bt; p=["RSB"]; mflops=(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","*",m,k,nz,mflops, p);
+	printf("%s\t%d\t%d\t%d\t%.1es\t%g\t%.1ex\t%s\n","SPMV_T",m,k,nz,t,mflops,ot/bt,p);
 
 	## spgemm
 	ot=-time; ox=om*om; ot+=time;
 	#
 	bt=-time; bx=bm*bm; bt+=time;
-	t=ot; p=["octave-",version]; mflops=n*(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","OCT_SPGEMM",m,k,nz,mflops, p);
-	t=bt; p=["RSB"]; mflops=n*(flops/M)/t;
-	printf("%s\t%d\t%d\t%d\t%g\t%s\n","RSB_SPGEMM",m,k,nz,mflops, p);
+	t=ot; p=["octave-",version]; 
+	printf("%s\t%d\t%d\t%d\t%.1es\t\t%.1ex\t%s\n","SPGEMM",m,k,nz,t,1,    p);
+	t=bt; p=["RSB"]; 
+	printf("%s\t%d\t%d\t%d\t%.1es\t\t%.1ex\t%s\n","SPGEMM",m,k,nz,t,ot/bt,p);
 endfor
 endfor
+disp " ***********************************************************************"

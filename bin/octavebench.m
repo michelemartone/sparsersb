@@ -1,6 +1,6 @@
 #!/usr/bin/octave -q
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -17,9 +17,19 @@
 # 
 1; # This is a script
 # a benchmark program for octave/matlab
+
 # TODO: fix output format 
 # TODO: correct symmetric / hermitian matrices handling
 # TODO: sound, time-and-runs-based benchmarking criteria 
+
+pkg load sparsersb
+
+disp " ***********************************************************************"
+disp "**           A small 'sparse' vs 'sparsersb' test / benchmark.         **"
+disp "**      This is meant to be a demo, but not really an example.         **"
+disp "**  You can invoke it supplying a Matrix Market matrix (e.g. pd.mtx).  **"
+disp "**        Without arguments, will generate a test matrix.              **"
+disp " ***********************************************************************"
 
 n=10;
 
@@ -30,6 +40,7 @@ end
 
 if nargin <= 0
 # DGEMV benchmark
+disp "**  Will generate a matrix...                                          **"
 for o=1024:1024
 #for o=1024:256:2048*2
 	m=rand(o);
@@ -41,6 +52,7 @@ for o=1024:1024
 	dgemvmflops=Mflops;
 	printf("%d GEMV for order %d  in  %g secs, so %10f Mflops\n",n,o,t,n*2.0*o*o/(10^6 * t));
 end
+disp " ***********************************************************************"
 quit
 endif
 
@@ -55,9 +67,10 @@ end
 
 #matrices=ls("*.mtx")';
 f=1;
-uc=2;
+uc=2; # only 2 for the moment being.
 while f<=nargin
 	MB=1024*1024;
+	printf("**  Will read Matrix Market matrix file %s ...\n",f);
 	mmn=cell2mat(argv()(f))';
 	mn=strtrim(mmn');
 	tic();
@@ -73,7 +86,8 @@ while f<=nargin
 		#if(symm=="symmetric")uc+=2;endif
 		if(strcmp(symm,"symmetric"))uc+=1;endif
 	end
-	wr=0 ;
+	disp " "
+	wr=0 ; # write rendering to file
 	if wr==1 
 		sparsersb(sparsersb(nm),"render",[mn,"-original.eps"]);
 		pct=-time; 
@@ -89,14 +103,14 @@ while f<=nargin
 	fsz=stat(mn).size;
 	rt=toc();
 	[ia,ja,va]=find(nm);
-	printf("%s: %.2f MBytes read in  %.4f s (%10.2f MB/s)\n",mn',fsz/MB,rt,fsz/(rt*MB));
+	printf("%s: %.2f MBytes read in  %.4f s (%10.2f MB/s)\n",mn,fsz/MB,rt,fsz/(rt*MB));
 	#ia=ia'; ja=ja'; va=va';
 	sep=" ";
 	csvlstring=sprintf("#mn entries nrows ncols");
 	csvdstring=sprintf("%%:%s%s%d%s%d%s%d",mn,sep,entries,sep,nrows,sep,ncols);
 for ski=1:uc
 	oppnz=1;
-	# FIXME: what about symmetry ?
+	# FIXME: what about handling symmetry ?
 	sparsekw="sparse";
 	if(ski==2)sparsekw="sparsersb";endif
 	if(ski==3);
@@ -104,55 +118,63 @@ for ski=1:uc
 		sparsekw="sparsersb";
 		tic(); [nm]=sparsersb(mn); rt=toc();
 		sparsersb(nm,"info")
-		printf("%s: %.2f MBytes read by librsb in  %.4f s (%10.2f MB/s)\n",mn',fsz/MB,rt,fsz/(rt*MB));
+		printf("%s: %.2f MBytes read by librsb in  %.4f s (%10.2f MB/s)\n",mn,fsz/MB,rt,fsz/(rt*MB));
 	endif
 	if(ski==4);
 		nm=tril(nm);
 	endif
 	[ia,ja,va]=find(nm);
 	rnz=nnz(nm);
-	printf("benchmarking %s\n",sparsekw);
-	#printf("symmetry ? %s\n",issymmetric(sparse(nm)));
+	printf(" *** Benchmarking '%s'.\n",sparsekw);
+	# printf("symmetry ? %d\n",issymmetric(sparse(nm)));
 	mrc=rows(nm); mcc=columns(nm);
-
 
 	if(ski!=3);
 	tic();
 	eval(["for i=1:n;  om=",sparsekw,"(ia,ja,va,mrc,mcc,\"summation\"); end"]);
-	printf("benchmarking %s\n",sparsekw);
+	printf(" *** Benchmarking '%s' instantiation from 'ia,ja,va'.\n",sparsekw);
 	at=toc();
 	#if(ski==2) tic(); nm=sparsersb(om,"autotune","N");om=nm; att=toc(); ;endif
 	mnz=nnz(om);
-	amflops=n*2.0*mnz/(10^6 * at);
-	printf("%s (%s) %d spBLD for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,rnz,at,amflops);
+	amflops=n*(mnz/(10^6 * at));
+	printf("%s '%s' %d Instantiations for %d nnz in  %.4f secs, so %10.2f nnz/s\n",mn,sparsekw,n,rnz,at,amflops);
 	else
 	mnz=rnz;
 	end
 
+	if(ski==2)
+		nsb=str2num(sparsersb(om,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
+		printf (" ** Assembled 'sparsersb' matrix has %d RSB blocks.\n", nsb);
+	endif
+
 	#rm=sparsersb(ia,ja,va);# UNFINISHED
 	r=linspace(1,1,size(om,1))';
 	v=linspace(1,1,size(om,2))';
+	printf(" *** Benchmarking '%s' SPMV..\n",sparsekw);
 	tic(); for i=1:n; r+=om  *v; end; umt=toc();
 	UMflops=oppnz*n*2.0*mnz/(10^6 * umt);
-	printf("%s (%s) %d spMV  for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,mnz,umt, UMflops);
+	printf("%s '%s' %d SPMV  for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn,sparsekw,n,mnz,umt, UMflops);
 	bpnz=-1;  # FIXME: bytes per nonzero!
 	msstr="?";# FIXME: matrix structure string!
 	# FIXME: finish the following!
-	#printbenchline(mn',"spMV",sparsekw,n,mnz,umt, UMflops,bpnz,msstr);
+	#printbenchline(mn',"SPMV",sparsekw,n,mnz,umt, UMflops,bpnz,msstr);
 	#
 	tmp=r;r=v;v=tmp;
+	printf(" *** Benchmarking %s SPMV_T..\n",sparsekw);
 	tic(); for i=1:n; r+=om.'*v; end; tmt=toc();
 	TMflops=oppnz*n*2.0*mnz/(10^6 * tmt);
-	printf("%s (%s) %d spMVT for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn',sparsekw,n,mnz,tmt, TMflops);
+	printf("%s '%s' %d spMVT for %d nnz in  %.4f secs, so %10.2f Mflops\n",mn,sparsekw,n,mnz,tmt, TMflops);
+
 	if(ski<3);
 		csvlstring=sprintf("%s%s",csvlstring," n at amflops umt UMflops tmt TMflops");
 		csvdstring=sprintf("%s%s%d%s%f%s%f%s%f%s%f%s%f%s%f",csvdstring,sep,n,sep,at,sep,amflops,sep,umt,sep,UMflops,sep,tmt,sep,TMflops);
 	endif
+	disp " "
 end 
 	++f;
-	printf("%s\n",csvlstring);
-	printf("%s\n",csvdstring);
+	# Uncomment following lines for benchmark-oriented output:
+	#printf("%s\n",csvlstring);
+	#printf("%s\n",csvdstring);
 end 
 
-printf("benchmark terminated\n");
-
+disp " ***********************************************************************"

@@ -24,9 +24,10 @@ disp "**  On a few sample problems, tests:                                   **"
 disp "**   - matrix-vector multiplication               (SPMV)               **"
 disp "**   - matrix-vector multiplication transposed    (SPMV_T)             **"
 disp "**   - sparse matrix-spares matrix multiplication (SPGEMM)             **"
+disp "**   - and shows speedup ('RSB SPEEDUP' column)                        **"
 disp " ***********************************************************************"
 
-disp "OP	ROWS	COLUMNS	NONZEROES	OPTIME	MFLOPS	SPEEDUP	IMPLEMENTATION"
+disp "OP	ROWS	COLUMNS	NONZEROES	OPTIME	MFLOPS	RSB SPEEDUP	IMPLEMENTATION"
 
 cmt="#";
 #for n_=1:6*0+1

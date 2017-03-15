@@ -1,5 +1,5 @@
 # 
-#  Copyright (C) 2011-2015   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -15,32 +15,64 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 # 
 #
-# This program shall attempt solution of a problem saved in the MATLAB format as for the University of Florida collection.
+# This program shall attempt solution of a problem saved in the MATLAB 
+#  format as for the University of Florida collection.
 #
-# e.g.: http://www.cise.ufl.edu/research/sparse/mat/Hamm/memplus.mat
+# One with a problem structured as in e.g.:
+#  http://www.cise.ufl.edu/research/sparse/mat/Hamm/memplus.mat
+#  http://www.cise.ufl.edu/research/sparse/mat/Schenk_ISEI/barrier2-9.mat
 # 
-# s=load("~/memplus.mat");
+# s=load("~/barrier2-9.mat");
 1; # This is a script
+
+pkg load sparsersb
+
+disp " ***********************************************************************"
+disp "**                    A usage example of sparsersb.                    **"
+disp "** You can supply 'sparsersb' matrices to iterative method routines.   **"
+disp "** If the matrix is large enough, this shall secure good performance   **"
+disp "** of matrix-vector multiply: up to you to find method+linear system ! **"
+disp " ***********************************************************************"
+
 s=load(argv(){length(argv())});
 n=rows(s.Problem.A);
-minres=1e-7;
-maxit = n;
-#maxit = 100;
+minres=1e-3;
+#maxit = n;
+maxit = 100;
 b=s.Problem.b;
-#A=sparse(s.Problem.A);
-A=sparsersb(s.Problem.A);
+
+oct_A=sparse(s.Problem.A);
+rsb_A=sparsersb(s.Problem.A);
+
+printf (" **** Loaded a %d x %d matrix with %.3e nonzeroes ****\n", n, columns(s.Problem.A), nnz(s.Problem.A) );
+
 X0=[];
 RELRES=2*minres;
 TOTITER=0;
 M1=[]; M2=[];
-M1=spdiag(A)\ones(n,1);
-M2=spdiag(ones(n,1));
-while RELRES >= minres ;
-tic; [X1, FLAG, RELRES, ITER] = pcg (A, b, minres, maxit, M1,M2,X0); odt=toc;
-RELRES
-ITER;
-TOTITER=TOTITER+ITER
-toc
-X0=X1;
-end
+M1=sparse(diag(s.Problem.A)\ones(n,1));
+M2=sparse(diag(ones(n,1)));
 
+nsb=str2num(sparsersb(rsb_A,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
+printf (" **** The 'sparsersb' matrix consists of %d RSB blocks. ****\n", nsb);
+
+disp " *********** Invoking pcg using a 'sparse'    matrix ******************* ";
+tic; [X1, FLAG, RELRES, ITER] = pcg (oct_A, b, minres, maxit, M1,M2,X0); odt=toc;
+toc
+
+disp " *********** Invoking pcg using a 'sparsersb' matrix ******************* ";
+tic; [X1, FLAG, RELRES, ITER] = pcg (rsb_A, b, minres, maxit, M1,M2,X0); odt=toc;
+toc
+
+disp " ** Attempting autotuning 'sparsersb' matrix (pays off on the long run * ";
+tic; rsb_A=sparsersb(rsb_A,"autotune","n",1);
+toc;
+nsb=str2num(sparsersb(rsb_A,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
+printf (" **** The 'sparsersb' matrix consists of %d RSB blocks now. **** \n", nsb);
+
+disp " ****** Invoking pcg using a 'sparsersb' matrix (might be faster now) *** ";
+tic; [X1, FLAG, RELRES, ITER] = pcg (rsb_A, b, minres, maxit, M1,M2,X0); odt=toc;
+toc
+
+disp " *********************************************************************** ";
+quit(1);

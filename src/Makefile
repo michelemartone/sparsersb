@@ -23,6 +23,8 @@ $(SPARSERSB_OCT): sparsersb.cc
 rtest: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent ../inst/sparsersbtester.m
 	$(OCTAVE) --silent ../bin/octavebench.m ../bin/pd.mtx
+	$(OCTAVE) --silent ../bin/octavebench.m 
+	$(OCTAVE) --norc -q --eval 'demo sparsersb'
 
 bench: $(SPARSERSB_OCT)
 	$(OCTAVE) --silent ../bin/obench.m

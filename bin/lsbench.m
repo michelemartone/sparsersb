@@ -26,6 +26,7 @@
 disp " ***********************************************************************"
 disp "**   Usage example of sparsersb solving linear systems with GMRES.     **"
 disp "** Matrices large enough for 'sparsersb' to likely outperform 'sparse'.**"
+disp "** p.s.: Invoke 'demo sparsersb' to get just a first working overview. **"
 disp " ***********************************************************************"
 
 function lsb_compare(A)

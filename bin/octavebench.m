@@ -29,6 +29,7 @@ disp "**           A small 'sparse' vs 'sparsersb' test / benchmark.         **"
 disp "**      This is meant to be a demo, but not really an example.         **"
 disp "**  You can invoke it supplying a Matrix Market matrix (e.g. pd.mtx).  **"
 disp "**        Without arguments, will generate a test matrix.              **"
+disp "** p.s.: Invoke 'demo sparsersb' to get just a first working overview. **"
 disp " ***********************************************************************"
 
 n=10;

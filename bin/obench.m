@@ -25,6 +25,7 @@ disp "**   - matrix-vector multiplication               (SPMV)               **"
 disp "**   - matrix-vector multiplication transposed    (SPMV_T)             **"
 disp "**   - sparse matrix-spares matrix multiplication (SPGEMM)             **"
 disp "**   - and shows speedup ('RSB SPEEDUP' column)                        **"
+disp "** p.s.: Invoke 'demo sparsersb' to get just a first working overview. **"
 disp " ***********************************************************************"
 
 disp "OP	ROWS	COLUMNS	NONZEROES	OPTIME	MFLOPS	RSB SPEEDUP	IMPLEMENTATION"

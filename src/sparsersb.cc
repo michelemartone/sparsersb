@@ -2642,38 +2642,60 @@ ret:
 
 /*
 %!demo
-%! s=sparsersb([2])
-%! s=sparsersb([1,2],[1,1],[11,21],2,2)
+%! disp "The interface of 'sparsersb' is almost like the one of 'sparse'."
 %! 
-%! M=10000;N=10000;P=1 / M;
+%! sparsersb([2]); # 1x1 matrix
+%! sparsersb([1,2],[1,1],[11,21]    ); # 2x1 matrix
+%! sparsersb([1,2],[1,1],[11,21],2,2); # 2x2 matrix
+%!
+%! sparsersb([1,2,2  ],[1,1,2  ],[11,21,   22],2,2);          # 2x2 lower triangular
+%! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2);          # 2x2 lower triangular, last element ignored
+%! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2,"unique"); # 2x2 lower triangular, last element ignored
+%! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2,"sum");    # 2x2 lower triangular, last two elements summed
+%!
+%! disp "But it has a extensions, like symmetric and hermitian matrices."
+%! sparsersb([1,2,2  ],[1,1,2  ],[11,21 ,  22],2,2,"general");   # 2x2 lower tringular
+%! sparsersb([1,2,2  ],[1,1,2  ],[11,21 ,  22],2,2,"symmetric"); # 2x2 symmetric (only lower triangle stored)
+%! sparsersb([1,2,2  ],[1,1,2  ],[11,21i,  22],2,2,"hermitian"); # 2x2 hermitian (only lower triangle stored)
+
+%!demo
+%! disp "Any 'sparse' or 'dense' matrix can be converted to 'sparsersb'."
+%! d=sparsersb(       [1,2;3,4] );
+%! s=sparsersb(sparse([1,2;3,4]));
+%! disp "Many matrix operators are active, e.g.: +,*,-,/,\ among others..."
+%! s+d;
+%! s*d;
+%! s-d;
+%! s/d;
+%! s\[1;1];
+%! # ...
+
+%!demo
+%! disp "On large matrices 'sparsersb' is supposed to be faster than 'sparse' in sparse matrix-vector multiplication:"
+%! 
+%! M=10000;N=10000;P=100 / M;
 %! s=sparse(sprand(M,N,P));
 %! r=sparsersb(s);
 %! x=ones(M,1);
-%! bdt=1.0;
-%! nnz(s)
-%! nnz(r)
+%! assert(nnz(s)==nnz(r))
 %! 
-%! tic()
-%! nnz(s);
+%! printf("Here, a %d x %d matrix with %d nonzeroes.\n",M,N,nnz(s))
+%! 
+%! tic();
 %! sc=0;
-%! for i=1,10
+%! while(toc()<3)
 %!   s*x;
 %!   sc=sc+1;
-%! end
-%! toc()
-
-%! tic()
-%! nnz(s);
-%! sc=0;
-%! for i=1,10
+%! endwhile
+%! st=toc()/sc;
+%! printf("Each multiplication with 'sparse' took %.1es.\n",st);
+%!
+%! tic();
+%! rc=0;
+%! while(toc()<3)
 %!   r*x;
-%!   sc=sc+1;
-%! end
-%! sc
-%! toc()
-%! 
-%! # FIXME: this is incomplete.
+%!   rc=rc+1;
+%! endwhile
+%! rt=toc()/rc;
+%! printf("Each multiplication with 'sparsersb' took %.1es, this is %.1gx the time with 'sparse'.\n",rt,rt/st);
 */
-
-
-

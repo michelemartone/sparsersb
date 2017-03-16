@@ -20,6 +20,7 @@ pkg load sparsersb
 disp " ***********************************************************************"
 disp "**                    A usage example of sparsersb.                    **"
 disp "** A case large enough for 'sparsersb' to likely outperform 'sparse'.  **"
+disp "** p.s.: Invoke 'demo sparsersb' to get just a first working overview. **"
 disp " ***********************************************************************"
 
 bs=100; # block size

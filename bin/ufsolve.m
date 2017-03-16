@@ -32,6 +32,7 @@ disp "**                    A usage example of sparsersb.                    **"
 disp "** You can supply 'sparsersb' matrices to iterative method routines.   **"
 disp "** If the matrix is large enough, this shall secure good performance   **"
 disp "** of matrix-vector multiply: up to you to find method+linear system ! **"
+disp "** p.s.: Invoke 'demo sparsersb' to get just a first working overview. **"
 disp " ***********************************************************************"
 
 s=load(argv(){length(argv())});

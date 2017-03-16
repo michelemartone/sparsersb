@@ -180,7 +180,7 @@
 #endif
 
 #define RSBOI_INFOBUF	256
-#define RSBOI_WANT_SYMMETRY 0
+#define RSBOI_WANT_SYMMETRY 1
 #define RSBOI_WANT_PRINT_DETAIL 0
 #define RSBOI_WANT_PRINT_COMPLEX_OR_REAL 0
 #define RSBOI_WANT_SUBSREF 1
@@ -1092,7 +1092,7 @@ err:
 				<< ", symm = "<<
 				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S":
 				(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"H":"U"))
-				<< // FIXME: need a mechanism to print out these flags from rsb itself
+				// FIXME: need a mechanism to print out these flags from rsb itself
 #endif
 			;
 #if RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE
@@ -2486,11 +2486,12 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		}
 	}
 	else
-	if (nargin >= 3 && nargin <= 6 && !(args(0).is_string() || args(1).is_string() || args(2).is_string() ) )
+	if (nargin >= 3 && nargin <= 7 && !(args(0).is_string() || args(1).is_string() || args(2).is_string() ) )
 	{
 		rsb_flags_t eflags=RSBOI_DCF;
+		rsb_flags_t sflags=RSB_FLAG_NOFLAGS;
 		octave_idx_type nrA=0,ncA=0;
-		int sai=0;
+		int sai=0; // string argument index
 
 		if (nargin > 3)
 		{
@@ -2530,17 +2531,35 @@ checked:
 		else
 			if (nargin == 4  && args(3).is_string())
 				sai=3;
-		if(sai)
+		for(;sai>0 && sai<nargin;++sai)
 		{
 			std::string vv= args(sai).string_value();
+
 			if ( vv == "summation" || vv == "sum" )
 				eflags=RSB_FLAG_DUPLICATES_SUM;
 			else
 			if ( vv == "unique" )
 				eflags=RSB_FLAG_DUPLICATES_KEEP_LAST;
+#if RSBOI_WANT_SYMMETRY 
+			/* FIXME: still undocumented extension */
 			else
-				goto errp;
+			if ( vv == "symmetric" || vv == "sym" )
+				sflags=RSB_FLAG_SYMMETRIC;
+			else
+			if ( vv == "hermitian" || vv == "her" )
+				sflags=RSB_FLAG_HERMITIAN;
+			else
+			if ( vv == "general" || vv == "gen" )
+				;
+#endif /* RSBOI_WANT_SYMMETRY */
+			else
+			{
+				vv="'" + vv;
+				vv+="' is not a recognized keyword (unlike 'summation', 'unique', 'symmetric', 'hermitian', 'general')!";
+				error(vv.c_str()); goto errp;
+			}
 		}
+		RSB_DO_FLAG_ADD(eflags,sflags);
 		if (nargin >= 6  && args(5).is_integer_type())
 		{
 			/* we ignore this value for MATLAB compatibility */

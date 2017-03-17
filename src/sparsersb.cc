@@ -2697,5 +2697,28 @@ ret:
 %!   rc=rc+1;
 %! endwhile
 %! rt=toc()/rc;
-%! printf("Each multiplication with 'sparsersb' took %.1es, this is %.1gx the time with 'sparse'.\n",rt,rt/st);
+%! printf("Each multiplication with 'sparsersb' took %.3es, this is %.3gx the time with 'sparse'.\n",rt,rt/st);
+%!
+%! disp "'sparsersb' has an 'empirical online' auto-tuning function"
+%! nsb=str2num(sparsersb(r,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
+%! disp "after 'autotuning' for a specific operation, this will perform faster"
+%! tic;
+%! r=sparsersb(r,"autotune","n",1);
+%! toc;
+%! nnb=str2num(sparsersb(r,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
+%! printf ("Autotuning took  %.2es (%d -> %d RSB blocks).\n", toc, nsb, nnb);
+%! tic();
+%! rc=0;
+%! while(toc()<3)
+%!   r*x;
+%!   rc=rc+1;
+%! endwhile
+%! rt=toc()/rc;
+%! printf("Each 'optimized' multiplication with 'sparsersb' took %.3es, this is %.3gx the time with 'sparse'.\n",rt,rt/st);
+
+%!demo
+%! disp "'sparsersb' can render matrices"
+%! rm = sparsersb(sprand(100000,100000,.0001));
+%! sparsersb(rm,'render','sptest.eps')
+%%!demo
 */

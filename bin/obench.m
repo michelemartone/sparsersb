@@ -16,7 +16,7 @@
 # 
 1; # This is a script
 
-pkg load sparsersb
+if length(getenv("SPARSERSB_TEST")) == 0 ; pkg load sparsersb ; end
 
 disp " ***********************************************************************"
 disp "**           A small 'sparse' vs 'sparsersb' benchmark.                **"

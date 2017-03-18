@@ -22,7 +22,7 @@
 # TODO: correct symmetric / hermitian matrices handling
 # TODO: sound, time-and-runs-based benchmarking criteria 
 
-pkg load sparsersb
+if length(getenv("SPARSERSB_TEST")) == 0 ; pkg load sparsersb ; end
 
 disp " ***********************************************************************"
 disp "**           A small 'sparse' vs 'sparsersb' test / benchmark.         **"

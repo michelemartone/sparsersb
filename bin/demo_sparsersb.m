@@ -15,7 +15,7 @@
 #  along with this program; if not, see <http://www.gnu.org/licenses/>.
 # 
 
-pkg load sparsersb
+if length(getenv("SPARSERSB_TEST")) == 0 ; pkg load sparsersb ; end
 
 disp " ***********************************************************************"
 disp "**                    A usage example of sparsersb.                    **"

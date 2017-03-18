@@ -21,18 +21,20 @@ tags: *.cc
 $(SPARSERSB_OCT): sparsersb.cc
 	LFLAGS="$(LFLAGS)" CXXFLAGS="$(CXXFLAGS) $(CXXFLAGS_CXX11)" $(MKOCTFILE) -D'RSB_SPARSERSB_LABEL=sparsersb' -o $@ $< 
 rtest: $(SPARSERSB_OCT)
-	$(OCTAVE) --silent ../inst/sparsersbtester.m
-	$(OCTAVE) --silent ../bin/octavebench.m ../bin/pd.mtx
-	$(OCTAVE) --silent ../bin/octavebench.m 
-	$(OCTAVE) --norc -q --eval 'demo sparsersb'
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../inst/sparsersbtester.m
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../bin/octavebench.m ../bin/pd.mtx
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../bin/octavebench.m 
 
 bench: $(SPARSERSB_OCT)
-	$(OCTAVE) --silent ../bin/obench.m
-	$(OCTAVE) --silent ../bin/lsbench.m
-	$(OCTAVE) --silent ../inst/sparsersbbench.m
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../bin/obench.m
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../bin/lsbench.m
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../inst/sparsersbbench.m
+
+itests: tests
+	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent --eval 'demo sparsersb'
 	
 tests: rtest
-check: rtest
+check: tests
 
 clean:
 	-$(RM) *.o octave-core core *.oct *~ tags

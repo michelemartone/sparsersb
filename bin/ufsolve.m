@@ -25,7 +25,7 @@
 # s=load("~/barrier2-9.mat");
 1; # This is a script
 
-pkg load sparsersb
+if length(getenv("SPARSERSB_TEST")) == 0 ; pkg load sparsersb ; end
 
 disp " ***********************************************************************"
 disp "**                    A usage example of sparsersb.                    **"

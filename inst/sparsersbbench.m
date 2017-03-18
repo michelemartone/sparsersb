@@ -19,7 +19,7 @@
 # TODO: sprand should not be used in a consistent way
 
 1; # This is a script.
-pkg load sparsersb
+if length(getenv("SPARSERSB_TEST")) == 0 ; pkg load sparsersb ; end
 
 function dt=sparsersbbench__(precmd,cmd,postcmd,mint)
 # ..

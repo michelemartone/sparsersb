@@ -2642,27 +2642,26 @@ ret:
 
 /*
 %!demo
-%! disp "The interface of 'sparsersb' is almost like the one of 'sparse'."
-%! 
+%! # The interface of 'sparsersb' is almost like the one of 'sparse'.
 %! sparsersb([2]); # 1x1 matrix
 %! sparsersb([1,2],[1,1],[11,21]    ); # 2x1 matrix
 %! sparsersb([1,2],[1,1],[11,21],2,2); # 2x2 matrix
-%!
 %! sparsersb([1,2,2  ],[1,1,2  ],[11,21,   22],2,2);          # 2x2 lower triangular
 %! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2);          # 2x2 lower triangular, last element ignored
 %! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2,"unique"); # 2x2 lower triangular, last element ignored
 %! sparsersb([1,2,2,2],[1,1,2,2],[11,21,11,11],2,2,"sum");    # 2x2 lower triangular, last two elements summed
 %!
-%! disp "But it has a extensions, like symmetric and hermitian matrices."
+%! # But it has a extensions, like symmetric and hermitian matrices.
 %! sparsersb([1,2,2  ],[1,1,2  ],[11,21 ,  22],2,2,"general");   # 2x2 lower tringular
 %! sparsersb([1,2,2  ],[1,1,2  ],[11,21 ,  22],2,2,"symmetric"); # 2x2 symmetric (only lower triangle stored)
 %! sparsersb([1,2,2  ],[1,1,2  ],[11,21i,  22],2,2,"hermitian"); # 2x2 hermitian (only lower triangle stored)
 
 %!demo
-%! disp "Any 'sparse' or 'dense' matrix can be converted to 'sparsersb'."
+%! # Any 'sparse' or 'dense' matrix can be converted to 'sparsersb'.
 %! d=sparsersb(       [1,2;3,4] );
 %! s=sparsersb(sparse([1,2;3,4]));
-%! disp "Many matrix operators are active, e.g.: +,*,-,/,\ among others..."
+%! 
+%! # Many matrix operators are active, e.g.: +,*,-,/,\ among others...
 %! s+d;
 %! s*d;
 %! s-d;
@@ -2671,16 +2670,14 @@ ret:
 %! # ...
 
 %!demo
-%! disp "On large matrices 'sparsersb' is supposed to be faster than 'sparse' in sparse matrix-vector multiplication:"
-%! 
+%! # On large matrices 'sparsersb' is supposed to be faster than 'sparse' in sparse matrix-vector multiplication:
 %! M=10000;N=10000;P=100 / M;
 %! s=sparse(sprand(M,N,P));
 %! r=sparsersb(s);
 %! x=ones(M,1);
 %! assert(nnz(s)==nnz(r))
 %! 
-%! printf("Here, a %d x %d matrix with %d nonzeroes.\n",M,N,nnz(s))
-%! 
+%! printf("Here, a %.2e x %.2e matrix with %.2e nonzeroes.\n",M,N,nnz(s))
 %! tic();
 %! sc=0;
 %! while(toc()<3)
@@ -2697,11 +2694,11 @@ ret:
 %!   rc=rc+1;
 %! endwhile
 %! rt=toc()/rc;
-%! printf("Each multiplication with 'sparsersb' took %.3es, this is %.3gx the time with 'sparse'.\n",rt,rt/st);
+%! printf("Each multiplication with 'sparsersb' took %.3es, this is %.4g%% of the time taken by 'sparse'.\n",rt,100*rt/st);
 %!
-%! disp "'sparsersb' has an 'empirical online' auto-tuning function"
+%! # 'sparsersb' has an 'empirical online auto-tuning' function
 %! nsb=str2num(sparsersb(r,"get","RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T"));
-%! disp "after 'autotuning' for a specific operation, this will perform faster"
+%! # after 'autotuning' for a specific operation, this will perform faster
 %! tic;
 %! r=sparsersb(r,"autotune","n",1);
 %! toc;
@@ -2714,10 +2711,10 @@ ret:
 %!   rc=rc+1;
 %! endwhile
 %! rt=toc()/rc;
-%! printf("Each 'optimized' multiplication with 'sparsersb' took %.3es, this is %.3gx the time with 'sparse'.\n",rt,rt/st);
+%! printf("Each 'optimized' multiplication with 'sparsersb' took %.3es, this is %.4g%% of the time taken by 'sparse'.\n",rt,100*rt/st);
 
 %!demo
-%! disp "'sparsersb' can render matrices"
+%! # 'sparsersb' can render matrices into Encapsulated Postscript files:
 %! rm = sparsersb(sprand(100000,100000,.0001));
 %! sparsersb(rm,'render','sptest.eps')
 %%!demo

@@ -61,7 +61,7 @@ function ase=are_spm_equal(OM,XM)
 	ase&=isequal(oi,xi);
 	ase&=isequal(oj,xj);
 	ase&=isequal(ov,xv);
-end
+end # are_spm_equal
 
 function testmsg(match,tname,erreason)
 	if(match>0)
@@ -76,12 +76,12 @@ function testmsg(match,tname,erreason)
 	else
 		printf(" ().\n",erreason)
 	end
-end
+end # testmsg
 
 function match=testinfo(OM,XM)
 	printf("will test types \"%s\" and \"%s\"\n",typeinfo(OM),typeinfo(XM))
 	match=1;
-end
+end # testinfo
 
 function match=testdims(OM,XM)
 	match=1;
@@ -89,7 +89,7 @@ function match=testdims(OM,XM)
 	match&=(columns(OM)==columns(XM));
 	match&=(nnz(OM)==nnz(XM));
 	testmsg(match,"dimensions");
-end
+end # testdims
 
 function match=testsprsb(OM,XM)
 	match=1;
@@ -126,7 +126,7 @@ function match=testsprsb(OM,XM)
 	match&=!are_spm_equal(RM,XM);
 	clear RM;
 	testmsg(match,"constructors");
-end
+end # testsprsb
 
 function match=testfind(OM,XM)
 	match=1;
@@ -135,7 +135,7 @@ function match=testfind(OM,XM)
 	match&=isequal(([oi,oj,ov]=find(OM)),([xi,xj,xv]=find(XM)));
 	match&=isequal(nonzeros(OM),nonzeros(XM));
 	testmsg(match,"find");
-end
+end # testfind
 
 function match=testasgn(OM,XM)
 	match=1;
@@ -161,7 +161,8 @@ function match=testasgn(OM,XM)
 	endfor
 	endfor
 	testmsg(match,"asgn");
-end
+end # testasgn
+
 
 function match=testelms(OM,XM)
 	match=1;
@@ -173,7 +174,7 @@ function match=testelms(OM,XM)
 	endfor
 	endfor
 	testmsg(match,"elems");
-end
+end # testelms
 
 function match=testdiag(OM,XM)
 	#sparse(spdiag(OM))
@@ -187,7 +188,7 @@ function match=testdiag(OM,XM)
 	#match=(diag(OM)==diag(XM)); # TODO: understand why the following syntax is problematic !
 	#match=(spdiag(OM)==spdiag(XM));
 	testmsg(match,"diagonal");
-end
+end # testdiag
 
 function match=testpcgm(OM,XM)
 	# FIXME! This test ignores OM and XM !
@@ -219,7 +220,7 @@ function match=testpcgm(OM,XM)
 	[XX, XFLAG, XRELRES, XITER, XRESVEC, XEIGEST]= pcg (sparsersb(A),b, 1.e-6, 500, l,u);
 	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	testmsg(match,"pcg");
-end
+end # testpcgm
 
 function hwl=have_working_luinc()
 	try
@@ -228,7 +229,7 @@ function hwl=have_working_luinc()
 	catch 
 	hwl=0;
 	end_try_catch
-end
+end # have_working_luinc
 
 function match=testpcrm(OM,XM)
 	# FIXME! This test ignores OM and XM !
@@ -260,7 +261,7 @@ function match=testpcrm(OM,XM)
 	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b, 1.e-6, 500, l);
 	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
 	testmsg(match,"pcr");
-end
+end # testpcrm
 
 function match=testmult(OM,XM)
 	match=1;
@@ -278,7 +279,7 @@ function match=testmult(OM,XM)
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	match&=are_spm_equal(OX,XX);
 	testmsg(match,"multiply");
-end
+end # testmult
 
 function match=testspsv(OM,XM)
 	match=1;
@@ -293,7 +294,7 @@ function match=testspsv(OM,XM)
 	#B
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	testmsg(match,"triangular solve");
-end
+end # testspsv
 
 function match=testscal(OM,XM)
 	match=1;
@@ -338,7 +339,7 @@ function match=testscal(OM,XM)
 	match&=isequal(find(XM),find(XB));
 	testmsg(match,"scale");
 	OM=OB; XM=XB;
-end
+end # testscal
 
 function match=testnorm(OM,XM)
 	match=1;
@@ -346,7 +347,7 @@ function match=testnorm(OM,XM)
 		match&=isequal(full(normest(OM)),full(normest(XM)));
 	end
 	testmsg(match,"norms");
-end
+end # testnorm
 
 function match=testadds(OM,XM)
 	match=1;
@@ -377,7 +378,7 @@ function match=testadds(OM,XM)
 	match&=isequal(find(XM),find(XB));
 	testmsg(match,"add and subtract");
 	OM=OB; XM=XB;
-end
+end # testadds
 
 function match=tests(OM,XM,M)
 	if(nargin>2)
@@ -407,7 +408,7 @@ function match=tests(OM,XM,M)
 	match&=testscal(OM,XM);
 	match&=testadds(OM,XM);
 	testmsg(match,"overall (for this matrix)");
-end
+end # tests
 
 match=1;
 mtn=1;

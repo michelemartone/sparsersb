@@ -57,6 +57,7 @@
  * norm computation
  * reformat code for readability
  * warnings about incomplete complex implementation may be overzealous.
+ * need matrix exponentiation through conversion to octave format.
  * Note: although librsb has been optimized for performance, sparsersb is not.
 
  * Developer notes:
@@ -188,6 +189,7 @@
 #define RSBOI_WANT_VECLOAD_INSTEAD_MTX 1
 #define RSBOI_WANT_MTX_LOAD 1
 #define RSBOI_WANT_MTX_SAVE 1
+#define RSBOI_WANT_POW 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -1713,14 +1715,16 @@ DEFBINOP(rsb_c_mul, sparse_rsb_mtx, complex)
 }
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 
-#if 0
-DEFBINOP(rsb_s_pow, sparse_rsb_mtx, scalar)
+#if RSBOI_WANT_POW
+DEFBINOP(rsb_s_pow, sparse_rsb_mtx, scalar) // ^
 {
+	RSBOI_FIXME("This is elemental exponentiation!");
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	return v1.rsboi_get_power_copy(v2.scalar_value());
+	RSBOI_T alpha=v2.scalar_value();
+	return v1.cp_ubop(RSB_ELOPF_POW,&alpha);
 }
-#endif
+#endif /* RSBOI_WANT_POW */
 
 DEFASSIGNOP (assign, sparse_rsb_mtx, sparse_rsb_mtx)
 {
@@ -2000,7 +2004,9 @@ static void install_sparsersb_ops (void)
 	INSTALL_BINOP (op_ldiv, octave_sparsersb_mtx, octave_complex_matrix, c_ldiv);
 	INSTALL_BINOP (op_trans_ldiv, octave_sparsersb_mtx, octave_complex_matrix, trans_c_ldiv);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
-	//INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
+#if RSBOI_WANT_POW
+	INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
+#endif /* RSBOI_WANT_POW */
 	INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_matrix, el_div);
 	INSTALL_UNOP (op_transpose, octave_sparsersb_mtx, transpose);
 	INSTALL_UNOP (op_hermitian, octave_sparsersb_mtx, htranspose);

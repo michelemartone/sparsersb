@@ -2648,6 +2648,35 @@ ret:
 
 /*
 %!demo
+%! # You can use 'sparsersb' just like 'sparse' in the most of cases:
+%! R=(rand(3)>.6)
+%! # R =
+%! # 
+%! #    0   0   0
+%! #    0   0   0
+%! #    1   0   1
+%! # 
+%! A_octave=sparse(R)
+%! # A_octave =
+%! # 
+%! # Compressed Column Sparse (rows = 3, cols = 3, nnz = 2 [22%])
+%! # 
+%! #   (3, 1) ->  1
+%! #   (3, 3) ->  1
+%! # 
+%! A_librsb=sparsersb(R)
+%! # A_librsb =
+%! # 
+%! # Recursive Sparse Blocks  (rows = 3, cols = 3, nnz = 2, symm = U [22%])
+%! # 
+%! #   (3, 1) -> 1
+%! #   (3, 3) -> 1
+%! # 
+%! # test sparsersb
+%! # ...
+%! # help sparsersb
+
+%!demo
 %! # The interface of 'sparsersb' is almost like the one of 'sparse'.
 %! sparsersb([2]); # 1x1 matrix
 %! sparsersb([1,2],[1,1],[11,21]    ); # 2x1 matrix

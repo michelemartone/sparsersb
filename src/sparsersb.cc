@@ -193,6 +193,7 @@
 #define RSBOI_WANT_MTX_LOAD 1
 #define RSBOI_WANT_MTX_SAVE 1
 #define RSBOI_WANT_POW 1
+#define RSBOI_WANT_QSI 1 /* query string interface */
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -2147,11 +2148,13 @@ If @var{opn} is a string representing a valid librsb option name and @var{opv} i
 \n\
 \
 If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{A}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned. As of librsb-1.2, these is debug or internal information. E.g. for 'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the number of internal RSB blocks will be returned.\n\
-\n\
-\
-If @var{A} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{A}. String @code{@var{v}} will be returned. See librsb's @code{rsb_mtx_get_info_str()}.\n\
-@strong{Note}: this feature is still incomplete, and whatever the value of @var{QS}, a general information string will be returned.\n\
 \n"\
+\
+/*"If @var{S} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{S}. String @code{@var{v}} will be returned. See librsb's @code{rsb_mtx_get_info_str()}.\n\
+@strong{Note}: this feature is still incomplete, and whatever the value of @var{QS}, a general information string will be returned.\n"*/\
+\
+"If @var{S} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} shall be interpreted as a query string about matrix @var{S}. String @code{@var{v}} will be returned with query results. \n @strong{Note}: this feature is to be completed and its syntax reserved for future use. In this version, whatever the value of @var{QS}, a general matrix information string will be returned (like " RSBOI_FNS "(@var{S},\"get\",\"RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T\") ).\n"\
+"\n"\
 /*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
 to have a common size.\n*/
 RSBOI_10100_DOC ""\
@@ -2357,6 +2360,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 
 		if (nargin == 2 && isr && args(1).is_string())
+#if RSBOI_WANT_QSI
 		{
 			// sparsersb (S, QS)
 			char ss[RSBOI_INFOBUF];
@@ -2367,13 +2371,19 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 			errval = rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			if(!RSBOI_SOME_ERROR(errval))
 				retval.append(ss);
-			/* TODO, FIXME: to add interpretation (we are ignoring args(1) !): this is unfinished */
+			/* TODO, FIXME: to add interpretation (we are ignoring args(1) !): this is to be extended. */
 			RSBOI_WARN(RSBOI_0_UNFFEMSG);/* FIXME: this is yet unfinished */
 			// octave_stdout << "Matrix information (in the future, supplementary information may be returned, as more inquiry functionality will be implemented):\n" << ss << "\n";
 			/* FIXME: shall not print out, but rather return the info as a string*/
 			//retval.append("place info string here !\n");
 			goto ret;
 		}
+#else /* RSBOI_WANT_QSI */
+		{
+			// sparsersb (S, QS)
+			error("invocation error !"); goto errp;
+		}
+#endif /* RSBOI_WANT_QSI */
 		else
 		if(args(0).is_sparse_type())
 		{

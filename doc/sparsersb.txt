@@ -72,7 +72,7 @@
      information will be returned. As of librsb-1.2, these is debug or
      internal information. E.g. for
      'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the
-     number of internal RSB blocks will be returned.
+     count of internal RSB blocks will be returned.
 
      If S is a sparsersb matrix and QS is a string, QS shall be
      interpreted as a query string about matrix S. String `V' will be

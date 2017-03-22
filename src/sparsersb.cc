@@ -2153,7 +2153,7 @@ If @var{m} or @var{n} are not specified, then @code{@var{m} = max (@var{i})}, @c
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, these will be passed to the @code{rsb_lib_set_opt_str()} function.\n\
 \n\
 \
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{S}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned. As of librsb-1.2, these is debug or internal information. E.g. for 'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the number of internal RSB blocks will be returned.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{S}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned. As of librsb-1.2, these is debug or internal information. E.g. for 'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the count of internal RSB blocks will be returned.\n\
 \n"\
 \
 /*"If @var{S} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{S}. String @code{@var{v}} will be returned. See librsb's @code{rsb_mtx_get_info_str()}.\n\
@@ -2181,7 +2181,6 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 	RSBOI_DEBUG_NOTICE("in sparsersb()\n");
 
-	//if(ic3 || ic0)
 	if(ic0)
 	{
 		RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);
@@ -2352,7 +2351,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 	if ( nargin >= 3 && isr && args(1).is_string() && args(1).string_value()=="get" /* && args(1).is_string() */ )
 	{
 		// sparsersb (S, "get", MIF, XXX)
-		error("did you intend to get matrices information ? use the correct syntax then !"); goto errp;
+		error("did you intend to get matrices information ? use the correct syntax then !"); 
+		goto errp;
 	}
 
 	if ( nargin == 1 || nargin == 2 )
@@ -2387,7 +2387,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 #else /* RSBOI_WANT_QSI */
 		{
 			// sparsersb (S, QS)
-			error("invocation error !"); goto errp;
+			error("invocation error !");
+		       	goto errp;
 		}
 #endif /* RSBOI_WANT_QSI */
 		else
@@ -2404,14 +2405,16 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(!ic0)
 				{
 					const SparseMatrix m = args(0).sparse_matrix_value();
-					if (error_state) goto err;
+					if (error_state)
+					       	goto err;
 					retval.append(osmp=new octave_sparsersb_mtx(m,typecode));
 				}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 				else
 				{
 					const SparseComplexMatrix m = args(0).sparse_complex_matrix_value();
-					if (error_state) goto err;
+					if (error_state)
+					       	goto err;
 					retval.append(osmp=new octave_sparsersb_mtx(m,typecode));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
@@ -2422,7 +2425,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		{
 			// sparsersb (MTXFILENAME)
 			const std::string mtxfilename = args(0).string_value();
-			if (error_state) goto err;
+			if (error_state)
+			       	goto err;
 			if(mtxfilename==RSBOI_LIS)
 			{
 				//retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
@@ -2467,7 +2471,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 					rsb_file_vec_load(mtxfilename.c_str(),typecode,RSBOI_NULL,&n);
 					if(n<1)
 					{
-						/* FIXME: message needed here */
+						// error("are you sure you passed a valid Matrix Market vector file ?");
 						goto err;
 					}
 
@@ -2512,14 +2516,16 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(!ic0)
 				{
 					Matrix m = args(0).matrix_value();
-					if (error_state) goto err;
+					if (error_state)
+						goto err;
 					retval.append(osmp=new octave_sparsersb_mtx(m));
 				}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 				else
 				{
 					ComplexMatrix m = args(0).complex_matrix_value();
-					if (error_state) goto err;
+					if (error_state)
+						goto err;
 					retval.append(osmp=new octave_sparsersb_mtx(m));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
@@ -2600,7 +2606,8 @@ checked:
 			{
 				vv="'" + vv;
 				vv+="' is not a recognized keyword (unlike 'summation', 'unique', 'symmetric', 'hermitian', 'general')!";
-				error(vv.c_str()); goto errp;
+				error(vv.c_str());
+				goto errp;
 			}
 		}
 		RSB_DO_FLAG_ADD(eflags,sflags);
@@ -2608,7 +2615,9 @@ checked:
 		{
 			/* we ignore this value for MATLAB compatibility */
 		}
-		if (error_state) goto ret;
+
+		if (error_state)
+			goto ret;
 
 		if(!ic3)
 		{
@@ -2617,7 +2626,6 @@ checked:
 			idx_vector jv=args(1).index_vector ();
 			retval.append(osmp=new octave_sparsersb_mtx( iv, jv, args(2).matrix_value(),nrA,ncA,eflags ));
 		}
-
 #if RSBOI_WANT_DOUBLE_COMPLEX
 		else
 		{

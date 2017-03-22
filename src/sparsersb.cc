@@ -149,6 +149,9 @@
 #define RSBOI_0_ASSERRMSG  "assignment is still unsupported on 'sparse_rsb' matrices"
 #define RSBOI_0_NSQERRMSG  "matrix is not square"
 #define RSBOI_0_NIYERRMSG  "not implemented yet in sparsersb"
+#define RSBOI_0_INTERRMSG  "internal sparsersb error: this might be a bug -- please contact and tell us about this!"
+#define RSBOI_0_INTERRMSGSTMT(STMT)  {error(RSBOI_0_INTERRMSG);STMT;}
+//#define RSBOI_0_INTERRMSGSTMT(STMT)                           STMT;
 #define RSBOI_D_EMPTY_MSG  ""
 #define RSBOI_O_MISSIMPERRMSG  "implementation missing here\n"
 #define RSBOI_O_NPMSERR  "providing non positive matrix size is not allowed!"
@@ -2247,7 +2250,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 		// ...
 		if(!osmp || !osmp->mtxAp)
-			goto ret;/* FIXME: error handling missing here */
+			RSBOI_0_INTERRMSGSTMT(goto ret)
 		if(nargout)
 		{
 			struct rsb_mtx_t*mtxAp = NULL;
@@ -2279,7 +2282,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		if (nargin > 4) pmHeight = args(4).scalar_value();
 
 		if(!osmp || !osmp->mtxAp)
-			goto ret;/* FIXME: error handling missing here */
+			RSBOI_0_INTERRMSGSTMT(goto ret)
 
  		if( args(1).string_value() == "renders")
 			marf = RSB_MARF_EPS_S;
@@ -2316,7 +2319,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		char ss[RSBOI_INFOBUF];
 
 		if(!osmp || !osmp->mtxAp)
-			goto ret;/* FIXME: error handling missing here */
+			RSBOI_0_INTERRMSGSTMT(goto ret)
 
 		if(strlen(args(2).string_value().c_str())==0)
 			strncpy(is,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",sizeof(is));
@@ -2359,7 +2362,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 			char ss[RSBOI_INFOBUF];
 			rsb_err_t errval = RSB_ERR_NO_ERROR;
 
-			if(!osmp || !osmp->mtxAp)goto ret;/* FIXME: error handling missing here */
+			if(!osmp || !osmp->mtxAp)
+				RSBOI_0_INTERRMSGSTMT(goto ret)
 			errval = rsb_mtx_get_info_str(osmp->mtxAp,"RSB_MIF_MATRIX_INFO__TO__CHAR_P",ss,RSBOI_INFOBUF);
 			if(!RSBOI_SOME_ERROR(errval))
 				retval.append(ss);

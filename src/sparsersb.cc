@@ -2081,7 +2081,7 @@ DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 @deftypefnx {Loadable Function} {@var{v} =} " RSBOI_FNS " (@var{S}, \"get\", @var{mif})\n\
 @deftypefnx {Loadable Function} {@var{v} =} " RSBOI_FNS " (@var{S}, @var{QS})\n\
 @deftypefnx {Loadable Function} " RSBOI_FNS " (@var{a},\"save\",@var{mtxfilename})\n\
-@deftypefnx {Loadable Function} {[@var{S}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} " RSBOI_FNS " (@var{mtxfilename}, @var{mtxtypestring})\n\
+@deftypefnx {Loadable Function} {[@var{S}, @var{nrows}, @var{ncols}, @var{nnz}, @var{repinfo}, @var{field}, @var{symmetry}] =} " RSBOI_FNS " (@var{mtxfilename}[, @var{mtxtypestring}])\n\
 " RSBOI_10100_DOCH ""\
 \
 "\n"\
@@ -2187,6 +2187,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 	install_sparse_rsb();
 	if( nargin == 3 && args(0).is_string() && args(0).string_value()=="set" && args(1).is_string() && args(2).is_string())
 	{
+		// sparsersb ("set", OPN, OPV)
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		const char *os=args(1).string_value().c_str();
 		const char *ov=args(2).string_value().c_str();
@@ -2202,11 +2203,13 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 	if( nargin >= 2 && args(0).is_string() && args(0).string_value()=="set" /* && args(1).is_string() */ )
 	{
-		error("did you intend to set librsb options ? use the correct syntax then !"); goto errp;
+		// sparsersb ("set", XXX)
+		error("did you intend to set librsb options ? use the correct syntax then ! (third argument missing)"); goto errp;
 	}
 
 	if( nargin == 2 && args(0).is_string() && args(0).string_value()=="get" && args(1).is_string() )
 	{
+		// sparsersb ("get", XXX)
 		/* FIXME: unfinished feature ! */
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		error("getting library options still unimplemented!");
@@ -2216,6 +2219,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 	if (nargin >= 2 && isr && args(1).is_string() && args(1).string_value()=="autotune")
 	{
+		// sparsersb (S,"autotune"[, TRANSA, NRHS, MAXR, TMAX, TN, SF])
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		/* these are user settable */
 		rsb_coo_idx_t nrhs=0;
@@ -2264,6 +2268,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
  		&& args(1).is_string() && args(1).string_value().substr(0,6)=="render"
 		&& args(2).is_string())
 	{
+		// sparsersb (S,"render", FILENAME[, RWIDTH, RHEIGHT])
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		std::string rmf = args(2).string_value();
 		rsb_coo_idx_t pmWidth = 512, pmHeight = 512; /* Care to update the documentation when changing these. */
@@ -2293,6 +2298,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
  		&& args(1).is_string() && args(1).string_value()=="save"
 		&& args(2).is_string())
 	{
+		// sparsersb (A,"save",MTXFILENAME)
 		rsb_file_mtx_save(osmp->mtxAp,args(2).string_value().c_str()); /* TODO: error handling */
 		goto ret;
 	}
@@ -2301,6 +2307,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
  		&& args(1).is_string() && args(1).string_value()=="get"
 		&& args(2).is_string())
 	{
+		// sparsersb (S, "get", MIF)
 		/* FIXME: undocumented feature */
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		/* rsb_real_t miv=RSBOI_ZERO;*/ /* FIXME: this is extreme danger! */
@@ -2331,6 +2338,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 	if ( nargin >= 3 && isr && args(1).is_string() && args(1).string_value()=="get" /* && args(1).is_string() */ )
 	{
+		// sparsersb (S, "get", MIF, XXX)
 		error("did you intend to get matrices information ? use the correct syntax then !"); goto errp;
 	}
 
@@ -2346,6 +2354,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 		if (nargin == 2 && isr && args(1).is_string())
 		{
+			// sparsersb (S, QS)
 			char ss[RSBOI_INFOBUF];
 			rsb_err_t errval = RSB_ERR_NO_ERROR;
 
@@ -2363,6 +2372,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		else
 		if(args(0).is_sparse_type())
 		{
+			// sparsersb (sparse(...), ...)
 			if( isr )
 			{
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
@@ -2389,6 +2399,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		else
 		if(args(0).is_string())
 		{
+			// sparsersb (MTXFILENAME)
 			const std::string mtxfilename = args(0).string_value();
 			if (error_state) goto err;
 			if(mtxfilename==RSBOI_LIS)
@@ -2403,6 +2414,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 			}
 			else
 			{
+				// [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY] = sparsersb (MTXFILENAME)
 				rsb_type_t typecode = RSBOI_TYPECODE;
 				RSBOI_WARN(RSBOI_0_UNFFEMSG);
 				RSBOI_WARN("shall set the type, here");
@@ -2469,11 +2481,13 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		{
 			if (nargin == 2  && args(0).is_scalar_type() && args(1).is_scalar_type() )
 			{
+				// sparsersb (M, N)
 				const SparseMatrix m = args(0).sparse_matrix_value();
 				retval.append(osmp=new octave_sparsersb_mtx(SparseMatrix(args(0).scalar_value(),args(1).scalar_value())));
 			}
 			else
 			{
+				// sparsersb (A, XXX)
 				if(!ic0)
 				{
 					Matrix m = args(0).matrix_value();
@@ -2488,12 +2502,16 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 					retval.append(osmp=new octave_sparsersb_mtx(m));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
+				// FIXME: ignoring second argument
+				// if(nargin == 2)
+				// { error("when initializing from a single matrix, no need for second argument !"); goto errp; }
 			}
 		}
 	}
 	else
 	if (nargin >= 3 && nargin <= 7 && !(args(0).is_string() || args(1).is_string() || args(2).is_string() ) )
 	{
+		// sparsersb (I, J, SV, M, N, "unique")
 		rsb_flags_t eflags=RSBOI_DCF;
 		rsb_flags_t sflags=RSB_FLAG_NOFLAGS;
 		octave_idx_type nrA=0,ncA=0;
@@ -2591,7 +2609,10 @@ checked:
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	}
 	else
+	{
+		// error("wrong invocation syntax !"); 
 		goto errp;
+	}
 	if(!osmp)
 	{
 		RSBOI_WARN(RSBOI_0_NEEDERR);

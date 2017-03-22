@@ -4,8 +4,9 @@ sparsersb-1.0.3 Release Date: 2017-0X-XX
 ===============================================================================
 ** Thought to be used with the latest librsb-1.2.0.
 **  - "symmetric" RSB representation supported
-**  - rundemos / runtests
-**  - improved overall documentation
+**  - improved documentation
+**  - improved demos (demo sparsersb)
+**  - improved tests (test sparsersb)
 ===============================================================================
 sparsersb-1.0.2 Release Date: 2016-10-03
 ===============================================================================

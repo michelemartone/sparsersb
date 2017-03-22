@@ -2147,7 +2147,7 @@ If @var{m} or @var{n} are not specified, then @code{@var{m} = max (@var{i})}, @c
 If @var{opn} is a string representing a valid librsb option name and @var{opv} is a string representing a valid librsb option value, these will be passed to the @code{rsb_lib_set_opt_str()} function.\n\
 \n\
 \
-If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{A}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned. As of librsb-1.2, these is debug or internal information. E.g. for 'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the number of internal RSB blocks will be returned.\n\
+If @var{mif} is a string specifying a valid librsb matrix info string (valid for librsb's @code{rsb_mtx_get_info_from_string()}), then the corresponding value will be returned for matrix @code{@var{S}}, in string @code{@var{v}}. If @var{mif} is the an empty string (\"\"), matrix structure information will be returned. As of librsb-1.2, these is debug or internal information. E.g. for 'RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T', a string with the number of internal RSB blocks will be returned.\n\
 \n"\
 \
 /*"If @var{S} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} will be interpreted as a query string about matrix @var{S}. String @code{@var{v}} will be returned. See librsb's @code{rsb_mtx_get_info_str()}.\n\

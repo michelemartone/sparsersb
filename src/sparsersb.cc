@@ -2502,9 +2502,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 					retval.append(osmp=new octave_sparsersb_mtx(m));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
-				// FIXME: ignoring second argument
-				// if(nargin == 2)
-				// { error("when initializing from a single matrix, no need for second argument !"); goto errp; }
+				if(nargin >= 2)
+				{ error("when initializing from a single matrix, no need for second argument !"); goto errp; }
 			}
 		}
 	}
@@ -2609,10 +2608,7 @@ checked:
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	}
 	else
-	{
-		// error("wrong invocation syntax !"); 
 		goto errp;
-	}
 	if(!osmp)
 	{
 		RSBOI_WARN(RSBOI_0_NEEDERR);

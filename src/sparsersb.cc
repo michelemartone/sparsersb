@@ -212,9 +212,9 @@
 #endif
 
 #if 1
-extern "C" { rsb_err_t rsb_dump_postscript_from_mtx_t(const struct rsb_mtx_t*mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_bool_t all_nnz); }
+extern "C" { rsb_err_t rsb_dump_postscript_from_mtx_t(const struct rsb_mtx_t *mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_bool_t all_nnz); }
 extern "C" {
-rsb_err_t rsb_dump_postscript_recursion_from_mtx_t(const struct rsb_mtx_t*mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_flags_t flags, rsb_bool_t want_blocks, rsb_bool_t z_dump , rsb_bool_t want_nonzeros ); }
+rsb_err_t rsb_dump_postscript_recursion_from_mtx_t(const struct rsb_mtx_t *mtxAp, rsb_blk_idx_t br, rsb_blk_idx_t bc, int width, int height, rsb_flags_t flags, rsb_bool_t want_blocks, rsb_bool_t z_dump , rsb_bool_t want_nonzeros ); }
 #endif
 
 #if RSBOI_WANT_HEAVY_DEBUG
@@ -224,7 +224,7 @@ extern "C" {
 #endif
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 extern "C" {
-	int rsb_do_get_nnz_element(struct rsb_mtx_t*,void*,void*,void*,int);
+	int rsb_do_get_nnz_element(struct rsb_mtx_t *,void*,void*,void*,int);
 }
 #endif
 #if RSBOI_WANT_DOUBLE_COMPLEX
@@ -270,7 +270,7 @@ static rsb_err_t rsboi_idxv_overflow( const idx_vector & IM, const idx_vector & 
 }
 
 #if RSBOI_O64_R32
-static rsb_err_t rsboi_idx_overflow( rsb_err_t * errvalp, octave_idx_type idx1, octave_idx_type idx2=0, octave_idx_type idx3=0)
+static rsb_err_t rsboi_idx_overflow( rsb_err_t *errvalp, octave_idx_type idx1, octave_idx_type idx2=0, octave_idx_type idx3=0)
 {
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
 
@@ -284,7 +284,7 @@ static rsb_err_t rsboi_idx_overflow( rsb_err_t * errvalp, octave_idx_type idx1, 
 static void rsboi_oi2ri( octave_idx_type * IP, rsb_nnz_idx_t nnz)
 {
 	// octave_idx_type -> rsb_coo_idx_t
-	rsb_coo_idx_t * RP = (rsb_coo_idx_t*) IP;
+	rsb_coo_idx_t * RP = (rsb_coo_idx_t *) IP;
 	const octave_idx_type * OP = (const octave_idx_type*) IP;
 	rsb_nnz_idx_t nzi;
 
@@ -295,7 +295,7 @@ static void rsboi_oi2ri( octave_idx_type * IP, rsb_nnz_idx_t nnz)
 static void rsboi_ri2oi( rsb_coo_idx_t * IP, rsb_nnz_idx_t nnz)
 {
 	// rsb_coo_idx_t -> octave_idx_type
-	const rsb_coo_idx_t * RP = (const rsb_coo_idx_t*) IP;
+	const rsb_coo_idx_t * RP = (const rsb_coo_idx_t *) IP;
 	octave_idx_type * OP = (octave_idx_type*) IP;
 	rsb_nnz_idx_t nzi;
 
@@ -303,65 +303,65 @@ static void rsboi_ri2oi( rsb_coo_idx_t * IP, rsb_nnz_idx_t nnz)
 		OP[nnz-(nzi+1)]=RP[nnz-(nzi+1)];
 }
 
-static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t * mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
+static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t *mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
 {
 	// assumes tacitly that rsboi_idx_overflow(IA[i],JA[i])==false for i in 0..nnzA-1.
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
-	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)JA, flags );
+	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_ t*)JA, flags );
 	rsb_nnz_idx_t nnzA = 0;
 	rsb_mtx_get_info(mtxAp,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&nnzA); // FIXME: make this a member and use nnz()
-	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
-	rsboi_ri2oi((rsb_coo_idx_t*)JA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t *)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t *)JA,nnzA);
 	return errval;
 }
 
-static struct rsb_mtx_t * rsboi_mtx_alloc_from_csc_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+static struct rsb_mtx_t *rsboi_mtx_alloc_from_csc_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t *errvalp)
 {
-	struct rsb_mtx_t * mtxAp = RSBOI_NULL;
+	struct rsb_mtx_t *mtxAp = RSBOI_NULL;
 
 	if( RSBOI_SOME_ERROR(rsboi_idx_overflow(errvalp,nrA,ncA,nnzA) ) )
 		goto ret;
 	rsboi_oi2ri(IA,nnzA);
 	rsboi_oi2ri(CP,ncA+1);
-	mtxAp = rsb_mtx_alloc_from_csc_const(VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)CP, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
-	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
-	rsboi_ri2oi((rsb_coo_idx_t*)CP,ncA+1);
+	mtxAp = rsb_mtx_alloc_from_csc_const(VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_t *)CP, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	rsboi_ri2oi((rsb_coo_idx_t *)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t *)CP,ncA+1);
 ret:
 	return mtxAp;
 }
 
-static struct rsb_mtx_t * rsboi_mtx_alloc_from_coo_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+static struct rsb_mtx_t *rsboi_mtx_alloc_from_coo_const(const void *VA, /*const*/ octave_idx_type * IA, /*const*/ octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t *errvalp)
 {
-	struct rsb_mtx_t * mtxAp = RSBOI_NULL;
+	struct rsb_mtx_t *mtxAp = RSBOI_NULL;
 
 	if( RSBOI_SOME_ERROR(rsboi_idx_overflow(errvalp,nrA,ncA,nnzA) ) )
 		goto ret;
 	rsboi_oi2ri(IA,nnzA);
 	rsboi_oi2ri(JA,nnzA);
-	mtxAp = rsb_mtx_alloc_from_coo_const(VA, (rsb_coo_idx_t*)IA, (rsb_coo_idx_t*)JA, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
-	rsboi_ri2oi((rsb_coo_idx_t*)IA,nnzA);
-	rsboi_ri2oi((rsb_coo_idx_t*)JA,nnzA);
+	mtxAp = rsb_mtx_alloc_from_coo_const(VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_t *)JA, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
+	rsboi_ri2oi((rsb_coo_idx_t *)IA,nnzA);
+	rsboi_ri2oi((rsb_coo_idx_t *)JA,nnzA);
 ret:
 	return mtxAp;
 }
 #else /* RSBOI_O64_R32 */
-static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t * mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
+static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t *mtxAp, void * VA, octave_idx_type * IA, octave_idx_type * JA, rsb_flags_t flags )
 {
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
 	errval = rsb_mtx_get_coo(mtxAp, VA, IA, JA, flags );
 	return errval;
 }
 
-static struct rsb_mtx_t * rsboi_mtx_alloc_from_csc_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+static struct rsb_mtx_t *rsboi_mtx_alloc_from_csc_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * CP, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t *errvalp)
 {
-	struct rsb_mtx_t * mtxAp = RSBOI_NULL;
+	struct rsb_mtx_t *mtxAp = RSBOI_NULL;
 	mtxAp = rsb_mtx_alloc_from_csc_const(VA, IA, CP, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
 	return mtxAp;
 }
 
-static struct rsb_mtx_t * rsboi_mtx_alloc_from_coo_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t * errvalp)
+static struct rsb_mtx_t *rsboi_mtx_alloc_from_coo_const(const void *VA, const octave_idx_type * IA, const octave_idx_type * JA, rsb_nnz_idx_t nnzA, rsb_type_t typecode, rsb_coo_idx_t nrA, rsb_coo_idx_t ncA, rsb_blk_idx_t brA, rsb_blk_idx_t bcA, rsb_flags_t flagsA, rsb_err_t *errvalp)
 {
-	struct rsb_mtx_t * mtxAp = RSBOI_NULL;
+	struct rsb_mtx_t *mtxAp = RSBOI_NULL;
 	mtxAp = rsb_mtx_alloc_from_coo_const(VA, IA, JA, nnzA, typecode, nrA, ncA, brA, bcA, flagsA, errvalp);
 	return mtxAp;
 }
@@ -388,7 +388,7 @@ static const RSBOI_T rsboi_pone[] = {+1.0,0.0};
 static const RSBOI_T rsboi_mone[] = {-1.0,0.0}; 
 static const RSBOI_T rsboi_zero[] = { 0.0,0.0}; /* two elements, as shall work also with complex */
 
-static octave_base_value * default_numeric_conversion_function (const octave_base_value& a);
+static octave_base_value *default_numeric_conversion_function (const octave_base_value& a);
 
 static bool sparsersb_tester(void)
 {
@@ -417,7 +417,7 @@ class octave_sparsersb_mtx : public octave_sparse_matrix
 {
 	private:
 	public:
-	struct rsb_mtx_t * mtxAp;
+	struct rsb_mtx_t *mtxAp;
 	public:
 		octave_sparsersb_mtx (void) : octave_sparse_matrix(RSBIO_DEFAULT_CORE_MATRIX)
 		{
@@ -567,7 +567,7 @@ err:
 			this->alloc_rsb_mtx_from_csc_copy(sm);
 		}
 
-		octave_sparsersb_mtx (struct rsb_mtx_t * mtxBp) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX), mtxAp(mtxBp)
+		octave_sparsersb_mtx (struct rsb_mtx_t *mtxBp) : octave_sparse_matrix (RSBIO_DEFAULT_CORE_MATRIX), mtxAp(mtxBp)
 		{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			if(!this->mtxAp)
@@ -577,7 +577,7 @@ err:
 		octave_sparsersb_mtx (const octave_sparsersb_mtx& T) :
 		octave_sparse_matrix (T)  {
 			rsb_err_t errval = RSB_ERR_NO_ERROR;
-			struct rsb_mtx_t* mtxBp = RSBOI_NULL;
+			struct rsb_mtx_t *mtxBp = RSBOI_NULL;
 		       	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,RSBOI_NULL,T.mtxAp,RSBOI_EXPF);
 			this->mtxAp = mtxBp;
@@ -1192,7 +1192,7 @@ err:
 	{
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		struct rsb_mtx_t* mtxBp = RSBOI_NULL;
+		struct rsb_mtx_t *mtxBp = RSBOI_NULL;
 		if(is_real_type())
 		{
 			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,transA, &alpha,this->mtxAp,RSBOI_EXPF);
@@ -1213,8 +1213,8 @@ err:
 	octave_value rsboi_get_scaled_copy(const Complex alpha)const
 	{
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
-		octave_sparsersb_mtx * m = RSBOI_NULL;
-		struct rsb_mtx_t*mtxBp = RSBOI_NULL;
+		octave_sparsersb_mtx *m = RSBOI_NULL;
+		struct rsb_mtx_t *mtxBp = RSBOI_NULL;
 		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 		errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->mtxAp,RSBOI_EXPF);
 		m = new octave_sparsersb_mtx( mtxBp );
@@ -1375,7 +1375,7 @@ octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=RSBOI_NULL)const
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
-	octave_sparsersb_mtx * m = new octave_sparsersb_mtx(*this);
+	octave_sparsersb_mtx *m = new octave_sparsersb_mtx(*this);
 	if(!m)return m;
 	errval = rsb_mtx_upd_values(m->mtxAp,opf,alphap);
 	RSBOI_PERROR(errval);
@@ -1411,7 +1411,7 @@ octave_value_list find_nonzero_elem_idx (const class octave_sparsersb_mtx & nda,
 #define RSB_CAST_BINOP_ARGS CAST_BINOP_ARGS
 #endif /* RSBOI_USE_PATCH_38143 */
 
-static octave_base_value * default_numeric_conversion_function (const octave_base_value& a)
+static octave_base_value *default_numeric_conversion_function (const octave_base_value& a)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSBOI_CAST_CONV_ARG (const octave_sparsersb_mtx&);
@@ -2240,8 +2240,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		rsb_real_t sf = 1.0;
 		rsb_trans_t transA = RSB_TRANSPOSITION_N; 
 		/* TODO: these shall also be user settable */
-		const void * alphap = RSBOI_NULL;
-		const void * betap = RSBOI_NULL;
+		const void *alphap = RSBOI_NULL;
+		const void *betap = RSBOI_NULL;
 		/* these not */
 	       	rsb_flags_t order = RSB_OI_DMTXORDER;
 	       	const void * Bp = RSBOI_NULL;
@@ -2261,7 +2261,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 			RSBOI_0_INTERRMSGSTMT(goto ret)
 		if(nargout)
 		{
-			struct rsb_mtx_t*mtxAp = RSBOI_NULL;
+			struct rsb_mtx_t *mtxAp = RSBOI_NULL;
 			errval = rsb_mtx_clone(&mtxAp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,RSBOI_NULL,osmp->mtxAp,RSBOI_EXPF);
 			errval = rsb_tune_spmm(&mtxAp,&sf,&tn,maxr,tmax,transA,alphap,RSBOI_NULL,nrhs,order,Bp,ldB,betap,Cp,ldC);
 			retval.append(new octave_sparsersb_mtx(mtxAp));

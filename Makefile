@@ -60,6 +60,7 @@ $(RELEASE_DIR): .hg/dirstate
 	@echo "Creating package version $(VERSION) release ..."
 	-$(RM) -r "$@"
 	hg archive --exclude ".hg*" --exclude "Makefile" --type files "$@"
+	cd "$@/src" && ./autogen.sh && $(RM) -r "src/autom4te.cache"
 	${FIX_PERMISSIONS} "$@"
 
 $(HTML_DIR): install

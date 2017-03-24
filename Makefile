@@ -26,7 +26,7 @@ define create_tarball
 $(shell cd $(dir $(1)) \
     && find $(notdir $(1)) -print0 \
     | LC_ALL=C sort -z \
-    | tar c --format=ustar --mtime="$(HG_DATE)" \
+    | tar c --format=ustar --mtime="$(HG_DATE)" --mode=a+rX,u+w,go-w,ug-s \
             --owner=0 --group=0 --numeric-owner \
             --no-recursion --null -T - -f - \
     | gzip -9n > "$(2)")
@@ -36,8 +36,6 @@ M_SOURCES   := $(wildcard inst/*.m) $(patsubst %.in,%,$(wildcard src/*.m.in))
 PKG_ADD     := $(shell sed -n 's/^\(\#\#\|\/\/\) PKG_ADD: \(.*\)/\2/p' $(M_SOURCES))
 
 OCTAVE ?= octave --no-window-system --silent
-
-FIX_PERMISSIONS ?= chmod -R a+rX,u+w,go-w,ug-s
 
 .PHONY: help dist html release install all check run clean
 
@@ -61,7 +59,6 @@ $(RELEASE_DIR): .hg/dirstate
 	-$(RM) -r "$@"
 	hg archive --exclude ".hg*" --exclude "Makefile" --type files "$@"
 	cd "$@/src" && ./autogen.sh && $(RM) -r "src/autom4te.cache"
-	${FIX_PERMISSIONS} "$@"
 
 $(HTML_DIR): install
 	@echo "Generating HTML documentation. This may take a while ..."
@@ -70,7 +67,6 @@ $(HTML_DIR): install
 	  --eval "pkg load generate_html; " \
 	  --eval "pkg load $(PACKAGE);" \
 	  --eval 'generate_package_html ("${PACKAGE}", "$@", "octave-forge");'
-	${FIX_PERMISSIONS} $@
 
 dist: $(RELEASE_TARBALL)
 html: $(HTML_TARBALL)

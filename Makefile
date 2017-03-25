@@ -64,7 +64,7 @@ $(RELEASE_DIR): .hg/dirstate
 $(HTML_DIR): install
 	@echo "Generating HTML documentation. This may take a while ..."
 	-$(RM) -r "$@"
-	$(OCTAVE) --no-window-system --silent \
+	$(OCTAVE) \
 	  --eval "pkg load generate_html; " \
 	  --eval "pkg load $(PACKAGE);" \
 	  --eval 'generate_package_html ("${PACKAGE}", "$@", "octave-forge");'

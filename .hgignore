@@ -22,6 +22,7 @@ syntax: regexp
 ^src/config\.log$
 ^src/config\.status$
 ^src/Makefile$
+^src/Makeconf$
 ^src/.*\.m$
 
 # e.g. doc/faq/OctaveFAQ.info

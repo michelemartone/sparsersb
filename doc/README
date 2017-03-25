@@ -8,13 +8,13 @@ Author: Michele MARTONE
 Build / use instructions (using pkg):
 
 To use the configure auto-detected librsb from within Octave:
- > pkg -local -verbose install sparsersb-1.0.3.tar.gz
+ > pkg -local -verbose install sparsersb-1.0.4.tar.gz
  > pkg load sparsersb
  > help sparsersb
 
 Alternatively:
- tar czf sparsersb-1.0.3.tar.gz
- cd sparsersb-1.0.3/src
+ tar czf sparsersb-1.0.4.tar.gz
+ cd sparsersb-1.0.4/src
  ./configure
  make
  make check
@@ -26,7 +26,7 @@ and use it; e.g.:
 or setting:
  export LIBRSB_TARBALL=$HOME/librsb-1.2.0.tar.gz
 before entering in Octave and building with pkg:
- > pkg -local -verbose install sparsersb-1.0.3.tar.gz
+ > pkg -local -verbose install sparsersb-1.0.4.tar.gz
 
 On many systems, you will have to build librsb with the PIC (-fPIC on GCC)
 option or you will get link time problems.

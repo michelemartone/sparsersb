@@ -33,11 +33,12 @@ $(shell cd $(dir $(1)) \
 endef
 
 M_SOURCES   := $(wildcard inst/*.m) $(patsubst %.in,%,$(wildcard src/*.m.in))
-PKG_ADD     := $(shell sed -n 's/^\(\#\#\|\/\/\) PKG_ADD: \(.*\)/\2/p' $(M_SOURCES))
 
 OCTAVE ?= octave --no-window-system --silent
 
-.PHONY: help dist html release install all check run clean
+.PHONY: all help dist html release install build-inplace check run clean
+
+all: build-inplace release
 
 help:
 	@echo "Targets:"
@@ -80,14 +81,27 @@ install: $(RELEASE_TARBALL)
 	@echo "Installing package locally ..."
 	$(OCTAVE) --eval 'pkg ("install", "${RELEASE_TARBALL}")'
 
-check:
-	$(OCTAVE) --path "inst/" \
-	  --eval '${PKG_ADD}' \
-	  --eval 'runtests ("inst");'
 
-run:
-	$(OCTAVE) --persist --path "inst/" \
-	  --eval '${PKG_ADD}'
+build-inplace: src/sparsersb.oct
+
+src/configure: src/autogen.sh src/configure.ac
+	cd src && ./autogen.sh
+
+src/Makeconf: src/configure src/Makeconf.in
+	cd src && ./configure
+
+src/sparsersb.oct: src/Makefile src/Makeconf
+	cd src && $(MAKE) sparsersb.oct
+
+
+check: src/sparsersb.oct
+	$(MAKE) -C src tests
+
+run: src/sparsersb.oct
+	$(OCTAVE) --persist --path "inst/" --path "src/"
 
 clean:
 	$(RM) -r $(TARGET_DIR)
+	$(MAKE) -C src clean
+	$(RM) -rf src/autom4te.cache
+	$(RM) src/Makeconf src/config.log src/config.status src/configure

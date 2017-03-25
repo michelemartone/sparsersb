@@ -1,6 +1,6 @@
 #!/usr/bin/octave -q
 # 
-#  Copyright (C) 2011-2016   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -208,7 +208,8 @@ function match=testpcgm(OM,XM)
 	A = diag (sparse (1:n));
 	#A = A + A';
 	b = rand (n, 1);
-	[l, u, p, q] = luinc (A, 1.e-3);
+	opts.droptol=1.e-3;
+	[l, u] = ilu (A); 
 	[OX, OFLAG, ORELRES, OITER, ORESVEC, OEIGEST]= pcg (          A ,b);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC, XEIGEST]= pcg (sparsersb(A),b);
 	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
@@ -222,14 +223,14 @@ function match=testpcgm(OM,XM)
 	testmsg(match,"pcg");
 end # testpcgm
 
-function hwl=have_working_luinc()
+function hwl=have_working_ilu()
 	try
-	a=luinc (sparse([1,1;1,1]),1);
+	a=ilu (sparse([1,1;1,1]),1);
 	hwl=1;
 	catch 
 	hwl=0;
 	end_try_catch
-end # have_working_luinc
+end # have_working_ilu
 
 function match=testpcrm(OM,XM)
 	# FIXME! This test ignores OM and XM !
@@ -249,7 +250,8 @@ function match=testpcrm(OM,XM)
 	A = diag (sparse (1:n));
 	A = A + A'; # we want symmetric matrices
 	b = rand (n, 1);
-	[l, u, p, q] = luinc (A, 1.e-3);
+	opts.droptol=1.e-3;
+	[l, u] = ilu (A); 
 	[OX, OFLAG, ORELRES, OITER, ORESVEC]= pcr (          A ,b);
 	[XX, XFLAG, XRELRES, XITER, XRESVEC]= pcr (sparsersb(A),b);
 	match&=(norm(OX-XX)<tol);# FIXME: a very brittle check!
@@ -395,11 +397,11 @@ function match=tests(OM,XM,M)
 	match&=testelms(OM,XM);
 	match&=testasgn(OM,XM);
 	if nnz(OM)>1
-		if have_working_luinc()
+		if have_working_ilu()
 			match&=testpcgm(OM,XM);
 			match&=testpcrm(OM,XM);
 		else
-			testmsg(-1,"luinc does not work; probably UMFPACK is not installed: skipping some tests.")
+			testmsg(-1,"ilu does not work; probably UMFPACK is not installed: skipping some tests.")
 		endif
 		match&=testmult(OM,XM);
 		match&=testspsv(OM,XM);

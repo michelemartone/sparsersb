@@ -1,8 +1,13 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.3 Release Date: 2017-03-27
+sparsersb-1.0.4 Release Date: 2017-03-25
 ===============================================================================
-** Thought to be used with the latest librsb-1.2.0.
+** Intended to be used with the latest librsb-1.2.0.
+**  - test script now uses ilu() instead of obsolete luinc()
+===============================================================================
+sparsersb-1.0.3 Release Date: 2017-03-24
+===============================================================================
+** Intended to be used with the latest librsb-1.2.0.
 **  - "symmetric" RSB representation supported
 **  - improved documentation (including a few typos)
 **  - improved demos (demo sparsersb)
@@ -11,13 +16,13 @@ sparsersb-1.0.3 Release Date: 2017-03-27
 ===============================================================================
 sparsersb-1.0.2 Release Date: 2016-10-03
 ===============================================================================
-** Thought to be used with the latest librsb-1.2.0.
+** Intended to be used with the latest librsb-1.2.0.
 **  - builds even if octave built with --enable-64, but limited to matrices
 **    which would fit when using a normal setup.
 ===============================================================================
 sparsersb-1.0.1 Release Date: 2016-08-01
 ===============================================================================
-** Thought to be used with the latest librsb-1.2.0.
+** Intended to be used with the latest librsb-1.2.0.
 ** Changed sparsersb's `configure --help': 
 **  - options to build librsb from a tarball (via configure or LIBRSB_TARBALL)
 **  - options to use librsb-config

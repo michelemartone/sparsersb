@@ -10,7 +10,7 @@
 PACKAGE := $(shell grep "^Name: " DESCRIPTION | cut -f2 -d" ")
 VERSION := $(shell grep "^Version: " DESCRIPTION | cut -f2 -d" ")
 
-TARGET_DIR      := target
+TARGET_DIR      := $(CURDIR)/target
 RELEASE_DIR     := $(TARGET_DIR)/$(PACKAGE)-$(VERSION)
 RELEASE_TARBALL := $(TARGET_DIR)/$(PACKAGE)-$(VERSION).tar.gz
 HTML_DIR        := $(TARGET_DIR)/$(PACKAGE)-html
@@ -53,7 +53,7 @@ help:
 	@echo "   clean   - Remove releases, html documentation"
 
 %.tar.gz: %
-	$(call create_tarball,$*,${CURDIR}/$@)
+	$(call create_tarball,$*,$@)
 
 $(RELEASE_DIR): .hg/dirstate
 	@echo "Creating package version $(VERSION) release ..."
@@ -64,9 +64,8 @@ $(RELEASE_DIR): .hg/dirstate
 $(HTML_DIR): install
 	@echo "Generating HTML documentation. This may take a while ..."
 	-$(RM) -r "$@"
-	$(OCTAVE) \
+	cd src && $(OCTAVE) \
 	  --eval "pkg load generate_html; " \
-	  --eval "pkg load $(PACKAGE);" \
 	  --eval 'generate_package_html ("${PACKAGE}", "$@", "octave-forge");'
 
 dist: $(RELEASE_TARBALL)

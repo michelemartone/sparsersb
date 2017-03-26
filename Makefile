@@ -38,7 +38,11 @@ OCTAVE ?= octave --no-window-system --silent
 
 .PHONY: all help dist html release install build-inplace check run clean
 
-all: build-inplace release
+# Default target
+release: dist html
+	md5sum $(RELEASE_TARBALL) $(HTML_TARBALL)
+	@echo "Upload @ https://sourceforge.net/p/octave/package-releases/new/"
+	@echo 'Execute: hg tag "release-${VERSION}" when the release is ready.'
 
 help:
 	@echo "Targets:"
@@ -71,10 +75,6 @@ $(HTML_DIR): install
 dist: $(RELEASE_TARBALL)
 html: $(HTML_TARBALL)
 
-release: dist html
-	md5sum $(RELEASE_TARBALL) $(HTML_TARBALL)
-	@echo "Upload @ https://sourceforge.net/p/octave/package-releases/new/"
-	@echo 'Execute: hg tag "release-${VERSION}" when the release is ready.'
 
 install: $(RELEASE_TARBALL)
 	@echo "Installing package locally ..."

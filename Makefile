@@ -40,10 +40,14 @@ OCTAVE ?= octave --no-window-system --silent
 
 # Default target
 release: dist html
-	md5sum $(RELEASE_TARBALL) $(HTML_TARBALL)
+	@echo " "
 	@echo "Upload @ https://sourceforge.net/p/octave/package-releases/new/"
+	@echo "and provide the following md5sums:"
+	@cd $(TARGET_DIR) && md5sum \
+		$(notdir $(RELEASE_TARBALL)) \
+		$(notdir $(HTML_TARBALL))
 	@echo 'Execute: hg tag "release-${VERSION}" when the release is ready.'
-
+	@echo " "
 help:
 	@echo "Targets:"
 	@echo "   dist    - Create $(RELEASE_TARBALL) for release"

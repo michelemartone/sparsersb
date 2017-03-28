@@ -1,5 +1,10 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
+sparsersb-1.0.5 Release Date: 2017-03-29
+===============================================================================
+** Intended to be used with the latest librsb-1.2.0.
+**  - tests won't use quit(): might emit exception according to bug #49271
+===============================================================================
 sparsersb-1.0.4 Release Date: 2017-03-25
 ===============================================================================
 ** Intended to be used with the latest librsb-1.2.0.

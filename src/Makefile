@@ -51,7 +51,7 @@ clean:
 #	tar czf $(PACKAGE_NAME).tgz $(PACKAGE_NAME)
 #	tar tzf $(PACKAGE_NAME).tgz
 
-SPARSERSB=sparsersb-1.0.4
+SPARSERSB=sparsersb-1.0.5
 ARCHIVE=$(HOME)/src/sparsersb-archives
 GPGSIGNCMD=gpg -sbav -u 1DBB555AEA359B8AAF0C6B88E0E669C8EF1258B8 
 

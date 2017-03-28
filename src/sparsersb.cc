@@ -20,7 +20,7 @@
  * adapt to when octave_idx_type is 64 bit long
  * rsb_file_vec_save (1.1)
  * all *.m files shall go to inst/
- * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.4.tar.gz 
+ * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.5.tar.gz 
  * produce ../doc/sparsersb.txi; can use get_help_text
  * put to ./devel/ what is not to be distributed
  * make or configure should fail on missing library (actually it does not)
@@ -249,7 +249,7 @@ extern "C" {
 #define RSBOI_10100_DOCH	""
 #endif
 
-#define RSBOI_VERSION	100004	/* e.g. 100004 means 1.0.4 */
+#define RSBOI_VERSION	100005	/* e.g. 100005 means 1.0.5 */
 
 #if defined(USE_64_BIT_IDX_T) || defined(OCTAVE_ENABLE_64) || defined(RSBOI_DETECTED_LONG_IDX) /* 4.1.0+ / 4.0.3 / any */
 #define RSBOI_O64_R32 1

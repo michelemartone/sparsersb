@@ -105,4 +105,3 @@ disp "All done."
 disp "Notice how for large matrices the matrix construction is slower..."
 disp "... but multiplications are faster !"
 disp " ***********************************************************************"
-quit(1);

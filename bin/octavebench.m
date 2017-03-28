@@ -54,8 +54,7 @@ for o=1024:1024
 	printf("%d GEMV for order %d  in  %g secs, so %10f Mflops\n",n,o,t,n*2.0*o*o/(10^6 * t));
 end
 disp " ***********************************************************************"
-quit
-endif
+else	# nargin > 0
 
 # if nargin > 0, we continue
 want_sparsersb_io=1;
@@ -179,3 +178,4 @@ end
 end 
 
 disp " ***********************************************************************"
+endif	# nargin > 0

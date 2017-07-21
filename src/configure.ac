@@ -107,11 +107,7 @@ else
 	fi
 fi
 
-if test -x `which $OCTAVE-cli` ; then
-	OCTAVE_CLI="$OCTAVE-cli";
-else
-	OCTAVE_CLI="$OCTAVE";
-fi
+OCTAVE_CLI="$OCTAVE --no-gui --no-window-system";
 
 SPARSERSB_USE_64BIT_IDX=`$OCTAVE_CLI --no-line-editing -qf --eval 'printf ("%i", sizemax() > intmax ("int32"))'`
 if [test x"$SPARSERSB_USE_64BIT_IDX" = x"1" ]; then

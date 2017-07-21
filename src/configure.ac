@@ -158,6 +158,40 @@ if [ test "$have_rsb" != "yes" ]; then
 	AC_MSG_ERROR([$PACKAGE_NAME requires librsb library])
 fi
 
+# check for octave functions
+save_CXX="$CXX"
+save_CXXFLAGS="$CXXFLAGS"
+CXX=`${MKOCTFILE} -p CXX`
+CXXFLAGS="$CXXFLAGS -I`$MKOCTFILE -p OCTINCLUDEDIR`"
+
+# need to use interpreter->get_load_path in dev version of octave,
+# prior to that methods of load_path were static
+AC_CACHE_CHECK(
+  [for octave_value function iscomplex],
+  [octave_value_cv_iscomplex],
+  [AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([
+      #include <oct.h>
+      #include <octave.h>
+      ],
+      [
+        octave_value().iscomplex();
+      ])],
+    [octave_value_cv_iscomplex=yes],
+    [octave_value_cv_iscomplex=no])
+  ])
+if test "$octave_value_cv_iscomplex" = "yes" ; then
+  HAVE_OCTAVE_VALUE_ISCOMPLEX=-DHAVE_OCTAVE_VALUE_ISCOMPLEX
+else
+  HAVE_OCTAVE_VALUE_ISCOMPLEX=
+fi
+AC_SUBST(HAVE_OCTAVE_VALUE_ISCOMPLEX)
+
+CC=$save_CXX
+CXXFLAGS=$save_CXXFLAGS
+
+
+
 AC_SUBST(OCTAVE)
 AC_SUBST(TARGETS)
 AC_SUBST(SPARSERSB_CXXFLAGS)
@@ -166,6 +200,7 @@ AC_SUBST(SPARSERSB_LDFLAGS)
 
 AC_CONFIG_FILES([Makeconf])
 AC_OUTPUT
+
 
 AC_MSG_NOTICE([
 

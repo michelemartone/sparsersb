@@ -1,7 +1,7 @@
 sinclude Makeconf
 # Makeconf is created by the configure script.
 # You can also not use it but set explicitly the following:
-CXXFLAGS=$(SPARSERSB_CXXFLAGS)
+CXXFLAGS=$(SPARSERSB_CXXFLAGS) $(OCTAVE_FUNC_DEFINES)
 LFLAGS=$(shell $(MKOCTFILE) -p LFLAGS) $(SPARSERSB_LDFLAGS)
 CXXFLAGS_CXX11=$(SPARSERSB_CXX11)
 

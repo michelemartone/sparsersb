@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+ Copyright (C) 2011-2018   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * adapt to when octave_idx_type is 64 bit long
  * rsb_file_vec_save (1.1)
  * all *.m files shall go to inst/
- * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.5.tar.gz 
+ * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.4.tar.gz 
  * produce ../doc/sparsersb.txi; can use get_help_text
  * put to ./devel/ what is not to be distributed
  * make or configure should fail on missing library (actually it does not)
@@ -177,11 +177,7 @@
 
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
 #define RSBOI_WANT_DOUBLE_COMPLEX 1
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 #define ORSB_RSB_TYPE_FLAG(OBJ) (((OBJ).iscomplex())?RSB_NUMERICAL_TYPE_DOUBLE:RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX)
-#else
-#define ORSB_RSB_TYPE_FLAG(OBJ) (((OBJ).is_complex_type())?RSB_NUMERICAL_TYPE_DOUBLE:RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX)
-#endif
 #else
 #define RSBOI_WANT_DOUBLE_COMPLEX 0
 #define ORSB_RSB_TYPE_FLAG(OBJ) RSB_NUMERICAL_TYPE_DOUBLE
@@ -232,11 +228,7 @@ extern "C" {
 }
 #endif
 #if RSBOI_WANT_DOUBLE_COMPLEX
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) (((V1).iscomplex()||(V2).iscomplex())?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE)
-#else
-#define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) (((V1).is_complex_type()||(V2).is_complex_type())?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE)
-#endif
 #else
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) RSBOI_TYPECODE
 #endif
@@ -257,7 +249,7 @@ extern "C" {
 #define RSBOI_10100_DOCH	""
 #endif
 
-#define RSBOI_VERSION	100005	/* e.g. 100005 means 1.0.5 */
+#define RSBOI_VERSION	100004	/* e.g. 100004 means 1.0.4 */
 
 #if defined(USE_64_BIT_IDX_T) || defined(OCTAVE_ENABLE_64) || defined(RSBOI_DETECTED_LONG_IDX) /* 4.1.0+ / 4.0.3 / any */
 #define RSBOI_O64_R32 1
@@ -319,7 +311,7 @@ static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t *mtxAp, void * VA, oct
 	// assumes tacitly that rsboi_idx_overflow(IA[i],JA[i])==false for i in 0..nnzA-1.
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
 
-	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_t*)JA, flags );
+	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_ t*)JA, flags );
 	rsb_nnz_idx_t nnzA = 0;
 	rsb_mtx_get_info(mtxAp,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&nnzA); // FIXME: make this a member and use nnz()
 	rsboi_ri2oi((rsb_coo_idx_t *)IA,nnzA);
@@ -871,11 +863,7 @@ err:
 		bool is_diagonal (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 		bool iscomplex (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
-#else
-		bool is_complex_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
-#endif
 		bool is_bool_type (void) const { return false; }
 		bool is_integer_type (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
@@ -1546,11 +1534,7 @@ octave_value rsboi_spsm(const octave_sparsersb_mtx&v1, const octave_matrix&v2, r
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	if(v1.iscomplex())
-#else
-	if(v1.is_complex_type())
-#endif
 	{
 		ComplexMatrix retval = v2.complex_matrix_value();
 		octave_idx_type b_nc = retval.cols ();
@@ -1656,11 +1640,7 @@ DEFBINOP(ldiv, sparse_rsb_mtx, matrix)
 	if(v1.is__triangular()) 
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_N);
 
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	if(v1.iscomplex() || v2.iscomplex())
-#else
-	if(v1.is_complex_type() || v2.is_complex_type())
-#endif
 		return (v1.sparse_complex_matrix_value()).solve(v2.sparse_complex_matrix_value());
 	else
 		return (v1.sparse_matrix_value()).solve(v2.matrix_value());
@@ -1675,11 +1655,7 @@ DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
 	if(v1.is__triangular()) 
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_T);
 
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	if(v1.iscomplex() || v2.iscomplex())
-#else
-	if(v1.is_complex_type() || v2.is_complex_type())
-#endif
 		return (v1.sparse_complex_matrix_value().transpose()).solve(v2.sparse_complex_matrix_value());
 	else
 		return (v1.sparse_matrix_value().transpose()).solve(v2.matrix_value());
@@ -1695,11 +1671,7 @@ DEFBINOP(c_ldiv, sparse_rsb_mtx, matrix)
 	if(v1.is__triangular()) 
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_N);
 
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	if(v1.iscomplex() || v2.iscomplex())
-#else
-	if(v1.is_complex_type() || v2.is_complex_type())
-#endif
 		return (v1.sparse_complex_matrix_value()).solve(v2.sparse_complex_matrix_value());
 	else
 		return (v1.sparse_matrix_value()).solve(v2.matrix_value());
@@ -1713,11 +1685,7 @@ DEFBINOP(trans_c_ldiv, sparse_rsb_mtx, matrix)
 	if(v1.is__triangular()) 
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_T);
 
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	if(v1.iscomplex() || v2.iscomplex())
-#else
-	if(v1.is_complex_type() || v2.is_complex_type())
-#endif
 		return (v1.sparse_complex_matrix_value().transpose()).solve(v2.sparse_complex_matrix_value());
 	else
 		return (v1.sparse_matrix_value().transpose()).solve(v2.matrix_value());
@@ -2231,13 +2199,8 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 	int nargin = args.length ();
 	octave_value_list retval;
 	octave_sparsersb_mtx*osmp = RSBOI_NULL;
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 	bool ic0 = nargin>0?(args(0).iscomplex()):false;
 	bool ic3 = nargin>2?(args(2).iscomplex()):false;
-#else
-	bool ic0 = nargin>0?(args(0).is_complex_type()):false;
-	bool ic3 = nargin>2?(args(2).is_complex_type()):false;
-#endif
 	bool isr = (nargin>0 && args(0).type_name()==RSB_OI_TYPEINFO_STRING);
 
 	RSBOI_DEBUG_NOTICE("in sparsersb()\n");
@@ -2559,11 +2522,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(nargout) retval.append(osmp->cols()),--nargout;
 				if(nargout) retval.append(osmp->nnz()),--nargout;
 				if(nargout) retval.append(osmp->get_info_string()),--nargout;
-#ifdef HAVE_OCTAVE_VALUE_ISCOMPLEX
 				if(nargout) retval.append((!osmp->iscomplex())?"real":"complex"),--nargout;
-#else
-				if(nargout) retval.append((!osmp->is_complex_type())?"real":"complex"),--nargout;
-#endif
 				if(nargout) retval.append(osmp->get_symmetry()),--nargout;
 			}
 		}
@@ -2865,3 +2824,4 @@ ret:
 %! sparsersb(rm,'render','sptest.eps')
 %%!demo
 */
+

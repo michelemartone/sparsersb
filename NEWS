@@ -1,5 +1,10 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
+sparsersb-1.0.6 Release Date: 2018-06-15
+===============================================================================
+** Intended to be used with the latest librsb-1.2.0.
+**  - fix of typo breaking builds (bug # #50764)
+===============================================================================
 sparsersb-1.0.5 Release Date: 2017-03-29
 ===============================================================================
 ** Intended to be used with the latest librsb-1.2.0.

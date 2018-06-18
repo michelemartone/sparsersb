@@ -1982,7 +1982,7 @@ DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
 // deprecated; need a wrapper using octave::typeinfo::register_assign_op
 #define RSBOI_INSTALL_ASSIGNOP INSTALL_ASSIGNOP
 
-// deprecated; need a wrapper using octave::typeinfo::register_binary_op
+// deprecated; need a wrapper using octave::typeinfo::register_unary_op
 #define RSBOI_INSTALL_UNOP INSTALL_UNOP 
 
 static void install_sparsersb_ops (void)

@@ -865,7 +865,7 @@ err:
 		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool iscomplex (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
 		bool is_bool_type (void) const { return false; }
-		bool is_integer_type (void) const { return false; }
+		bool isinteger (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
 		/* bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; }*/ /* new */
@@ -2635,7 +2635,7 @@ checked:
 			}
 		}
 		RSB_DO_FLAG_ADD(eflags,sflags);
-		if (nargin >= 6  && args(5).is_integer_type())
+		if (nargin >= 6  && args(5).isinteger())
 		{
 			/* we ignore this value for MATLAB compatibility */
 		}

@@ -858,7 +858,7 @@ err:
 		}
 
 		bool is_map (void) const { return true; }
-		bool is_sparse_type (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return true; }
+		bool issparse(void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return true; }
 		bool is_real_type (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return this->rsbtype()==RSB_NUMERICAL_TYPE_DOUBLE?true:false; }
 		bool is_diagonal (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
@@ -2416,7 +2416,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		}
 #endif /* RSBOI_WANT_QSI */
 		else
-		if(args(0).is_sparse_type())
+		if(args(0).issparse())
 		{
 			// sparsersb (sparse(...), ...)
 			if( isr )

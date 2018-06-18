@@ -516,7 +516,7 @@ err:
 			octave_idx_type nrA = sm.rows (), ncA = sm.cols ();
 
 #if RSBOI_WANT_SYMMETRY
-			if(sm.is_symmetric())
+			if(sm.issymmetric())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
 #endif
 			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))

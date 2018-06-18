@@ -1976,18 +1976,25 @@ DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
 }
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 
-#define RSBOI_INSTALL_BINOP INSTALL_BINOP
+// deprecated; need a wrapper using octave::typeinfo::register_binary_op
+#define RSBOI_INSTALL_BINOP INSTALL_BINOP 
+
+// deprecated; need a wrapper using octave::typeinfo::register_assign_op
+#define RSBOI_INSTALL_ASSIGNOP INSTALL_ASSIGNOP
+
+// deprecated; need a wrapper using octave::typeinfo::register_binary_op
+#define RSBOI_INSTALL_UNOP INSTALL_UNOP 
 
 static void install_sparsersb_ops (void)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	#ifdef RSB_FULLY_IMPLEMENTED
 	/* boolean pattern-based not */
-	INSTALL_UNOP (op_not, octave_sparsersb_mtx, op_not);
+	RSBOI_INSTALL_UNOP (op_not, octave_sparsersb_mtx, op_not);
 	/* to-dense operations */
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_scalar, assigns);
+	RSBOI_INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_scalar, assigns);
 	/* ? */
-	INSTALL_UNOP (op_uplus, octave_sparsersb_mtx, uplus);
+	RSBOI_INSTALL_UNOP (op_uplus, octave_sparsersb_mtx, uplus);
 	/* elemental comparison, evaluate to sparse or dense boolean matrices */
 	RSBOI_INSTALL_BINOP (op_eq, octave_sparsersb_mtx, , );
 	RSBOI_INSTALL_BINOP (op_le, octave_sparsersb_mtx, , );
@@ -2006,25 +2013,25 @@ static void install_sparsersb_ops (void)
 	RSBOI_INSTALL_BINOP (op_lshift, octave_sparsersb_mtx, , );
 	RSBOI_INSTALL_BINOP (op_rshift, octave_sparsersb_mtx, , );
 	#endif
-	// INSTALL_ASSIGNOP (op_el_div_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_div_eq_sc); // errval = rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
-	// INSTALL_ASSIGNOP (op_el_mul_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_mul_eq_sc);
+	// RSBOI_INSTALL_ASSIGNOP (op_el_div_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_div_eq_sc); // errval = rsb_mtx_upd_values(this->mtxAp,RSB_ELOPF_SCALE_ROWS,cm.data());
+	// RSBOI_INSTALL_ASSIGNOP (op_el_mul_eq, octave_sparsersb_mtx, octave_matrix, rsb_op_el_mul_eq_sc);
 	//INSTALL_WIDENOP (octave_sparsersb_mtx, octave_sparse_matrix,octave_sparse_rsb_to_octave_sparse_conv);/* a DEFCONV .. */
 	//INSTALL_ASSIGNCONV (octave_sparsersb_mtx, octave_sparse_matrix,octave_sparse_matrix);/* .. */
 	// no need for the following: need a good conversion function, though
-	//INSTALL_UNOP (op_incr, octave_sparsersb_mtx, op_incr);
-	//INSTALL_UNOP (op_decr, octave_sparsersb_mtx, op_decr);
+	//RSBOI_INSTALL_UNOP (op_incr, octave_sparsersb_mtx, op_incr);
+	//RSBOI_INSTALL_UNOP (op_decr, octave_sparsersb_mtx, op_decr);
 	RSBOI_INSTALL_BINOP (op_el_mul, octave_sparsersb_mtx, octave_scalar, rsb_el_mul_s);
 #if RSBOI_WANT_DOUBLE_COMPLEX
 	RSBOI_INSTALL_BINOP (op_el_mul, octave_sparsersb_mtx, octave_complex, rsb_el_mul_c);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
-//	INSTALL_ASSIGNOP (op_mul_eq, octave_sparsersb_mtx, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
-//	INSTALL_ASSIGNOP (op_div_eq, octave_sparsersb_mtx, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
+//	RSBOI_INSTALL_ASSIGNOP (op_mul_eq, octave_sparsersb_mtx, octave_scalar, rsb_op_mul_eq_s); // 20110313 not effective
+//	RSBOI_INSTALL_ASSIGNOP (op_div_eq, octave_sparsersb_mtx, octave_scalar, rsb_op_div_eq_s); // 20110313 not effective
 	RSBOI_INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_scalar, rsb_el_div_s);
 #if RSBOI_WANT_DOUBLE_COMPLEX
 	RSBOI_INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_complex, rsb_el_div_c);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	RSBOI_INSTALL_BINOP (op_el_pow, octave_sparsersb_mtx, octave_scalar, el_pow);
-	INSTALL_UNOP (op_uminus, octave_sparsersb_mtx, uminus);
+	RSBOI_INSTALL_UNOP (op_uminus, octave_sparsersb_mtx, uminus);
 	RSBOI_INSTALL_BINOP (op_ldiv, octave_sparsersb_mtx, octave_matrix, ldiv);
 	RSBOI_INSTALL_BINOP (op_el_ldiv, octave_sparsersb_mtx, octave_matrix, el_ldiv);
 	RSBOI_INSTALL_BINOP (op_div, octave_sparsersb_mtx, octave_matrix, div);
@@ -2044,10 +2051,10 @@ static void install_sparsersb_ops (void)
 	RSBOI_INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_scalar, rsb_s_pow);
 #endif /* RSBOI_WANT_POW */
 	RSBOI_INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_matrix, el_div);
-	INSTALL_UNOP (op_transpose, octave_sparsersb_mtx, transpose);
-	INSTALL_UNOP (op_hermitian, octave_sparsersb_mtx, htranspose);
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_sparse_matrix, assign);
-	INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_matrix, assignm);
+	RSBOI_INSTALL_UNOP (op_transpose, octave_sparsersb_mtx, transpose);
+	RSBOI_INSTALL_UNOP (op_hermitian, octave_sparsersb_mtx, htranspose);
+	RSBOI_INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_sparse_matrix, assign);
+	RSBOI_INSTALL_ASSIGNOP (op_asn_eq, octave_sparsersb_mtx, octave_matrix, assignm);
 	RSBOI_INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_matrix, op_mul);
 	//RSBOI_INSTALL_BINOP (op_pow, octave_sparsersb_mtx, octave_matrix, op_pow);
 	RSBOI_INSTALL_BINOP (op_sub, octave_sparsersb_mtx, octave_sparsersb_mtx, op_sub);

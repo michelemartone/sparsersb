@@ -548,7 +548,7 @@ err:
 			rsb_type_t typecode = RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX;
 
 #if RSBOI_WANT_SYMMETRY
-			if(sm.is_hermitian())
+			if(sm.ishermitian())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_HERMITIAN|RSB_FLAG_TRIANGULAR);
 #endif
 			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))

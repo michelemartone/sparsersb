@@ -311,7 +311,7 @@ static rsb_err_t rsboi_mtx_get_coo(const struct rsb_mtx_t *mtxAp, void * VA, oct
 	// assumes tacitly that rsboi_idx_overflow(IA[i],JA[i])==false for i in 0..nnzA-1.
 	rsb_err_t errval = RSB_ERR_NO_ERROR;
 
-	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_ t*)JA, flags );
+	errval = rsb_mtx_get_coo(mtxAp, VA, (rsb_coo_idx_t *)IA, (rsb_coo_idx_t*)JA, flags );
 	rsb_nnz_idx_t nnzA = 0;
 	rsb_mtx_get_info(mtxAp,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&nnzA); // FIXME: make this a member and use nnz()
 	rsboi_ri2oi((rsb_coo_idx_t *)IA,nnzA);

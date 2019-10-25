@@ -32,36 +32,50 @@
 
 1; # This is a script.
 
-function ase=are_spm_equal(OM,XM)
+function error_if(cond)
+# not active for the moment
+#	if(cond)
+#		error "octave's sparse and sparsersb seem not to match"
+#	end
+end # error_if
+
+function ase=are_spm_equal(OM,XM,eoin)
 	ase=0;
-	if(nnz(XM)!=nnz(OM)); return; end
-	if(columns(XM)!=columns(OM)); return; end
-	if(rows(XM)!=rows(OM)); return; end
-	if(length(XM)!=length(OM)); return; end
-	if(size(XM)!=size(OM)); return; end
-	if(full(XM)!=full(OM)); return; end
-	if((3*XM)!=(3*OM)); return; end
-	if((XM/2)!=(OM/2)); return; end
-	#if((XM.^2)!=(OM.^2)); return; end
-	if((-XM)!=(-OM)); return; end
+	if(nargin>=3) eoi=eoin; else eoi=false; end
+	if(nnz(XM)!=nnz(OM)); error_if(eoi); return; end
+	if(columns(XM)!=columns(OM)); error_if(eoi); return; end
+	if(rows(XM)!=rows(OM)); error_if(eoi); return; end
+	if(length(XM)!=length(OM)); error_if(eoi); return; end
+	if(size(XM)!=size(OM)); error_if(eoi); return; end
+	if(full(XM)!=full(OM)); error_if(eoi); return; end
+	if((3*XM)!=(3*OM)); error_if(eoi); return; end
+	if((XM/2)!=(OM/2)); error_if(eoi); return; end
+	#if((XM.^2)!=(OM.^2)); error_if(eoi); return; end
+	if((-XM)!=(-OM)); error_if(eoi); return; end
 	for ri=1:rows(XM)
-		if(XM(ri,:)!=OM(ri,:)); return; end
+		if(XM(ri,:)!=OM(ri,:)); error_if(eoi); return; end
 	end
 	for ci=1:columns(XM)
-		if(XM(:,ci)!=OM(:,ci)); return; end
+		if(XM(:,ci)!=OM(:,ci)); error_if(eoi); return; end
 	end
 	for ri=1:rows(XM)
 	for ci=1:columns(XM)
-		if(XM(ri,ci)!=OM(ri,ci)); return; end
+		if(XM(ri,ci)!=OM(ri,ci)); error_if(eoi); return; end
 	end
 	end
-	if(XM(:,:)!=OM(:,:)); return; end
+	if(XM(:,:)!=OM(:,:)); error_if(eoi); return; end
 	ase=1;
 	[oi,oj,ov]=find(OM);
 	[xi,xj,xv]=find(XM);
-	ase&=isequal(oi,xi);
-	ase&=isequal(oj,xj);
-	ase&=isequal(ov,xv);
+	ise=isequal(oi,xi);
+	error_if(eoi && ise);
+	ase&=ise;
+	ise&=isequal(oj,xj);
+	error_if(eoi && ise);
+	ase&=ise;
+	ise&=isequal(ov,xv);
+	error_if(eoi && ise);
+	ase&=ise;
 	return;
 end # are_spm_equal
 
@@ -116,8 +130,8 @@ function match=testsprsb(OM,XM)
 	nr=max(oi);
 	nc=max(oj);
 	RM=sparsersb([oi;1;1],[oj;1;1],[ov;-1;1],nr,nc,"sum")
-	match&=are_spm_equal(RM,OM);
-	match&=are_spm_equal(RM,XM);
+	match&=are_spm_equal(RM,OM,true);
+	match&=are_spm_equal(RM,XM,true);
 	clear RM;
 	RM=sparsersb([oi;1;1],[oj;1;1],[ov;-2;1],nr,nc,"sum");
 	match&=!are_spm_equal(RM,OM);
@@ -278,10 +292,10 @@ function match=testmult(OM,XM)
 	match&=isequal(OX,XX);# FIXME: a very loose check!
 	OX=transpose(OM)*B; XX=transpose(XM)*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
-	match&=are_spm_equal(OX,XX);
+	match&=are_spm_equal(OX,XX,true);
 	OX=OM.'*B; XX=XM.'*B;
 	match&=isequal(OX,XX);# FIXME: a very loose check!
-	match&=are_spm_equal(OX,XX);
+	match&=are_spm_equal(OX,XX,true);
 	testmsg(match,"multiply");
 end # testmult
 

@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011-2018   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+ Copyright (C) 2011-2019   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -864,6 +864,7 @@ err:
 		bool is_lower_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_LOWER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool is_upper_triangular (void) const { RSBOI_0_EMCHECK(this->mtxAp); RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_UPPER_TRIANGULAR)?true:false; }/* FIXME: new: not sure whether this is ever called */
 		bool iscomplex (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return !is_real_type(); }
+		bool isreal (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return  is_real_type(); }
 		bool is_bool_type (void) const { return false; }
 		bool isinteger (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }

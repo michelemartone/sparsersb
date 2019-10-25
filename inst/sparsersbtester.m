@@ -33,10 +33,9 @@
 1; # This is a script.
 
 function error_if(cond)
-# not active for the moment
-#	if(cond)
-#		error "octave's sparse and sparsersb seem not to match"
-#	end
+	if(cond)
+		error "octave's sparse and sparsersb seem not to match"
+	end
 end # error_if
 
 function ase=are_spm_equal(OM,XM,eoin)

@@ -67,14 +67,14 @@ function ase=are_spm_equal(OM,XM,eoin)
 	ase=1;
 	[oi,oj,ov]=find(OM);
 	[xi,xj,xv]=find(XM);
-	ise=isequal(oi,xi);
-	error_if(eoi && ise);
+	ise =isequal(oi,xi);
+	error_if(eoi && !ise);
 	ase&=ise;
-	ise&=isequal(oj,xj);
-	error_if(eoi && ise);
+	ise =isequal(oj,xj);
+	error_if(eoi && !ise);
 	ase&=ise;
-	ise&=isequal(ov,xv);
-	error_if(eoi && ise);
+	ise =isequal(ov,xv);
+	error_if(eoi && !ise);
 	ase&=ise;
 	return;
 end # are_spm_equal

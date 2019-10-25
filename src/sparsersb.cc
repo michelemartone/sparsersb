@@ -69,6 +69,11 @@
 #define RSBOI_WANT_PRINT_PCT_OCTAVE_STYLE 1
 
 #include <octave/oct.h>
+#define RSBOI_USE_PATCH_OCT44 (OCTAVE_MAJOR_VERSION>=5) || ( (OCTAVE_MAJOR_VERSION==4) && (OCTAVE_MINOR_VERSION>=4))
+#if RSBOI_USE_PATCH_OCT44
+#include <octave/variables.h>
+#include <octave/interpreter.h>
+#endif /* RSBOI_USE_PATCH_OCT44 */
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
 #include <octave/ov-scalar.h>
@@ -1977,6 +1982,19 @@ DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
 }
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 
+#if RSBOI_USE_PATCH_OCT44
+#define RSBOI_INSTALL_BINOP(op, t1, t2, f) { \
+  	octave::type_info& type_info = octave::__get_type_info__ ("");\
+	type_info.register_binary_op(octave_value::op, t1::static_type_id (), t2::static_type_id (), CONCAT2 (oct_binop_, f)); }
+
+#define RSBOI_INSTALL_ASSIGNOP(op, t1, t2, f) { \
+  	octave::type_info& type_info = octave::__get_type_info__ ("");\
+	type_info.register_assign_op(octave_value::op, t1::static_type_id (), t2::static_type_id (), CONCAT2 (oct_assignop_, f)); }
+
+#define RSBOI_INSTALL_UNOP(op, t1, f) { \
+  	octave::type_info& type_info = octave::__get_type_info__ ("");\
+	type_info.register_unary_op(octave_value::op, t1::static_type_id (), CONCAT2 (oct_unop_, f)); }
+#else /* RSBOI_USE_PATCH_OCT44 */
 // deprecated; need a wrapper using octave::typeinfo::register_binary_op
 #define RSBOI_INSTALL_BINOP INSTALL_BINOP 
 
@@ -1985,6 +2003,7 @@ DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
 
 // deprecated; need a wrapper using octave::typeinfo::register_unary_op
 #define RSBOI_INSTALL_UNOP INSTALL_UNOP 
+#endif /* RSBOI_USE_PATCH_OCT44 */
 
 static void install_sparsersb_ops (void)
 {
@@ -2106,12 +2125,17 @@ static void install_sparse_rsb (void)
 		octave_sparsersb_mtx::register_type ();
 		install_sparsersb_ops ();
 		rsboi_sparse_rsb_loaded = true;
+
+#if RSBOI_USE_PATCH_OCT44
+		octave::interpreter::the_interpreter()->mlock();
+#else /* RSBOI_USE_PATCH_OCT44 */
 		mlock();
+#endif /* RSBOI_USE_PATCH_OCT44 */
 	}
 	return;
 err:
 	RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS
-}
+} /* install_sparse_rsb */
 
 DEFUN_DLD (RSB_SPARSERSB_LABEL, args, nargout,
 "-*- texinfo -*-\n\

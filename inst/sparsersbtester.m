@@ -1,6 +1,6 @@
 #!/usr/bin/octave -q
 # 
-#  Copyright (C) 2011-2017   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
+#  Copyright (C) 2011-2019   Michele Martone   <michelemartone _AT_ users.sourceforge.net>
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -33,34 +33,36 @@
 1; # This is a script.
 
 function ase=are_spm_equal(OM,XM)
-	if(nnz(XM)!=nnz(OM));ase=0; return; end
-	if(columns(XM)!=columns(OM));ase=0; return; end
-	if(rows(XM)!=rows(OM));ase=0; return; end
-	if(length(XM)!=length(OM));ase=0; return; end
-	if(size(XM)!=size(OM));ase=0; return; end
-	if(full(XM)!=full(OM));ase=0; return; end
-	if((3*XM)!=(3*OM));ase=0; return; end
-	if((XM/2)!=(OM/2));ase=0; return; end
-	#if((XM.^2)!=(OM.^2));ase=0; return; end
-	if((-XM)!=(-OM));ase=0; return; end
+	ase=0;
+	if(nnz(XM)!=nnz(OM)); return; end
+	if(columns(XM)!=columns(OM)); return; end
+	if(rows(XM)!=rows(OM)); return; end
+	if(length(XM)!=length(OM)); return; end
+	if(size(XM)!=size(OM)); return; end
+	if(full(XM)!=full(OM)); return; end
+	if((3*XM)!=(3*OM)); return; end
+	if((XM/2)!=(OM/2)); return; end
+	#if((XM.^2)!=(OM.^2)); return; end
+	if((-XM)!=(-OM)); return; end
 	for ri=1:rows(XM)
-		if(XM(ri,:)!=OM(ri,:));ase=0; return; end
+		if(XM(ri,:)!=OM(ri,:)); return; end
 	end
 	for ci=1:columns(XM)
-		if(XM(:,ci)!=OM(:,ci));ase=0; return; end
+		if(XM(:,ci)!=OM(:,ci)); return; end
 	end
 	for ri=1:rows(XM)
 	for ci=1:columns(XM)
-		if(XM(ri,ci)!=OM(ri,ci));ase=0; return; end
+		if(XM(ri,ci)!=OM(ri,ci)); return; end
 	end
 	end
+	if(XM(:,:)!=OM(:,:)); return; end
 	ase=1;
-	if(XM(:,:)!=OM(:,:));ase=0; return; end
 	[oi,oj,ov]=find(OM);
 	[xi,xj,xv]=find(XM);
 	ase&=isequal(oi,xi);
 	ase&=isequal(oj,xj);
 	ase&=isequal(ov,xv);
+	return;
 end # are_spm_equal
 
 function testmsg(match,tname,erreason)

@@ -73,6 +73,7 @@
 #if RSBOI_USE_PATCH_OCT44
 #include <octave/variables.h>
 #include <octave/interpreter.h>
+#include <octave/mach-info.h>
 #endif /* RSBOI_USE_PATCH_OCT44 */
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
@@ -929,7 +930,12 @@ err:
 			error("save_binary() " RSBOI_0_NIYERRMSG);
 			return false;
 		}
+#if RSBOI_USE_PATCH_OCT44
+		bool load_binary (std::istream& is, bool swap, octave::mach_info::float_format fmt)
+#else /* RSBOI_USE_PATCH_OCT44 */
+		// would break on octave6
 		bool load_binary (std::istream& is, bool swap, oct_mach_info::float_format fmt)
+#endif /* RSBOI_USE_PATCH_OCT44 */
 		{
 			error("load_binary() " RSBOI_0_NIYERRMSG);
 			return false;

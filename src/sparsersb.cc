@@ -2702,7 +2702,7 @@ checked:
 			{
 				vv = "'" + vv;
 				vv+="' is not a recognized keyword (unlike 'summation', 'unique', 'symmetric', 'hermitian', 'general')!";
-				error(vv.c_str());
+				error("%s",vv.c_str());
 				goto errp;
 			}
 		}

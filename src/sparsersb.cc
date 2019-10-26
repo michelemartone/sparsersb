@@ -85,6 +85,20 @@
 #endif
 #include <rsb.h>
 
+#if RSBOI_USE_PATCH_OCT44
+/* transitional macros, new style */
+#define RSBOI_TRY_BLK try
+#define RSBOI_CATCH_BLK catch (octave::execution_exception& e) { goto err; }
+#define RSBOI_IF_ERR(STMT)
+#define RSBOI_IF_NERR(STMT) STMT
+#define RSBOI_IF_NERR_STATE()
+/* transitional macros, old style */
+#else /* RSBOI_USE_PATCH_OCT44 */
+#define RSBOI_IF_ERR(STMT)  if (  error_state) STMT
+#define RSBOI_IF_NERR(STMT) if (! error_state) STMT
+#define RSBOI_IF_NERR_STATE() if (! error_state)
+#endif /* RSBOI_USE_PATCH_OCT44 */
+
 //#define RSBOI_VERBOSE_CONFIG 1 /* poor man's trace facility */
 #ifdef RSBOI_VERBOSE_CONFIG /* poor man's trace facility */
 #if (RSBOI_VERBOSE_CONFIG>0)
@@ -749,6 +763,8 @@ err:
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			rsb_err_t errval = RSB_ERR_NO_ERROR;
 
+			RSBOI_TRY_BLK
+			{
 			switch (type[0])
 			{
 				case '(':
@@ -789,8 +805,10 @@ err:
 					else
 					if (n_idx == 2 )
 	  				{
+					RSBOI_TRY_BLK
+					{
 	    					idx_vector i = idx.front() (0).index_vector ();
-	    					if (! error_state)
+						RSBOI_IF_NERR_STATE()
 	      					{
 #if RSBOI_WANT_SYMMETRY
 							/* FIXME: and now ? */
@@ -804,8 +822,7 @@ err:
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d)\n",ii,jj);
        								errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
 								retval = rv;
-								if (! error_state)
-								  ;
+								RSBOI_IF_NERR(;)
 							}
 							else
 							{
@@ -816,10 +833,11 @@ err:
 								RSBOI_DEBUG_NOTICE("get_elements (%d %d) complex\n",ii,jj);
        								errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
 								retval = rv;
-								if (! error_state)
-								  ;
+								RSBOI_IF_NERR(;)
 							}
 	      					}
+					}
+					RSBOI_CATCH_BLK
 	  				}
 				}
 				break;
@@ -834,9 +852,12 @@ err:
 				default:
 					panic_impossible ();
 			}
-			if (! error_state)
+			}
+			RSBOI_CATCH_BLK
+			RSBOI_IF_NERR(
 				retval = retval.next_subsref (type, idx, skip);
-
+				)
+err:
 			return retval;
 		}
 #else /* RSBOI_WANT_SUBSREF */
@@ -938,8 +959,9 @@ err:
 						{
 							RSBOI_DEBUG_NOTICE("UNFINISHED\n");
 							idx_vector i = idx.front()(0).index_vector ();
-							if (! error_state)
+							RSBOI_IF_NERR(
 								;//retval = octave_value (matrix.index (i, resize_ok));
+							)
       						}
 						break;
 						default:
@@ -966,7 +988,7 @@ err:
 									std :: cout << " : , :\n";
 								}
 #endif
-								if (! error_state)
+								RSBOI_IF_NERR_STATE()
 								{
 									if(is_real_type())
 									{
@@ -984,8 +1006,9 @@ err:
 										//retval=rhs.double_value(); // this does not match octavej
 										//retval=octave_value(this); 
 										retval = octave_value(this->clone()); // matches but .. heavy ?!
-										if (! error_state)
+										RSBOI_IF_NERR(
 											;//retval = octave_value (matrix.index (i, j, resize_ok));
+										)
 									}
 									else
 									{
@@ -1003,8 +1026,9 @@ err:
 										//retval=rhs.double_value(); // this does not match octavej
 										//retval=octave_value(this); 
 										retval = octave_value(this->clone()); // matches but .. heavy ?!
-										if (! error_state)
+										RSBOI_IF_NERR(
 											;//retval = octave_value (matrix.index (i, j, resize_ok));
+										)
 									}
 //		  class octave_map;
 //		  retval = octave_map();
@@ -2463,16 +2487,14 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(!ic0)
 				{
 					const SparseMatrix m = args(0).sparse_matrix_value();
-					if (error_state)
-					       	goto err;
+					RSBOI_IF_ERR( goto err;)
 					retval.append(osmp = new octave_sparsersb_mtx(m,typecode));
 				}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 				else
 				{
 					const SparseComplexMatrix m = args(0).sparse_complex_matrix_value();
-					if (error_state)
-					       	goto err;
+					RSBOI_IF_ERR( goto err;)
 					retval.append(osmp = new octave_sparsersb_mtx(m,typecode));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
@@ -2481,10 +2503,11 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		else
 		if(args(0).is_string())
 		{
+		RSBOI_TRY_BLK
+		{
 			// sparsersb (MTXFILENAME)
 			const std::string mtxfilename = args(0).string_value();
-			if (error_state)
-			       	goto err;
+			RSBOI_IF_ERR( goto err;)
 			if(mtxfilename == RSBOI_LIS)
 			{
 				//retval.append(RSB_NUMERICAL_TYPE_PREPROCESSOR_SYMBOLS);
@@ -2560,7 +2583,11 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(nargout) retval.append(osmp->get_symmetry()),--nargout;
 			}
 		}
+		RSBOI_CATCH_BLK
+		}
 		else
+		{
+		RSBOI_TRY_BLK
 		{
 			if (nargin == 2  && args(0).is_scalar_type() && args(1).is_scalar_type() )
 			{
@@ -2574,22 +2601,22 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 				if(!ic0)
 				{
 					Matrix m = args(0).matrix_value();
-					if (error_state)
-						goto err;
+					RSBOI_IF_ERR( goto err;)
 					retval.append(osmp = new octave_sparsersb_mtx(m));
 				}
 #if RSBOI_WANT_DOUBLE_COMPLEX
 				else
 				{
 					ComplexMatrix m = args(0).complex_matrix_value();
-					if (error_state)
-						goto err;
+					RSBOI_IF_ERR( goto err;)
 					retval.append(osmp = new octave_sparsersb_mtx(m));
 				}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 				if(nargin >= 2)
 				{ error("when initializing from a single matrix, no need for second argument !"); goto errp; }
 			}
+		}
+		RSBOI_CATCH_BLK
 		}
 	}
 	else
@@ -2674,8 +2701,7 @@ checked:
 			/* we ignore this value for MATLAB compatibility */
 		}
 
-		if (error_state)
-			goto ret;
+		RSBOI_IF_ERR( goto err;)
 
 		if(!ic3)
 		{

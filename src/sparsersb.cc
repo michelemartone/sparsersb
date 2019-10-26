@@ -797,9 +797,9 @@ err:
 						if(RSBOI_SOME_ERROR(errval))
 						{
 							if(ii>=this->nnz() || ii<0)
-								error ("trying accessing element %d: index out of bounds !",ii+1);
+								error ("trying accessing element %ld: index out of bounds !",(long int)ii+1);
 							else
-								error ("trying accessing element %d: this seems bug!",ii+1);
+								error ("trying accessing element %ld: this seems bug!",(long int)ii+1);
 						}
 #endif
 					}

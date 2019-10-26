@@ -1814,7 +1814,12 @@ DEFASSIGNOP (assignm, sparse_rsb_mtx, matrix)
 	RSBOI_DESTROY(v1.mtxAp);
 	octave_value retval;
 	//v1.assign(idx, v2.matrix_value());
+#if RSBOI_USE_PATCH_OCT44
+	v1.assign(idx, v2.sparse_matrix_value());
+#else /* RSBOI_USE_PATCH_OCT44 */
+	// would break on octave6 (assignment deleted)
 	v1 = (idx, v2.matrix_value());
+#endif /* RSBOI_USE_PATCH_OCT44 */
 	//retval = v1;
 	retval = v2.matrix_value();
 	RSBOI_WARN(RSBOI_O_MISSIMPERRMSG);

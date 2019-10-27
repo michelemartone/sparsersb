@@ -1443,6 +1443,34 @@ octave_value rsboi_sppsp(const RSBOI_T*betap, const octave_sparsersb_mtx&v2)cons
 	return retval;
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+octave_value cp_ubop(enum rsb_elopf_t opf, Complex z)const
+{
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	octave_sparsersb_mtx *m = new octave_sparsersb_mtx(*this);
+
+	if( is_real_type ())
+	{
+		struct rsb_mtx_t *mtxCp = RSBOI_NULL;
+		errval = rsb_mtx_clone(&mtxCp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,RSBOI_NULL,this->mtxAp,RSBOI_EXPF);
+		if(RSBOI_SOME_ERROR(errval))
+			goto err;
+		errval = rsb_mtx_upd_values(mtxCp,opf,&z);
+		// FIXME: need proper error handling
+		RSBOI_PERROR(errval);
+		RSBOI_DESTROY(m->mtxAp);
+		m->mtxAp = mtxCp;
+	}
+	else
+		errval = rsb_mtx_upd_values(m->mtxAp,opf,&z);
+	// FIXME: need proper error handling
+	RSBOI_PERROR(errval);
+err:
+	return m;
+}
+#endif /* RSBOI_WANT_DOUBLE_COMPLEX */
+
 octave_value cp_ubop(enum rsb_elopf_t opf, void*alphap=RSBOI_NULL)const
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -1981,6 +2009,16 @@ DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 	return v1.cp_ubop(RSB_ELOPF_POW,&alpha);
 }
 
+#if RSBOI_WANT_DOUBLE_COMPLEX
+DEFBINOP(el_pow_c, sparse_rsb_mtx, complex)
+{
+	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_complex&);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	Complex alpha = v2.complex_value();
+	return v1.cp_ubop(RSB_ELOPF_POW,alpha);
+}
+#endif /* RSBOI_WANT_DOUBLE_COMPLEX */
+
 #ifdef RSB_FULLY_IMPLEMENTED
 DEFASSIGNOP (assigns, sparse_rsb_mtx, scalar)
 {
@@ -2113,6 +2151,7 @@ static void install_sparsersb_ops (void)
 	RSBOI_INSTALL_BINOP (op_el_div, octave_sparsersb_mtx, octave_complex, rsb_el_div_c);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	RSBOI_INSTALL_BINOP (op_el_pow, octave_sparsersb_mtx, octave_scalar, el_pow);
+	RSBOI_INSTALL_BINOP (op_el_pow, octave_sparsersb_mtx, octave_complex, el_pow_c);
 	RSBOI_INSTALL_UNOP (op_uminus, octave_sparsersb_mtx, uminus);
 	RSBOI_INSTALL_BINOP (op_ldiv, octave_sparsersb_mtx, octave_matrix, ldiv);
 	RSBOI_INSTALL_BINOP (op_el_ldiv, octave_sparsersb_mtx, octave_matrix, el_ldiv);

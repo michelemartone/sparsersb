@@ -61,6 +61,7 @@ function ase=are_spm_equal(OM,XM,eoin)
 	if(conj(XM)!=conj(OM)); error_if(eoi); return; end
 	if(transpose(XM)!=transpose(OM)); error_if(eoi); return; end
 	#if((XM.^2)!=(OM.^2)); error_if(eoi); return; end
+	if((XM.^(2*i))!=(OM.^(2*i))); error_if(eoi); return; end
 	if((-XM)!=(-OM)); error_if(eoi); return; end
 	for ri=1:rows(XM)
 		if(XM(ri,:)!=OM(ri,:)); error_if(eoi); return; end

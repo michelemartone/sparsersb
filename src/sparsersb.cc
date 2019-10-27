@@ -1285,7 +1285,6 @@ err:
 			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&alpha,this->mtxAp,RSBOI_EXPF);
 		}
 		RSBOI_PERROR(errval);
-		rsb_file_mtx_save(mtxBp,NULL);
 		m = new octave_sparsersb_mtx( mtxBp );
 		// FIXME: missing error handling!
 		return m;

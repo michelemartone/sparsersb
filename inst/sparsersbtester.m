@@ -60,8 +60,19 @@ function ase=are_spm_equal(OM,XM,eoin)
 	if((XM' )!=(OM' )); error_if(eoi); return; end
 	if(conj(XM)!=conj(OM)); error_if(eoi); return; end
 	if(transpose(XM)!=transpose(OM)); error_if(eoi); return; end
-	#if((XM.^2)!=(OM.^2)); error_if(eoi); return; end
-	if((XM.^(2*i))!=(OM.^(2*i))); error_if(eoi); return; end
+	#if((XM.^(2+0*i))!=(OM.^(2+0*i))); error_if(eoi); return; end
+	if((XM.^(0+2*i))!=(OM.^(0+2*i))); error_if(eoi); return; end
+	if((XM.^(2+0*i))!=(OM.^(2+0*i)))
+		errn=norm((XM.^2)-(OM.^2));
+		if (errn<1e-13);
+			(XM.^2)
+			(OM.^2)
+			warning ("tiny mismatch (norm: %g) when computing matrix squares (see above)", double(errn));
+		else
+			error_if(eoi);
+			return;
+		end
+	end
 	if((-XM)!=(-OM)); error_if(eoi); return; end
 	for ri=1:rows(XM)
 		if(XM(ri,:)!=OM(ri,:)); error_if(eoi); return; end

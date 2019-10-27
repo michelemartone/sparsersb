@@ -2005,7 +2005,7 @@ DEFBINOP(el_pow, sparse_rsb_mtx, scalar)
 {
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_scalar&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-	RSBOI_T alpha = v2.scalar_value();
+	RSBOI_T alpha [] = {v2.scalar_value(),0};
 	return v1.cp_ubop(RSB_ELOPF_POW,&alpha);
 }
 

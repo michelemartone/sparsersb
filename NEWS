@@ -3,6 +3,7 @@ Summary of important user-visible changes for releases of the sparsersb package
 sparsersb-1.0.7 Release Date: 2019-10-27
 ===============================================================================
 **  - fixed '*' operator: 2*sparsersb(...) now returns a sparsersb, not sparse
+**  - fixed '*' operation when one operand is real sparsersb and other complex
 **  - avoids internal octave API deprecated in 4.4
 **  - builds with 4.4 till pre-release 6.0
 **  - `make tests' shall fail on sparsersb not matching octave's sparse

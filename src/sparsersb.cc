@@ -1270,10 +1270,24 @@ err:
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		octave_sparsersb_mtx *m = RSBOI_NULL;
 		struct rsb_mtx_t *mtxBp = RSBOI_NULL;
-		RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 
-		errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&alpha,this->mtxAp,RSBOI_EXPF);
+		if(is_real_type())
+		{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX,RSB_TRANSPOSITION_N,&rsboi_pone,this->mtxAp,RSBOI_EXPF);
+			// FIXME: missing error handling!
+			RSBOI_PERROR(errval);
+			errval = rsb_mtx_upd_values(mtxBp,RSB_ELOPF_SCALE_ROWS,&alpha);
+		}
+		else
+		{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			errval = rsb_mtx_clone(&mtxBp,RSB_NUMERICAL_TYPE_SAME_TYPE,RSB_TRANSPOSITION_N,&alpha,this->mtxAp,RSBOI_EXPF);
+		}
+		RSBOI_PERROR(errval);
+		rsb_file_mtx_save(mtxBp,NULL);
 		m = new octave_sparsersb_mtx( mtxBp );
+		// FIXME: missing error handling!
 		return m;
 	}
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */

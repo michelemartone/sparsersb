@@ -1,9 +1,11 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.7 Release Date: 2019-10-??
+sparsersb-1.0.7 Release Date: 2019-10-27
 ===============================================================================
-** Intended to be used with the latest librsb-1.2.0.
-**  - avoid INSTALL_BINOP INSTALL_ASSIGNOP INSTALL_UNOP mlock deprecated in 4.4
+**  - fixed '*' operator: 2*sparsersb(...) now returns a sparsersb, not sparse
+**  - avoids internal octave API deprecated in 4.4
+**  - builds with 4.4 till pre-release 6.0
+**  - `make tests' shall fail on sparsersb not matching octave's sparse
 ===============================================================================
 sparsersb-1.0.6 Release Date: 2018-06-15
 ===============================================================================

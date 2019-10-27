@@ -1776,12 +1776,26 @@ DEFBINOP(rsb_s_mul, sparse_rsb_mtx, scalar)
 	return v1.rsboi_get_scaled_copy(v2.scalar_value());
 }
 
+DEFBINOP(s_rsb_mul, scalar, sparse_rsb_mtx)
+{
+	RSB_CAST_BINOP_ARGS (const octave_scalar&, const octave_sparsersb_mtx &);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v2.rsboi_get_scaled_copy(v1.scalar_value());
+}
+
 #if RSBOI_WANT_DOUBLE_COMPLEX
 DEFBINOP(rsb_c_mul, sparse_rsb_mtx, complex)
 {
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx &, const octave_complex&);
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	return v1.rsboi_get_scaled_copy(v2.complex_value());
+}
+
+DEFBINOP(c_rsb_mul, complex, sparse_rsb_mtx)
+{
+	RSB_CAST_BINOP_ARGS (const octave_complex&, const octave_sparsersb_mtx &);
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	return v2.rsboi_get_scaled_copy(v1.complex_value());
 }
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 

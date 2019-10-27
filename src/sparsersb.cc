@@ -2109,8 +2109,10 @@ static void install_sparsersb_ops (void)
 	RSBOI_INSTALL_BINOP (op_div, octave_sparsersb_mtx, octave_complex, rsb_c_div);
 #endif /* RSBOI_WANT_DOUBLE_COMPLEX */
 	RSBOI_INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_scalar, rsb_s_mul);
+	RSBOI_INSTALL_BINOP (op_mul, octave_scalar, octave_sparsersb_mtx, s_rsb_mul);
 #if RSBOI_WANT_DOUBLE_COMPLEX
 	RSBOI_INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex, rsb_c_mul);
+	RSBOI_INSTALL_BINOP (op_mul, octave_complex, octave_sparsersb_mtx, c_rsb_mul);
 	RSBOI_INSTALL_BINOP (op_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_mul);
 	RSBOI_INSTALL_BINOP (op_trans_mul, octave_sparsersb_mtx, octave_complex_matrix, op_c_trans_mul);
 	RSBOI_INSTALL_BINOP (op_ldiv, octave_sparsersb_mtx, octave_complex_matrix, c_ldiv);

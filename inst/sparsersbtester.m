@@ -38,6 +38,10 @@ function error_if(cond)
 	end
 end # error_if
 
+function ast=are_same_type(OM,XM)
+	ast=(strcmp(typeinfo(OM), typeinfo(XM)) == 1); # Octave's strcmp returns 1 if same.
+end # are_same_type
+
 function ase=are_spm_equal(OM,XM,eoin)
 	ase=0;
 	if(nargin>=3) eoi=eoin; else eoi=false; end
@@ -315,39 +319,54 @@ end # testspsv
 
 function match=testscal(OM,XM)
 	match=1;
+	match&=!are_same_type(OM,XM);
 	OB=OM;
 	XB=XM;
+	match&=!are_same_type(OB,XB);
 	#OB
 	#XB
 	OM=OM/2; XM=XM/2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	OM=OM*2; XM=XM*2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
+	OM=2*OM; XM=2*XM;
+	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	#
 	OM/=2; XM/=2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	OM*=2; XM*=2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	#
 	OM=OM./2; XM=XM./2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	OM=OM.*2; XM=XM.*2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	#
 	OM./=2; XM./=2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	OM.*=2; XM.*=2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	#
 	#
 	OM=OM.^2; XM=XM.^2;
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	# FIXME: the following is commented out in that not directly supported, and conversion is not guaranteed.
 	# OM=OM^2; XM=XM^2;
 	# match&=isequal(find(OM),find(XM));
 	#
 	OM=OM.^(1/2); XM=XM.^(1/2);
 	match&=isequal(find(OM),find(XM));
+	match&=!are_same_type(OM,XM);
 	# FIXME: the following is commented out in that not directly supported, and conversion is not guaranteed.
 	# OM=OM^(1/2); XM=XM^(1/2);
 	# match&=isequal(find(OM),find(XM));

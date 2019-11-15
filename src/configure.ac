@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
-AC_INIT([octave sparsersb package], [1.0.5])
+AC_INIT([octave sparsersb package], [1.0.7])
 dnl AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.

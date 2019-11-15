@@ -20,7 +20,7 @@
  * adapt to when octave_idx_type is 64 bit long
  * rsb_file_vec_save (1.1)
  * all *.m files shall go to inst/
- * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.4.tar.gz 
+ * switch to using bootstrap.sh (instead autogen.sh) and configure.ac with environment variables, so it can be called from pkg install sparsersb-1.0.4.tar.gz
  * produce ../doc/sparsersb.txi; can use get_help_text
  * put to ./devel/ what is not to be distributed
  * make or configure should fail on missing library (actually it does not)
@@ -50,7 +50,7 @@
  * often missing array lenghts/type checks
  * may define as map (see is_map) so that "a.type = ..." can work
  * is_struct, find_nonzero_elem_idx  are undefined
- * are octave_triangular_conv, default_numeric_conversion_function ok ? 
+ * are octave_triangular_conv, default_numeric_conversion_function ok ?
  * error reporting is insufficient
  * update to symmetric be forbidden or rather trigger a conversion ?
  * after file read, return various structural info
@@ -142,7 +142,7 @@
 #define RSBOI_RB RSB_DEFAULT_ROW_BLOCKING
 #define RSBOI_CB RSB_DEFAULT_COL_BLOCKING
 //#define RSBOI_RF RSB_FLAG_DEFAULT_STORAGE_FLAGS
-#define RSBOI_RF RSB_FLAG_DEFAULT_RSB_MATRIX_FLAGS 
+#define RSBOI_RF RSB_FLAG_DEFAULT_RSB_MATRIX_FLAGS
 #define RSBOI_DCF RSB_FLAG_DUPLICATES_SUM
 #define RSBOI_NF RSB_FLAG_NOFLAGS
 //#define RSBOI_EXPF RSB_FLAG_NOFLAGS
@@ -190,8 +190,8 @@
 #define RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS {1;}
 #define RSBOI_OV_STRIDE 1
 #define RSBOI_ZERO 0.0
-//#define RSB_OI_DMTXORDER RSB_FLAG_WANT_ROW_MAJOR_ORDER 
-#define RSB_OI_DMTXORDER RSB_FLAG_WANT_COLUMN_MAJOR_ORDER  /* for dense matrices (multivectors) */ 
+//#define RSB_OI_DMTXORDER RSB_FLAG_WANT_ROW_MAJOR_ORDER
+#define RSB_OI_DMTXORDER RSB_FLAG_WANT_COLUMN_MAJOR_ORDER  /* for dense matrices (multivectors) */
 #define RSB_OI_TYPEINFO_STRING "rsb sparse matrix"
 #define RSB_OI_TYPEINFO_TYPE    "double"
 
@@ -415,8 +415,8 @@ struct rsboi_coo_matrix_t
 	rsb_type_t typecode;		 /** as specified in the RSB_NUMERICAL_TYPE_* preprocessor symbols in types.h 	*/
 };
 
-static const RSBOI_T rsboi_pone[] = {+1.0,0.0}; 
-static const RSBOI_T rsboi_mone[] = {-1.0,0.0}; 
+static const RSBOI_T rsboi_pone[] = {+1.0,0.0};
+static const RSBOI_T rsboi_mone[] = {-1.0,0.0};
 static const RSBOI_T rsboi_zero[] = { 0.0,0.0}; /* two elements, as shall work also with complex */
 
 static octave_base_value *default_numeric_conversion_function (const octave_base_value& a);
@@ -1014,7 +1014,7 @@ err:
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
 										//retval=rhs.double_value(); // this does not match octavej
-										//retval=octave_value(this); 
+										//retval=octave_value(this);
 										retval = octave_value(this->clone()); // matches but .. heavy ?!
 										RSBOI_IF_NERR(
 											;//retval = octave_value (matrix.index (i, j, resize_ok));
@@ -1034,7 +1034,7 @@ err:
 										RSBOI_PERROR(errval);
 										/* FIXME: I am unsure, here */
 										//retval=rhs.double_value(); // this does not match octavej
-										//retval=octave_value(this); 
+										//retval=octave_value(this);
 										retval = octave_value(this->clone()); // matches but .. heavy ?!
 										RSBOI_IF_NERR(
 											;//retval = octave_value (matrix.index (i, j, resize_ok));
@@ -1176,9 +1176,9 @@ err:
 			octave_stdout << " ["<<pct<< "%]";
 #endif
 
-			octave_stdout << 
+			octave_stdout <<
 #if RSBOI_WANT_PRINT_COMPLEX_OR_REAL
-				", "<<c<< 
+				", "<<c<<
 #endif
 				")\n";
 #if RSBOI_WANT_PRINT_DETAIL
@@ -1504,7 +1504,7 @@ octave_value_list find_nonzero_elem_idx (const class octave_sparsersb_mtx & nda,
 
 #if RSBOI_USE_PATCH_38143
 #define RSBOI_CAST_CONV_ARG(ARGT) /* Seems like in 4.1.0+ CAST_CONV_ARG is not there. */	\
-        ARGT v = dynamic_cast< ARGT > (a) 
+        ARGT v = dynamic_cast< ARGT > (a)
 #define RSBOI_CAST_UNOP_ARG(ARGT) /* Seems like in 4.1.0+ CAST_UNOP_ARG is not there. */	\
 	RSBOI_CAST_CONV_ARG(ARGT)
 #define RSB_CAST_BINOP_ARGS(ARGT_V1, ARGT_V2); /* Seems like in 4.1.0+ CAST_BINOP_ARGS is not there. */	\
@@ -1718,7 +1718,7 @@ DEFBINOP(ldiv, sparse_rsb_mtx, matrix)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 
-	if(v1.is__triangular()) 
+	if(v1.is__triangular())
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_N);
 
 	if(v1.iscomplex() || v2.iscomplex())
@@ -1733,7 +1733,7 @@ DEFBINOP(trans_ldiv, sparse_rsb_mtx, matrix)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_matrix&);
 
-	if(v1.is__triangular()) 
+	if(v1.is__triangular())
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_T);
 
 	if(v1.iscomplex() || v2.iscomplex())
@@ -1749,7 +1749,7 @@ DEFBINOP(c_ldiv, sparse_rsb_mtx, matrix)
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
 
-	if(v1.is__triangular()) 
+	if(v1.is__triangular())
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_N);
 
 	if(v1.iscomplex() || v2.iscomplex())
@@ -1763,7 +1763,7 @@ DEFBINOP(trans_c_ldiv, sparse_rsb_mtx, matrix)
 {
 	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 	RSB_CAST_BINOP_ARGS (const octave_sparsersb_mtx&, const octave_complex_matrix&);
-	if(v1.is__triangular()) 
+	if(v1.is__triangular())
 		return rsboi_spsm(v1,v2,RSB_TRANSPOSITION_T);
 
 	if(v1.iscomplex() || v2.iscomplex())
@@ -2100,13 +2100,13 @@ DEFBINOP(op_c_trans_mul, sparse_rsb_mtx, matrix)
 	type_info.register_unary_op(octave_value::op, t1::static_type_id (), CONCAT2 (oct_unop_, f)); }
 #else /* RSBOI_USE_PATCH_OCT44 */
 // deprecated; need a wrapper using octave::typeinfo::register_binary_op
-#define RSBOI_INSTALL_BINOP INSTALL_BINOP 
+#define RSBOI_INSTALL_BINOP INSTALL_BINOP
 
 // deprecated; need a wrapper using octave::typeinfo::register_assign_op
 #define RSBOI_INSTALL_ASSIGNOP INSTALL_ASSIGNOP
 
 // deprecated; need a wrapper using octave::typeinfo::register_unary_op
-#define RSBOI_INSTALL_UNOP INSTALL_UNOP 
+#define RSBOI_INSTALL_UNOP INSTALL_UNOP
 #endif /* RSBOI_USE_PATCH_OCT44 */
 
 static void install_sparsersb_ops (void)
@@ -2218,7 +2218,7 @@ static void install_sparse_rsb (void)
 		if(RSBOI_SOME_ERROR(errval = rsb_lib_init(RSB_NULL_INIT_OPTIONS)))
 		{
 			RSBOI_FIXME("temporary style of error handling");
-			RSBOI_PERROR(errval); 
+			RSBOI_PERROR(errval);
 			RSBOI_ERROR("");
 			goto err;
 		}
@@ -2326,7 +2326,7 @@ If @var{mif} is a string specifying a valid librsb matrix info string (valid for
 \
 "If @var{S} is a " RSBOI_FNS " matrix and @var{QS} is a string, @var{QS} shall be interpreted as a query string about matrix @var{S}. String @code{@var{v}} will be returned with query results. \n @strong{Note}: this feature is to be completed and its syntax reserved for future use. In this version, whatever the value of @var{QS}, a general matrix information string will be returned (like " RSBOI_FNS "(@var{S},\"get\",\"RSB_MIF_LEAVES_COUNT__TO__RSB_BLK_INDEX_T\") ).\n"\
 "\n"\
-/*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\ 
+/*If any of @var{sv}, @var{i} or @var{j} are scalars, they are expanded\n\
 to have a common size.\n*/
 RSBOI_10100_DOC ""\
 "\n\
@@ -2403,7 +2403,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		rsb_time_t tmax = 2.0;
 		rsb_int_t tn = 0;
 		rsb_real_t sf = 1.0;
-		rsb_trans_t transA = RSB_TRANSPOSITION_N; 
+		rsb_trans_t transA = RSB_TRANSPOSITION_N;
 		/* TODO: these shall also be user settable */
 		const void *alphap = RSBOI_NULL;
 		const void *betap = RSBOI_NULL;
@@ -2440,7 +2440,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
-	if (nargin >= 3 && isr 
+	if (nargin >= 3 && isr
  		&& args(1).is_string() && args(1).string_value().substr(0,6)=="render"
 		&& args(2).is_string())
 	{
@@ -2470,7 +2470,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 	}
 #endif
 #if RSBOI_WANT_MTX_SAVE
-	if (nargin == 3 && isr 
+	if (nargin == 3 && isr
  		&& args(1).is_string() && args(1).string_value()=="save"
 		&& args(2).is_string())
 	{
@@ -2479,13 +2479,13 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 		goto ret;
 	}
 #endif
-	if (nargin == 3 && isr 
+	if (nargin == 3 && isr
  		&& args(1).is_string() && args(1).string_value()=="get"
 		&& args(2).is_string())
 	{
 		// sparsersb (S, "get", MIF)
 		// For any version of lirsb, you can get valid values with e.g.:
-		// grep RSB_MIF path-to/rsb.h | sed 's/^[, ]*//g;s/\([A-Z_]\+\).*<\(.\+\)(.*$/\1: \2/g;s/$/;/g' 
+		// grep RSB_MIF path-to/rsb.h | sed 's/^[, ]*//g;s/\([A-Z_]\+\).*<\(.\+\)(.*$/\1: \2/g;s/$/;/g'
 		rsb_err_t errval = RSB_ERR_NO_ERROR;
 		/* rsb_real_t miv = RSBOI_ZERO;*/ /* FIXME: this is extreme danger! */
 		char is[RSBOI_INFOBUF];
@@ -2502,7 +2502,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 
 		if(!RSBOI_SOME_ERROR(errval))
 		{
-			retval.append(octave_value(ss)); 
+			retval.append(octave_value(ss));
 			goto ret;
 		}
 		/* FIXME: serious error handling missing here */
@@ -2516,7 +2516,7 @@ Please note that on @code{" RSBOI_FNS "} type variables are available most, but 
 	if ( nargin >= 3 && isr && args(1).is_string() && args(1).string_value()=="get" /* && args(1).is_string() */ )
 	{
 		// sparsersb (S, "get", MIF, XXX)
-		error("did you intend to get matrices information ? use the correct syntax then !"); 
+		error("did you intend to get matrices information ? use the correct syntax then !");
 		goto errp;
 	}
 
@@ -2758,7 +2758,7 @@ checked:
 			else
 			if ( vv == "unique" )
 				eflags = RSB_FLAG_DUPLICATES_KEEP_LAST;
-#if RSBOI_WANT_SYMMETRY 
+#if RSBOI_WANT_SYMMETRY
 			/* FIXME: still undocumented extension */
 			else
 			if ( vv == "symmetric" || vv == "sym" )
@@ -2853,7 +2853,7 @@ ret:
 %!test
 %! [S, NROWS, NCOLS, NNZ, REPINFO, FIELD, SYMMETRY] = sparsersb("sparsersb_temporary_matrix_file.mtx", "Z"); assert(NROWS==2);assert(NCOLS==2);assert(NNZ==3);assert(FIELD=="complex");assert(SYMMETRY=='U');
 %!test
-%! rrm=sparsersb(sprand(1000,1000,0.001)); sparsersb(rrm,"render", "sparsersb_temporary_render.eps" ,1024,1024); 
+%! rrm=sparsersb(sprand(1000,1000,0.001)); sparsersb(rrm,"render", "sparsersb_temporary_render.eps" ,1024,1024);
 %! # sparsersb(rrm,"renderb", "sparsersb_temporary_renderb.eps"); sparsersb(rrm,"renders", "sparsersb_temporary_renders.eps"); # FIXME
 %!test
 %! sparsersb(sparsersb(sprand(100,100,0.4)),"autotune","n",20,4,1,1,1)
@@ -2864,27 +2864,27 @@ ret:
 %! # You can use 'sparsersb' just like 'sparse' in the most of cases:
 %! R=(rand(3)>.6)
 %! # R =
-%! # 
+%! #
 %! #    0   0   0
 %! #    0   0   0
 %! #    1   0   1
-%! # 
+%! #
 %! A_octave=sparse(R)
 %! # A_octave =
-%! # 
+%! #
 %! # Compressed Column Sparse (rows = 3, cols = 3, nnz = 2 [22%])
-%! # 
+%! #
 %! #   (3, 1) ->  1
 %! #   (3, 3) ->  1
-%! # 
+%! #
 %! A_librsb=sparsersb(R)
 %! # A_librsb =
-%! # 
+%! #
 %! # Recursive Sparse Blocks  (rows = 3, cols = 3, nnz = 2, symm = U [22%])
-%! # 
+%! #
 %! #   (3, 1) -> 1
 %! #   (3, 3) -> 1
-%! # 
+%! #
 %! # test sparsersb
 %! # ...
 %! # help sparsersb
@@ -2908,7 +2908,7 @@ ret:
 %! # Any 'sparse' or 'dense' matrix can be converted to 'sparsersb'.
 %! d=sparsersb(       [1,2;3,4] );
 %! s=sparsersb(sparse([1,2;3,4]));
-%! 
+%!
 %! # Many matrix operators are active, e.g.: +,*,-,/,\ among others...
 %! s+d;
 %! s*d;
@@ -2924,7 +2924,7 @@ ret:
 %! r=sparsersb(s);
 %! x=ones(M,1);
 %! assert(nnz(s)==nnz(r))
-%! 
+%!
 %! printf("Here, a %.2e x %.2e matrix with %.2e nonzeroes.\n",M,N,nnz(s))
 %! tic();
 %! sc=0;

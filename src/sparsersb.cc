@@ -907,11 +907,10 @@ err:
 		bool is__triangular (void) const
 	       	{
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		       	if(this->mtxAp 
+		       	if(this->mtxAp)
 #if RSBOI_WANT_SYMMETRY
-				&& ((!RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL))
+		       	if( (!RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL) )
 #endif
-			  )
 			{
 				return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
 			}

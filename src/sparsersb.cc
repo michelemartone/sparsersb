@@ -244,7 +244,12 @@ extern "C" {
 #endif
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 extern "C" {
+#if (RSB_LIBRSB_VER<=10200)
 	int rsb_do_get_nnz_element(struct rsb_mtx_t *,void*,void*,void*,int);
+#elif (RSB_LIBRSB_VER>=10300)
+	int rsb__do_get_nnz_element(struct rsb_mtx_t *,void*,void*,void*,int);
+ 	#define rsb_do_get_nnz_element rsb__do_get_nnz_element
+#endif
 }
 #endif
 #if RSBOI_WANT_DOUBLE_COMPLEX

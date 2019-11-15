@@ -125,11 +125,14 @@
 #define RSBOI_DEBUG_NOTICE( ... ) \
 	printf("In %s(), in file %s at line %10d:\n",__func__,__FILE__,__LINE__), \
 	printf( __VA_ARGS__ )
-//#define RSBOI_ERROR( ... ) \
+#if 0
+#define RSBOI_ERROR( ... ) \
 	printf("In %s(), in file %s at line %10d:\n",__func__,__FILE__,__LINE__), \
 	printf( __VA_ARGS__ )
+#else
 #define RSBOI_ERROR( MSG ) \
 	octave_stdout << "In "<<__func__<<"(), in file "<<__FILE__<<" at line "<<__LINE__<<":\n"<<MSG
+#endif
 #define RSBOI_DUMP RSBOI_PRINTF
 #else
 #define RSBOI_DUMP( ... )
@@ -187,7 +190,7 @@
 
 #define RSBIO_DEFAULT_CORE_MATRIX  Matrix (0,0)
 /* FIXME : octave_idx_type vs rsb_coo_idx_t */
-#define RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS {1;}
+#define RSBIO_NULL_STATEMENT_FOR_COMPILER_HAPPINESS {(void)1;}
 #define RSBOI_OV_STRIDE 1
 #define RSBOI_ZERO 0.0
 //#define RSB_OI_DMTXORDER RSB_FLAG_WANT_ROW_MAJOR_ORDER
@@ -204,7 +207,7 @@
 #endif
 
 #define RSBOI_USE_CXX11 ( defined(__cplusplus) && (__cplusplus>=201103L) )
-#if RSBOI_USE_CXX11
+#if defined(RSBOI_USE_CXX11)
 #define RSBOI_NULL nullptr
 #else /* RSBOI_USE_CXX11 */
 #define RSBOI_NULL NULL
@@ -906,16 +909,17 @@ err:
 		std::string get_symmetry (void) const { return (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S": (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN)?"H":"U")); }
 		bool is__triangular (void) const
 	       	{
+			rsb_bool_t retval = RSB_BOOL_FALSE;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-		       	if(this->mtxAp)
+
+		       	if(!this->mtxAp)
+			       	retval = RSB_BOOL_FALSE;
+			else
 #if RSBOI_WANT_SYMMETRY
 		       	if( (!RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)) || RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_DIAGONAL) )
 #endif
-			{
-				return RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
-			}
-			else
-			       	return RSB_BOOL_FALSE;
+				retval = RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_TRIANGULAR)?RSB_BOOL_TRUE:RSB_BOOL_FALSE;
+			return retval;
 		}
 //		int is_struct (void) const { return false; }
 
@@ -947,9 +951,11 @@ err:
 		octave_value subsasgn (const std::string& type, const std::list<octave_value_list>& idx, const octave_value& rhs)
 		{
 			octave_value retval;
+#if 0
 			rsb_err_t errval = RSB_ERR_NO_ERROR;
-
+#endif
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+
 			switch (type[0])
 			{
 				case '(':
@@ -1305,7 +1311,7 @@ octave_value scale_rows(const octave_matrix&v2, bool want_div=false)
 		const Matrix rm = want_div?1.0/v2.matrix_value ():v2.matrix_value ();
 		octave_idx_type b_nc = rm.cols ();
 		octave_idx_type b_nr = rm.rows ();
-		octave_idx_type ldb = b_nr;
+		//octave_idx_type ldb = b_nr;
 		octave_idx_type ldc = this->columns();
 		octave_idx_type nrhs = b_nc;
 		Matrix retval(ldc,nrhs,RSBOI_ZERO);
@@ -1319,7 +1325,7 @@ octave_value scale_rows(const octave_matrix&v2, bool want_div=false)
 		const ComplexMatrix cm = want_div?1.0/v2.complex_matrix_value ():v2.complex_matrix_value ();
 		octave_idx_type b_nc = cm.cols ();
 		octave_idx_type b_nr = cm.rows ();
-		octave_idx_type ldb = b_nr;
+		//octave_idx_type ldb = b_nr;
 		octave_idx_type ldc = this->columns();
 		octave_idx_type nrhs = b_nc;
 		ComplexMatrix retval(ldc,nrhs,RSBOI_ZERO);
@@ -1502,7 +1508,7 @@ octave_value_list find_nonzero_elem_idx (const class octave_sparsersb_mtx & nda,
 }
 #endif
 
-#if RSBOI_USE_PATCH_38143
+#if defined(RSBOI_USE_PATCH_38143)
 #define RSBOI_CAST_CONV_ARG(ARGT) /* Seems like in 4.1.0+ CAST_CONV_ARG is not there. */	\
         ARGT v = dynamic_cast< ARGT > (a)
 #define RSBOI_CAST_UNOP_ARG(ARGT) /* Seems like in 4.1.0+ CAST_UNOP_ARG is not there. */	\
@@ -1992,14 +1998,14 @@ DEFASSIGNOP(rsb_op_el_div_eq, sparse_rsb_mtx, scalar)
 
 DEFASSIGNOP(rsb_op_el_mul_eq_sc, sparse_rsb_mtx, matrix)
 {
-	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	//rsb_err_t errval = RSB_ERR_NO_ERROR;
 	RSB_CAST_BINOP_ARGS (octave_sparsersb_mtx &, const octave_matrix&);
 	return v1.scale_rows(v2,false);
 }
 
 DEFASSIGNOP(rsb_op_el_div_eq_sc, sparse_rsb_mtx, matrix)
 {
-	rsb_err_t errval = RSB_ERR_NO_ERROR;
+	//rsb_err_t errval = RSB_ERR_NO_ERROR;
 	RSB_CAST_BINOP_ARGS (octave_sparsersb_mtx &, const octave_matrix&);
 	return v1.scale_rows(v2,true);
 }

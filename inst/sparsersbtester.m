@@ -520,6 +520,32 @@ match&=tests(OM,XM);
 
 end
 
+function sparse_sparse_update_test()
+  A=sparsersb([11,0,0;0,22,23;0,0,0])
+  O=sparse(A)
+  
+  if A(1,1)!=O(1,1) 
+    error "subsref seemingly not working!"
+  endif
+  
+  if   (A!=0) !=  (O!=0)
+    error "subsasgn seemingly not working!"
+  endif
+  
+  A(A==23)=222
+  O(O==23)=222
+  
+  if A != O
+    error "subsasgn seemingly not working!"
+  endif
+  
+  return
+  # Not yet there:
+  A(sparsersb([0,0,0;1,0,0;0,0,0]))=-99   # not in nnz pattern
+  A(sparsersb([0,0,0;1,0,0;0,0,0]))=-99*i # only double supported for the moment
+end # endfunction
+sparse_sparse_update_test()
+
 if(match) printf("All tests passed.\n"); else printf("Failure while performing tests!\n");end
 
 # FIXME: shall print a report in case of failure.

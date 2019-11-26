@@ -77,6 +77,7 @@
 #endif /* RSBOI_USE_PATCH_OCT44 */
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
+#include <octave/ov-bool-sparse.h> /* RSBOI_WANT_SPMTX_SUBSASGN */
 #include <octave/ov-scalar.h>
 #include <octave/ov-complex.h>
 #include <octave/ops.h>
@@ -223,6 +224,7 @@
 #define RSBOI_WANT_MTX_SAVE 1
 #define RSBOI_WANT_POW 1
 #define RSBOI_WANT_QSI 1 /* query string interface */
+#define RSBOI_WANT_SPMTX_SUBSASGN 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -783,6 +785,7 @@ err:
 					if (n_idx == 1 )
 					{
 						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+						{
 	    					idx_vector i = idx.front() (0).index_vector ();
 #if   defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER< 10100)
 						octave_idx_type ii = i(0);
@@ -810,6 +813,7 @@ err:
 								error ("trying accessing element %ld: this seems bug!",(long int)ii+1);
 						}
 #endif
+						}
 					}
 					else
 					if (n_idx == 2 )
@@ -868,7 +872,7 @@ err:
 				)
 err:
 			return retval;
-		}
+		} /* subsref */
 #else /* RSBOI_WANT_SUBSREF */
 		/* FIXME: need an alternative, bogus implementation of subsref */
 #endif /* RSBOI_WANT_SUBSREF */
@@ -958,6 +962,7 @@ err:
 
 			switch (type[0])
 			{
+
 				case '(':
 				{
 				if (type.length () == 1)
@@ -973,11 +978,44 @@ err:
 						break;
 						case 1:
 						{
+#if RSBOI_WANT_SPMTX_SUBSASGN
+					{
+						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+						octave_value_list ovl = idx.front();
+						if(ovl(0).issparse() && ovl(0).isreal() && rhs.isreal())
+						{
+  							SparseBoolMatrix sm = SparseBoolMatrix (ovl(0).sparse_matrix_value());
+							octave_idx_type * ir = sm.mex_get_ir ();
+							octave_idx_type * jc = sm.mex_get_jc ();
+					        	octave_idx_type nr = sm.rows ();
+        						octave_idx_type nc = sm.cols ();
+							RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+							RSBOI_T rv = rhs.double_value();
+
+        						for (octave_idx_type j = 0; j < nc; j++)
+							{
+        						  for (octave_idx_type i = jc[j]; i < jc[j+1]; i++)
+							  {
+							    rsb_err_t errval = RSB_ERR_NO_ERROR;
+							    errval = rsb_mtx_set_values(this->mtxAp,&rv,&ir[i],&j,1,RSBOI_NF);
+                                                            if(RSBOI_SOME_ERROR(errval))
+							      error("FIXME: Incomplete: Can only accept already existing indices.");
+							  }
+							}
+							RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+							retval = octave_value(this->clone());
+						}
+						else
+						  error("FIXME: Incomplete: no complex sparse-sparse update for the moment.");
+					}
+#else /* RSBOI_WANT_SPMTX_SUBSASGN */
 							RSBOI_DEBUG_NOTICE("UNFINISHED\n");
 							idx_vector i = idx.front()(0).index_vector ();
+							// ...
 							RSBOI_IF_NERR(
 								;//retval = octave_value (matrix.index (i, resize_ok));
 							)
+#endif /* RSBOI_WANT_SPMTX_SUBSASGN */
       						}
 						break;
 						default:
@@ -1099,7 +1137,7 @@ err:
 					panic_impossible ();
 			}
 			return retval;
-		}
+		} /* subsasgn */
 
 		octave_base_value *try_narrowing_conversion (void)
 		{

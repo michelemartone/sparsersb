@@ -77,7 +77,7 @@
 #endif /* RSBOI_USE_PATCH_OCT44 */
 #include <octave/ov-re-mat.h>
 #include <octave/ov-re-sparse.h>
-#include <octave/ov-bool-sparse.h> /* RSBOI_WANT_SPMTX_SUBSASGN */
+#include <octave/ov-bool-sparse.h> /* RSBOI_WANT_SPMTX_SUBSREF || RSBOI_WANT_SPMTX_SUBSASGN */
 #include <octave/ov-scalar.h>
 #include <octave/ov-complex.h>
 #include <octave/ops.h>
@@ -224,6 +224,7 @@
 #define RSBOI_WANT_MTX_SAVE 1
 #define RSBOI_WANT_POW 1
 #define RSBOI_WANT_QSI 1 /* query string interface */
+#define RSBOI_WANT_SPMTX_SUBSREF 0 /* not yet there: need to accumulate in sparse */
 #define RSBOI_WANT_SPMTX_SUBSASGN 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
@@ -785,6 +786,30 @@ err:
 					if (n_idx == 1 )
 					{
 						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+#if RSBOI_WANT_SPMTX_SUBSREF
+						octave_value_list ovl = idx.front();
+						if(ovl(0).issparse())
+						{
+  							SparseBoolMatrix sm = SparseBoolMatrix (ovl(0).sparse_matrix_value());
+							octave_idx_type * ir = sm.mex_get_ir ();
+							octave_idx_type * jc = sm.mex_get_jc ();
+					        	octave_idx_type nr = sm.rows ();
+        						octave_idx_type nc = sm.cols ();
+							RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+
+        						for (octave_idx_type j = 0; j < nc; j++)
+							{
+							  std::cout << jc[j] << ".." << jc[j+1] << "\n";
+        						  for (octave_idx_type i = jc[j]; i < jc[j+1]; i++)
+							  {
+							    std::cout << ir[i] << " " << j << "\n";
+							  }
+							}
+							RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+							retval = octave_value(this->clone()); // matches but .. heavy ?!
+						}
+						else
+#endif /* RSBOI_WANT_SPMTX_SUBSREF */
 						{
 	    					idx_vector i = idx.front() (0).index_vector ();
 #if   defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER< 10100)

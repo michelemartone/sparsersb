@@ -59,6 +59,7 @@
  * warnings about incomplete complex implementation may be overzealous.
  * need matrix exponentiation through conversion to octave format.
  * Note: although librsb has been optimized for performance, sparsersb is not.
+ * Note: there are dangerous casts to rsb_coo_idx_t in subsasgn: for 64-bit octave_idx_type.
 
  * Developer notes:
  http://www.gnu.org/software/octave/doc/interpreter/index.html
@@ -1022,7 +1023,10 @@ err:
         						  for (octave_idx_type i = jc[j]; i < jc[j+1]; i++)
 							  {
 							    rsb_err_t errval = RSB_ERR_NO_ERROR;
-							    errval = rsb_mtx_set_values(this->mtxAp,&rv,&ir[i],&j,1,RSBOI_NF);
+							    rsb_coo_idx_t ii = static_cast<rsb_coo_idx_t>(ir[i]); // Note: potentioally dangerous casts, if types are different and matrix huge.
+							    rsb_coo_idx_t jj = static_cast<rsb_coo_idx_t>(j);
+
+							    errval = rsb_mtx_set_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
                                                             if(RSBOI_SOME_ERROR(errval))
 							      error("FIXME: Incomplete: Can only accept already existing indices.");
 							  }

@@ -281,7 +281,7 @@ extern "C" {
 #define RSBOI_10100_DOCH	""
 #endif
 
-#define RSBOI_VERSION	100004	/* e.g. 100004 means 1.0.4 */
+#define RSBOI_VERSION	100007	/* e.g. 100007 means 1.0.7 */
 
 #if defined(USE_64_BIT_IDX_T) || defined(OCTAVE_ENABLE_64) || defined(RSBOI_DETECTED_LONG_IDX) /* 4.1.0+ / 4.0.3 / any */
 #define RSBOI_O64_R32 1

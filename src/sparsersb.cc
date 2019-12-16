@@ -713,14 +713,65 @@ err:
 			return cm;
 		}
 
+		virtual Matrix full_sym_real_value()const
+		{
+			// Conversion to full, with symmetry expansion.
+			RSBOI_FIXME("inefficient (see transpose)!");
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+
+			const octave_idx_type rn = this->rows(), cn = this->cols();
+			Matrix v2(rn,cn,RSBOI_ZERO);
+			octave_value retval = v2;
+			rsb_err_t errval = RSB_ERR_NO_ERROR;
+			errval |= rsb_mtx_add_to_dense(&rsboi_pone,this->mtxAp,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
+			for(int i = 0; i<rn; ++i)
+				v2(i,i) = RSBOI_ZERO;
+			v2 = v2.transpose();
+			errval |= rsb_mtx_add_to_dense(&rsboi_pone,this->mtxAp,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
+			if(RSBOI_SOME_ERROR(errval))
+				RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
+			return v2;
+		} /* full_sym_real_value */
+
+		virtual ComplexMatrix full_sym_cplx_value()const
+		{
+			// Conversion to full, with symmetry expansion.
+			RSBOI_FIXME("inefficient (see transpose)!");
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+
+			const octave_idx_type rn = this->rows(), cn = this->cols();
+			ComplexMatrix v2(rn,cn,RSBOI_ZERO);
+			octave_value retval = v2;
+			rsb_err_t errval = RSB_ERR_NO_ERROR;
+			errval |= rsb_mtx_add_to_dense(&rsboi_pone,this->mtxAp,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
+			for(int i = 0; i<rn; ++i)
+				v2(i,i) = RSBOI_ZERO;
+			v2 = v2.transpose();
+			errval |= rsb_mtx_add_to_dense(&rsboi_pone,this->mtxAp,rn,rn,cn,RSB_BOOL_TRUE,(RSBOI_T*)v2.data());
+			if(RSBOI_SOME_ERROR(errval))
+				RSBOI_0_ERROR(RSBOI_0_NOCOERRMSG);
+			return v2;
+		} /* full_sym_cplx_value */
+
 		virtual octave_value full_value(void)const
 		{
 			RSBOI_FIXME("inefficient!");
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			if(this->is_real_type())
-				return this->matrix_value();
+
+			if(is__symmetric() || is__hermitian())
+			{
+				if(this->is_real_type())
+					return this->full_sym_real_value();
+				else
+					return this->full_sym_cplx_value();
+			}
 			else
-				return this->complex_matrix_value();
+			{
+				if(this->is_real_type())
+					return this->matrix_value();
+				else
+					return this->complex_matrix_value();
+			}
 		}
 
 #if RSBOI_WANT_DOUBLE_COMPLEX
@@ -934,8 +985,8 @@ err:
 		bool isinteger (void) const { return false; }
 		bool is_square (void) const { return this->rows()==this->cols(); }
 		bool is_empty (void) const { return false; }
-		/* bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; }*/ /* new */
-		/* bool is__hermitian (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN))return true; return false; }*/ /* new */
+		bool is__symmetric (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC))return true; return false; }
+		bool is__hermitian (void) const { if(RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN))return true; return false; }
 		std::string get_symmetry (void) const { return (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_SYMMETRIC)?"S": (RSB_DO_FLAG_HAS(this->rsbflags(),RSB_FLAG_HERMITIAN)?"H":"U")); }
 		bool is__triangular (void) const
 	       	{

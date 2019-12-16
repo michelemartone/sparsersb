@@ -861,6 +861,13 @@ err:
 						RSBOI_ERROR("");
 #elif defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 						octave_idx_type ii = i(0);
+#if RSBOI_WANT_RESHAPE
+						if( i.is_colon() )
+						{
+							retval = this->reshape(dim_vector (this->nnz(),1));
+							goto err;
+						}
+#endif /* RSBOI_WANT_RESHAPE */
 						RSBOI_DEBUG_NOTICE("get_element (%d)\n",ii);
 						if(is_real_type())
 						{

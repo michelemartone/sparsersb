@@ -864,7 +864,7 @@ err:
 #if RSBOI_WANT_RESHAPE
 						if( i.is_colon() )
 						{
-							retval = this->reshape(dim_vector (this->nnz(),1));
+							retval = this->reshape(dim_vector (this->rows()*this->cols(),1));
 							goto err;
 						}
 #endif /* RSBOI_WANT_RESHAPE */

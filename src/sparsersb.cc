@@ -819,12 +819,13 @@ err:
 				RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 				rsb_err_t errval = RSB_ERR_NO_ERROR;
 				octave_value retval;
-				// octave_idx_type n_idx = idx.length ();
 
 				//if (type.length () == 1)
 				{
-
-  					octave_idx_type n_idx = idx.length ();
+  					const octave_idx_type n_idx = idx.length ();
+					if (n_idx == 0 )
+						retval = clone();
+					else
 					if (n_idx == 1 )
 					{
 						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);

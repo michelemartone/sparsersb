@@ -225,6 +225,7 @@
 #define RSBOI_WANT_MTX_SAVE 1
 #define RSBOI_WANT_POW 1
 #define RSBOI_WANT_QSI 1 /* query string interface */
+#define RSBOI_WANT_RESHAPE 1
 #define RSBOI_WANT_SPMTX_SUBSREF 0 /* not yet there: need to accumulate in sparse */
 #define RSBOI_WANT_SPMTX_SUBSASGN 1
 //#define RSBOI_PERROR(E) rsb_perror(E)
@@ -627,9 +628,9 @@ err:
 		};
 		octave_idx_type length (void) const { return this->nnz(); }
 		octave_idx_type nelem (void) const { return this->nnz(); }
-		octave_idx_type numel (void) const { return this->nnz(); }
+		octave_idx_type numel (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return this->nnz(); }
 		octave_idx_type nnz (void) const { rsb_nnz_idx_t nnzA = 0; RSBOI_0_EMCHECK(this->mtxAp); rsb_mtx_get_info(this->mtxAp,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,&nnzA);  return nnzA;}
-		dim_vector dims (void) const { return (dim_vector(this->rows(),this->cols())); }
+		dim_vector dims (void) const { RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG); return (dim_vector(this->rows(),this->cols())); }
 		octave_idx_type dim1 (void) const { return this->rows(); }
 		octave_idx_type dim2 (void) const { return this->cols(); }
 		octave_idx_type rows (void) const { rsb_coo_idx_t Anr=0; RSBOI_0_EMCHECK(this->mtxAp); rsb_mtx_get_info(this->mtxAp,RSB_MIF_MATRIX_ROWS__TO__RSB_COO_INDEX_T,&Anr);  return Anr;}
@@ -924,6 +925,22 @@ err:
 err:
 				return retval;
 		}
+
+#if RSBOI_WANT_RESHAPE
+		octave_value reshape (const dim_vector& new_dims) const
+	       	{
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			RSBOI_WARN(RSBOI_0_UNFFEMSG);
+			octave_value retval;
+
+			if(is_real_type())
+				retval = new octave_sparsersb_mtx ( sparse_matrix_value().reshape(new_dims) );
+			else
+				retval = new octave_sparsersb_mtx ( sparse_complex_matrix_value().reshape(new_dims) );
+ret:
+			return retval;
+	       	}
+#endif /* RSBOI_WANT_RESHAPE */
 
 		octave_value subsref (const std::string &type, const std::list<octave_value_list>& idx)
 		{

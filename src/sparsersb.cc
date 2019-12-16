@@ -661,13 +661,6 @@ err:
 			return new octave_sparsersb_mtx ();
 		}
 
-#if 0
-		octave_value do_index_op(const octave_value_list& idx, bool resize_ok)
-		{
-			...
-		}
-#endif
-
 		virtual SparseMatrix sparse_matrix_value(bool = false)const
 		{
 			struct rsboi_coo_matrix_t rcm;
@@ -819,27 +812,24 @@ err:
 		//octave_value::assign_op, int, int, octave_value (&)
 		//octave_value  assign_op (const octave_base_value&, const octave_base_value&) {}
 		// octave_value::assign_op octave_value::binary_op_to_assign_op (binary_op op) { assign_op retval; return retval; }
-#if RSBOI_WANT_SUBSREF
-		octave_value subsref (const std::string &type, const std::list<octave_value_list>& idx)
-		{
-			octave_value retval;
-			int skip = 1;
-			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
-			rsb_err_t errval = RSB_ERR_NO_ERROR;
 
-			RSBOI_TRY_BLK
-			{
-			switch (type[0])
-			{
-				case '(':
-				if (type.length () == 1)
+#if RSBOI_WANT_SUBSREF
+		octave_value do_index_op(const octave_value_list& idx, bool resize_ok = false)
+		{
+				RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+				rsb_err_t errval = RSB_ERR_NO_ERROR;
+				octave_value retval;
+				// octave_idx_type n_idx = idx.length ();
+
+				//if (type.length () == 1)
 				{
-  					octave_idx_type n_idx = idx.front().length ();
+
+  					octave_idx_type n_idx = idx.length ();
 					if (n_idx == 1 )
 					{
 						RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 #if RSBOI_WANT_SPMTX_SUBSREF
-						octave_value_list ovl = idx.front();
+						octave_value_list ovl = idx;
 						if(ovl(0).issparse())
 						{
   							SparseBoolMatrix sm = SparseBoolMatrix (ovl(0).sparse_matrix_value());
@@ -863,7 +853,7 @@ err:
 						else
 #endif /* RSBOI_WANT_SPMTX_SUBSREF */
 						{
-	    					idx_vector i = idx.front() (0).index_vector ();
+	    					idx_vector i = idx (0).index_vector ();
 #if   defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER< 10100)
 						octave_idx_type ii = i(0);
 						RSBOI_ERROR("");
@@ -897,7 +887,7 @@ err:
 	  				{
 					RSBOI_TRY_BLK
 					{
-	    					idx_vector i = idx.front() (0).index_vector ();
+	    					idx_vector i = idx (0).index_vector ();
 						RSBOI_IF_NERR_STATE()
 	      					{
 #if RSBOI_WANT_SYMMETRY
@@ -905,7 +895,7 @@ err:
 #endif
 							if(is_real_type())
 							{
-								idx_vector j = idx.front() (1).index_vector ();
+								idx_vector j = idx (1).index_vector ();
 								RSBOI_T rv;
 						  		rsb_coo_idx_t ii = -1, jj = -1;
   								ii = i(0); jj = j(0);
@@ -916,7 +906,7 @@ err:
 							}
 							else
 							{
-								idx_vector j = idx.front() (1).index_vector ();
+								idx_vector j = idx (1).index_vector ();
 								Complex rv;
 						  		rsb_coo_idx_t ii =-1, jj = -1;
   								ii = i(0); jj = j(0);
@@ -930,7 +920,25 @@ err:
 					RSBOI_CATCH_BLK
 	  				}
 				}
+err:
+				return retval;
+		}
+
+		octave_value subsref (const std::string &type, const std::list<octave_value_list>& idx)
+		{
+			octave_value retval;
+			int skip = 1;
+			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+			rsb_err_t errval = RSB_ERR_NO_ERROR;
+
+			RSBOI_TRY_BLK
+			{
+			switch (type[0])
+			{
+				case '(':
+					retval = do_index_op(idx.front());
 				break;
+
 				case '.':
 					RSBOI_DEBUG_NOTICE("UNFINISHED\n");
 					break;

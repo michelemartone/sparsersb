@@ -815,6 +815,22 @@ err:
 		// octave_value::assign_op octave_value::binary_op_to_assign_op (binary_op op) { assign_op retval; return retval; }
 
 #if RSBOI_WANT_SUBSREF
+
+octave_value do_index_op_subsparse(const idx_vector & i) const
+{
+	// Convert to Octave's sparse and reconvert.
+	// check with
+	// octave --eval "nnz(sparse((toeplitz(sparsersb([0,1,2,3]))-toeplitz(sparse([0,1,2,3])))))==0"
+	RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
+	octave_value retval;
+
+	if(is_real_type())
+		retval = new octave_sparsersb_mtx ( SparseMatrix(sparse_matrix_value().index(i)) );
+	else
+		retval = new octave_sparsersb_mtx ( SparseComplexMatrix(sparse_complex_matrix_value().index(i)) );
+	return retval;
+}
+
 		octave_value do_index_op(const octave_value_list& idx, bool resize_ok = false)
 		{
 				RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
@@ -877,6 +893,12 @@ err:
 						}
 #endif /* RSBOI_WANT_RESHAPE */
 						RSBOI_DEBUG_NOTICE("get_element (%d)\n",ii);
+						RSBOI_DEBUG_NOTICE("i.length () = %d\n",i.length());
+						if(i.length()>1)
+						{
+							retval = do_index_op_subsparse(i);
+							goto err;
+						}
 						if(is_real_type())
 						{
 							RSBOI_T rv;

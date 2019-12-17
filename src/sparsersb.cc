@@ -3044,6 +3044,22 @@ ret:
 %! # sparsersb(rrm,"renderb", "sparsersb_temporary_renderb.eps"); sparsersb(rrm,"renders", "sparsersb_temporary_renders.eps"); # FIXME
 %!test
 %! sparsersb(sparsersb(sprand(100,100,0.4)),"autotune","n",20,4,1,1,1)
+%!test
+%! assert( nnz(sparse((toeplitz(sparsersb([0,1,2,3]))-toeplitz(sparse([0,1,2,3])))))==0 );
+%!test
+%! assert( prod(sparsersb([11,12,13;21,22,23])(:) - [11,21,12,22,13,23]')==0);
+%!test
+%! A = sprand(4,4,.5); assert(prod(reshape(sparsersb(A),[8,2]) - reshape(sparse(A),[8,2]))==0);
+%!test
+%! assert(sparsersb([-1,1,2])() == sparsersb([-1,1,2]));
+%!test
+%! % symmetry expansion
+%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(nnz(A)==4 && nnz(full(A))==5);
+%!test
+%! % note that now the 1-D indexing operation differs from sparse
+%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(A(1)==(1+i) && A(2)==1 && sparse(A)(2)==0)
+%!test
+%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(0==A(2:5)-sparsersb([1,1],[2,4],[1+0i,1+0i],1,4))
 */
 
 /*

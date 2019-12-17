@@ -554,6 +554,7 @@ err:
 #if RSBOI_WANT_SYMMETRY
 			if(sm.issymmetric())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_SYMMETRIC|RSB_FLAG_TRIANGULAR);
+			// It would be wise to have an isdiag() check and remove symmetry in that case.
 #endif
 			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
@@ -586,6 +587,7 @@ err:
 #if RSBOI_WANT_SYMMETRY
 			if(sm.ishermitian())
 				RSB_DO_FLAG_ADD(eflags,RSB_FLAG_LOWER_HERMITIAN|RSB_FLAG_TRIANGULAR);
+			// It would be wise to have an isdiag() check and remove symmetry in that case.
 #endif
 			if(!(this->mtxAp = rsboi_mtx_alloc_from_csc_const(sm.data(),sm.ridx(),sm.cidx(), nnzA=sm.nnz(),typecode, nrA, ncA, RSBOI_RB, RSBOI_CB, eflags,&errval)))
 				RSBOI_ERROR(RSBOI_0_ALLERRMSG);
@@ -3070,6 +3072,15 @@ ret:
 %! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(A(1)==(1+i) && A(2)==0 && sparse(A)(2)==0)
 %!test
 %! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(0==A(2:5)-sparsersb([1,1],[2,4],[1+0i,1+0i],1,4))
+%!test
+%! assert(  nnz(sparse([2,1;1,2])) == 4 && nnz(sparsersb([2,1;1,2])) == 3  )    #    symmetry
+%! assert(  nnz(sparse([2,0;1,2])) == 3 && nnz(sparsersb([2,0;1,2])) == 3  )    # no symmetry
+%!test
+%! assert( (sparse([2,0;1,2]) \ [1;1])  == (sparsersb([2,0;1,2]) \ [1;1])  )
+%! assert( (sparse([2,0;0,2]) \ [1;1])  == (sparsersb([2,0;0,2]) \ [1;1])  )
+%!test
+%! assert( (sparse([2,0;1,2]) * [1;1])  == (sparsersb([2,0;1,2]) * [1;1])  )
+%! assert( (sparse([2,0;0,2]) * [1;1])  == (sparsersb([2,0;0,2]) * [1;1])  )
 */
 
 /*

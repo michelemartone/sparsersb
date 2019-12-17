@@ -229,6 +229,7 @@
 #define RSBOI_WANT_SPMTX_SUBSREF 0 /* not yet there: need to accumulate in sparse */
 #define RSBOI_WANT_SPMTX_SUBSASGN 1
 #define RSBOI_WANT_OS_1D_IDX_ACCESS 1 /* Octave-style 1D index access */
+#define RSBOI_WANT_EXPAND_SYMM 1 /* Expand symmetry when converting to sparse */
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -674,21 +675,25 @@ err:
 			rsb_nnz_idx_t nnzA,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			RSBOI_0_EMCHECK(this->mtxAp);
+#if RSBOI_WANT_EXPAND_SYMM
+			const rsb_nnz_idx_t e = (is__symmetric() || is__hermitian()) ? 2 : 1;
+		       	rsb_nnz_idx_t nze = 0;
+#else
+			const rsb_nnz_idx_t e = 1;
+		       	const rsb_nnz_idx_t nze = 0;
+#endif
 			nnzA = this->nnz();
-			Array<octave_idx_type> IA( dim_vector(1,nnzA) );
-			Array<octave_idx_type> JA( dim_vector(1,nnzA) );
-			Array<RSBOI_T> VA( dim_vector(1,nnzA) );
+			Array<octave_idx_type> IA( dim_vector(1,nnzA*e) );
+			Array<octave_idx_type> JA( dim_vector(1,nnzA*e) );
+			Array<RSBOI_T> VA( dim_vector(1,nnzA*e) );
 
 			rcm.IA = (octave_idx_type*)IA.data(),rcm.JA = (octave_idx_type*)JA.data();
 			if(!this->is_real_type())
 			{
-				Array<Complex> VAC( dim_vector(1,nnzA) );
+				Array<Complex> VAC( dim_vector(1,nnzA*e) );
 				RSBOI_T* VAp = ((RSBOI_T*)VA.data());
 				rcm.VA = (RSBOI_T*)VAC.data();
-#if RSBOI_WANT_SYMMETRY
-				/* FIXME: and now ? shall we expand symmetry or not ? */
-#endif
-				/* FIXME: shall use some librsb's dedicated call for this */
+
 				errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 				for(nzi=0;nzi<nnzA;++nzi)
 					VAp[nzi]=((RSBOI_T*)rcm.VA)[2*nzi];
@@ -698,6 +703,27 @@ err:
 				rcm.VA = (RSBOI_T*)VA.data();
 				errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
 			}
+#if RSBOI_WANT_EXPAND_SYMM
+			if(e==2)
+			{
+				for(nzi=0;nzi<nnzA;++nzi)
+					if ( rcm.IA [nzi] != rcm.JA[nzi] )
+					{
+						((RSBOI_T*)rcm.VA)[nnzA+nze]=((RSBOI_T*)rcm.VA)[nzi];
+						rcm.JA [nnzA+nze] = rcm.IA[nzi];
+						rcm.IA [nnzA+nze] = rcm.JA[nzi];
+						nze++;
+					}
+				nnzA += nze;
+			}
+#endif
+#if RSBOI_WANT_EXPAND_SYMM
+			{
+				VA.resize1(nnzA),
+				IA.resize1(nnzA),
+				JA.resize1(nnzA);
+			}
+#endif
 			rcm.nrA = this->rows();
 			rcm.ncA = this->cols();
 
@@ -790,23 +816,48 @@ err:
 			rsb_nnz_idx_t nnzA,nzi;
 			RSBOI_DEBUG_NOTICE(RSBOI_D_EMPTY_MSG);
 			RSBOI_0_EMCHECK(this->mtxAp);
+#if RSBOI_WANT_EXPAND_SYMM
+			const rsb_nnz_idx_t e = (is__symmetric() || is__hermitian()) ? 2 : 1;
+		       	rsb_nnz_idx_t nze = 0;
+#else
+			const rsb_nnz_idx_t e = 1;
+		       	const rsb_nnz_idx_t nze = 0;
+#endif
 			nnzA = this->nnz();
-			Array<octave_idx_type> IA( dim_vector(1,nnzA) );
-			Array<octave_idx_type> JA( dim_vector(1,nnzA) );
-			Array<Complex> VA( dim_vector(1,nnzA) );
+			Array<octave_idx_type> IA( dim_vector(1,nnzA*e) );
+			Array<octave_idx_type> JA( dim_vector(1,nnzA*e) );
+			Array<Complex> VA( dim_vector(1,nnzA*e) );
 			RSBOI_T* VAp = ((RSBOI_T*)VA.data());
 
 			rcm.IA = (octave_idx_type*)IA.data(),rcm.JA = (octave_idx_type*)JA.data();
 			rcm.VA = VAp;
 			errval = rsboi_mtx_get_coo(this->mtxAp,rcm.VA,rcm.IA,rcm.JA,RSB_FLAG_C_INDICES_INTERFACE);
-#if RSBOI_WANT_SYMMETRY
-			/* FIXME: and now ? shall we expand symmetry or not ? */
-#endif
-			/* FIXME: shall use some librsb's dedicated call for this */
+
 			if(this->is_real_type())
 				for(nzi=0;nzi<nnzA;++nzi)
 					VAp[2*(nnzA-1-nzi)+0]=VAp[(nnzA-1-nzi)+0],
 					VAp[2*(nnzA-1-nzi)+1]=0;
+#if RSBOI_WANT_EXPAND_SYMM
+			if(e==2)
+			{
+				for(nzi=0;nzi<nnzA;++nzi)
+					if ( rcm.IA [nzi] != rcm.JA[nzi] )
+					{
+						if(this->is_real_type())
+							((RSBOI_T*)rcm.VA)[nnzA+nze]=((RSBOI_T*)rcm.VA)[nzi];
+						else
+							((Complex*)rcm.VA)[nnzA+nze]=conj(((Complex*)rcm.VA)[nzi]);
+						rcm.JA [nnzA+nze] = rcm.IA[nzi];
+						rcm.IA [nnzA+nze] = rcm.JA[nzi];
+						nze++;
+					}
+				nnzA += nze;
+			}
+
+			VA.resize1(nnzA);
+			IA.resize1(nnzA);
+			JA.resize1(nnzA);
+#endif
 			rcm.nrA = this->rows();
 			rcm.ncA = this->cols();
 
@@ -3081,6 +3132,14 @@ ret:
 %!test
 %! assert( (sparse([2,0;1,2]) * [1;1])  == (sparsersb([2,0;1,2]) * [1;1])  )
 %! assert( (sparse([2,0;0,2]) * [1;1])  == (sparsersb([2,0;0,2]) * [1;1])  )
+%!test
+%! % symmetry expansion
+%! assert ( nnz(sparse(sparsersb([1  ,1;1,1])) - sparse([1  ,1;1,1])) == 0 )
+%! assert ( nnz(sparse(sparsersb([1+i,1;1,1])) - sparse([1+i,1;1,1])) == 0 )
+%! % hermitianness expansion
+%! assert ( nnz(sparsersb([1,1+i;1-i,1]) - sparse([1,1+i;1-i,1])) == 0 )
+%! % no symmetric complex expansion
+%! assert ( nnz(sparsersb([1,1+i;1+i,1]) - sparse([1,1+i;1-i,1])) == 1 )
 */
 
 /*

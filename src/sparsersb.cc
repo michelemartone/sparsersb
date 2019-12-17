@@ -228,6 +228,7 @@
 #define RSBOI_WANT_RESHAPE 1
 #define RSBOI_WANT_SPMTX_SUBSREF 0 /* not yet there: need to accumulate in sparse */
 #define RSBOI_WANT_SPMTX_SUBSASGN 1
+#define RSBOI_WANT_OS_1D_IDX_ACCESS 1 /* Octave-style 1D index access */
 //#define RSBOI_PERROR(E) rsb_perror(E)
 #define RSBOI_PERROR(E) if(RSBOI_SOME_ERROR(E)) rsboi_strerr(E)
 #ifdef RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX
@@ -250,6 +251,7 @@ extern "C" {
 	rsb_bool_t rsb_is_correctly_built_rcsr_matrix(const struct rsb_mtx_t *mtxAp); // forward declaration
 }
 #endif
+#if !RSBOI_WANT_OS_1D_IDX_ACCESS
 #if defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
 extern "C" {
 #if (RSB_LIBRSB_VER<=10200)
@@ -260,6 +262,7 @@ extern "C" {
 #endif
 }
 #endif
+#endif /* !RSBOI_WANT_OS_1D_IDX_ACCESS */
 #if RSBOI_WANT_DOUBLE_COMPLEX
 #define RSBOI_BINOP_PREVAILING_TYPE(V1,V2) (((V1).iscomplex()||(V2).iscomplex())?RSB_NUMERICAL_TYPE_DOUBLE_COMPLEX:RSB_NUMERICAL_TYPE_DOUBLE)
 #else
@@ -876,7 +879,6 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 						octave_idx_type ii = i(0);
 						RSBOI_ERROR("");
 #elif defined(RSB_LIBRSB_VER) && (RSB_LIBRSB_VER>=10100)
-						octave_idx_type ii = i(0);
 #if RSBOI_WANT_RESHAPE
 						if( i.is_colon() )
 						{
@@ -892,23 +894,28 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 							goto err;
 						}
 #endif /* RSBOI_WANT_RESHAPE */
-						RSBOI_DEBUG_NOTICE("get_element (%d)\n",ii);
 						RSBOI_DEBUG_NOTICE("i.length () = %d\n",i.length());
 						if(i.length()>1)
 						{
 							retval = do_index_op_subsparse(i);
 							goto err;
 						}
+#if RSBOI_WANT_OS_1D_IDX_ACCESS
+						octave_idx_type jj = (i(0) / rows());
+						octave_idx_type ii = (i(0) % rows());
+						RSBOI_DEBUG_NOTICE("get_element (%d,%d)\n",ii,ii);
 						if(is_real_type())
 						{
 							RSBOI_T rv;
-							errval = rsb_do_get_nnz_element(this->mtxAp,&rv,RSBOI_NULL,RSBOI_NULL,ii);
+							//errval = rsb_do_get_nnz_element(this->mtxAp,&rv,RSBOI_NULL,RSBOI_NULL,ii);
+       							errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
 							retval = rv;
 						}
 						else
 						{
-							Complex rv;
-							errval = rsb_do_get_nnz_element(this->mtxAp,&rv,RSBOI_NULL,RSBOI_NULL,ii);
+							Complex rv { RSBOI_ZERO, RSBOI_ZERO };
+							//errval = rsb_do_get_nnz_element(this->mtxAp,&rv,RSBOI_NULL,RSBOI_NULL,ii);
+       							errval = rsb_mtx_get_values(this->mtxAp,&rv,&ii,&jj,1,RSBOI_NF);
 							retval = rv;
 						}
 						if(RSBOI_SOME_ERROR(errval))
@@ -916,8 +923,10 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 							if(ii>=this->nnz() || ii<0)
 								error ("trying accessing element %ld: index out of bounds !",(long int)ii+1);
 							else
-								error ("trying accessing element %ld: this seems bug!",(long int)ii+1);
+								; /* likely a zero */
+								// error ("trying accessing element %ld: this seems bug!",(long int)ii+1);
 						}
+#endif /* RSBOI_WANT_OS_1D_IDX_ACCESS */
 #endif
 						}
 					}
@@ -3056,8 +3065,9 @@ ret:
 %! % symmetry expansion
 %! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(nnz(A)==4 && nnz(full(A))==5);
 %!test
-%! % note that now the 1-D indexing operation differs from sparse
-%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(A(1)==(1+i) && A(2)==1 && sparse(A)(2)==0)
+%! % 1-D indexing access is meant to be like in sparse
+%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(A(1)==(1+i) && A(3)==1 && sparse(A)(3)==1)
+%! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(A(1)==(1+i) && A(2)==0 && sparse(A)(2)==0)
 %!test
 %! A=sparsersb([1+i,0,1;0,1,0;1,0,1]); assert(0==A(2:5)-sparsersb([1,1],[2,4],[1+0i,1+0i],1,4))
 */

@@ -867,6 +867,14 @@ err:
 							retval = this->reshape(dim_vector (this->rows()*this->cols(),1));
 							goto err;
 						}
+						if( i.is_range() )
+						{
+							if(is_real_type())
+								retval = new octave_sparsersb_mtx ( SparseMatrix(sparse_matrix_value().index(i)) );
+							else
+								retval = new octave_sparsersb_mtx ( SparseComplexMatrix(sparse_complex_matrix_value().index(i)) );
+							goto err;
+						}
 #endif /* RSBOI_WANT_RESHAPE */
 						RSBOI_DEBUG_NOTICE("get_element (%d)\n",ii);
 						if(is_real_type())

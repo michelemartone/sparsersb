@@ -903,8 +903,8 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 							goto err;
 						}
 #if RSBOI_WANT_OS_1D_IDX_ACCESS
-						octave_idx_type jj = (i(0) / rows());
-						octave_idx_type ii = (i(0) % rows());
+						rsb_coo_idx_t jj = (i(0) / rows());
+						rsb_coo_idx_t ii = (i(0) % rows());
 						RSBOI_DEBUG_NOTICE("get_element (%d,%d)\n",ii,ii);
 						if(is_real_type())
 						{

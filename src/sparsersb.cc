@@ -973,11 +973,10 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 						}
 						if(RSBOI_SOME_ERROR(errval))
 						{
-							if(ii>=this->nnz() || ii<0)
-								error ("trying accessing element %ld: index out of bounds !",(long int)ii+1);
+							if(ii>=this->rows() || ii<0 || jj>=this->cols() || jj<0)
+								error ("trying accessing element %ld,%ld: index out of bounds !",(long int)ii+1,(long int)jj+1);
 							else
 								; /* likely a zero */
-								// error ("trying accessing element %ld: this seems bug!",(long int)ii+1);
 						}
 #endif /* RSBOI_WANT_OS_1D_IDX_ACCESS */
 #endif

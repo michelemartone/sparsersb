@@ -8,7 +8,10 @@ sparsersb-1.0.7 Release Date: 2019-10-27
 **  - builds with 4.4 till pre-release 6.0
 **  - `make tests' shall fail on sparsersb not matching octave's sparse
 **  - implemented elemental transposition by complex: sparsersb.^complex
-**  - 1-D indexing access is meant to be like in sparse
+**  - expand symmetry  when converting sparsersb double  to sparse
+**  - expand hermitian when converting sparsersb complex to sparse
+**  - 1-D indexing read access is meant to be like in sparse
+**  - (:), (:,:), (i,:), (:,j) access support implemented (but not efficient)
 **  - internal bug fixes
 ===============================================================================
 sparsersb-1.0.6 Release Date: 2018-06-15

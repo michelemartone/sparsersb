@@ -993,6 +993,22 @@ octave_value do_index_op_subsparse(const idx_vector & i) const
 #if RSBOI_WANT_SYMMETRY
 							/* FIXME: and now ? */
 #endif
+#if RSBOI_WANT_RESHAPE
+							if( idx(0).index_vector ().is_colon() || idx(1).index_vector ().is_colon() )
+							{
+								if(is_real_type())
+								{
+									octave_sparse_matrix osm (sparse_matrix_value());
+									retval = osm.do_index_op(idx);
+								}
+								else
+								{
+									octave_sparse_complex_matrix osm (sparse_complex_matrix_value());
+									retval = osm.do_index_op(idx);
+								}
+								goto err;
+							}
+#endif /* RSBOI_WANT_RESHAPE */
 							if(is_real_type())
 							{
 								idx_vector j = idx (1).index_vector ();
@@ -3139,6 +3155,15 @@ ret:
 %! assert ( nnz(sparsersb([1,1+i;1-i,1]) - sparse([1,1+i;1-i,1])) == 0 )
 %! % no symmetric complex expansion
 %! assert ( nnz(sparsersb([1,1+i;1+i,1]) - sparse([1,1+i;1-i,1])) == 1 )
+%!test
+%! assert( (sparse([2, 0; 1, 2])(:,:))  == (sparsersb([2, 0; 1, 2])(:,:))  )
+%! assert( (sparse([2, 0; i, 2])(:,:))  == (sparsersb([2, 0; i, 2])(:,:))  )
+%!test
+%! assert( (sparse([2, 0; 1, 2])(2,:))  == (sparsersb([2, 0; 1, 2])(2,:))  )
+%! assert( (sparse([2, 0; i, 2])(2,:))  == (sparsersb([2, 0; i, 2])(2,:))  )
+%!test
+%! assert( (sparse([2, 0; 1, 2])(:,2))  == (sparsersb([2, 0; 1, 2])(:,2))  )
+%! assert( (sparse([2, 0; i, 2])(:,2))  == (sparsersb([2, 0; i, 2])(:,2))  )
 */
 
 /*

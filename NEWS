@@ -1,6 +1,6 @@
 Summary of important user-visible changes for releases of the sparsersb package
 ===============================================================================
-sparsersb-1.0.7 Release Date: 2019-10-27
+sparsersb-1.0.7 Release Date: 2020-01-07
 ===============================================================================
 **  - fixed '*' operator: 2*sparsersb(...) now returns a sparsersb, not sparse
 **  - fixed '*' operation when one operand is real sparsersb and other complex
@@ -13,6 +13,7 @@ sparsersb-1.0.7 Release Date: 2019-10-27
 **  - 1-D indexing read access is meant to be like in sparse
 **  - (:), (:,:), (i,:), (:,j) access support implemented (but not efficient)
 **  - internal bug fixes
+**  - more test cases (for 'test librsb')
 ===============================================================================
 sparsersb-1.0.6 Release Date: 2018-06-15
 ===============================================================================

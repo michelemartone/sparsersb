@@ -21,6 +21,7 @@ AC_ARG_VAR([LIBRSB_TARBALL],[Environment variable equivalent for --with-librsb-t
 if [ test "$MKOCTFILE" = "none" ]; then
   AC_MSG_ERROR([mkoctfile required to install $PACKAGE_NAME])
 fi
+MKOCTFILE="$MKOCTFILE -g"
 
 # Checks for librsb
 have_rsb=no

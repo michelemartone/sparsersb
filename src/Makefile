@@ -2,7 +2,7 @@ sinclude Makeconf
 # Makeconf is created by the configure script.
 # You can also not use it but set explicitly the following:
 CXXFLAGS=$(SPARSERSB_CXXFLAGS) $(OCTAVE_FUNC_DEFINES)
-LFLAGS=$(shell $(MKOCTFILE) -p LFLAGS) $(SPARSERSB_LDFLAGS)
+LDFLAGS=$(shell $(MKOCTFILE) -p LDFLAGS) $(SPARSERSB_LDFLAGS)
 CXXFLAGS_CXX11=$(SPARSERSB_CXX11)
 
 .PHONY: all check
@@ -19,7 +19,7 @@ tags: *.cc
 #		# make -C $(RSBLIBDIR) ; fi
 
 $(SPARSERSB_OCT): sparsersb.cc
-	LFLAGS="$(LFLAGS)" CXXFLAGS="$(CXXFLAGS) $(CXXFLAGS_CXX11)" $(MKOCTFILE) -D'RSB_SPARSERSB_LABEL=sparsersb' -o $@ $< 
+	LDFLAGS="$(LDFLAGS)" CXXFLAGS="$(CXXFLAGS) $(CXXFLAGS_CXX11)" $(MKOCTFILE) -D'RSB_SPARSERSB_LABEL=sparsersb' -o $@ $<
 rtest: $(SPARSERSB_OCT)
 	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../inst/sparsersbtester.m
 	SPARSERSB_TEST=1 $(OCTAVE) --norc --silent ../bin/octavebench.m ../bin/pd.mtx
